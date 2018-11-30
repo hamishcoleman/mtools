@@ -43,6 +43,7 @@
 
 typedef unsigned char Byte;
 typedef unsigned long Dword;
+typedef mt_off_t Qword;
 
 const char* AuthErrors[] = {
 	"Auth success!",
@@ -78,6 +79,7 @@ static int authenticate_to_floppyd(char fullauth, int sock, char *display,
 	char *xcookie = NULL;
 	Dword errcode;
 	int bytesRead;
+	int cap=0;
 
 	if (fullauth) {
 		command[4] = display;
@@ -108,13 +110,18 @@ static int authenticate_to_floppyd(char fullauth, int sock, char *display,
 		return errcode;
 	}
 
-
-	if(bytesRead == 8) {
+	protoversion = FLOPPYD_PROTOCOL_VERSION_OLD;	
+	if(bytesRead >= 12) {
 	    protoversion = read_dword(sock);
-	    read_dword(sock);
+	    cap = read_dword(sock);
 	}
 	
 	fprintf(stderr, "Protocol Version=%d\n", protoversion);
+	if(protoversion >= FLOPPYD_PROTOCOL_VERSION) {
+	  fprintf(stderr, "Capabilities:%s%s\n",		  
+		  (cap & FLOPPYD_CAP_EXPLICIT_OPEN) ? " ExplicitOpen" : "",
+		  (cap & FLOPPYD_CAP_LARGE_SEEK) ? " LargeFiles" : "");
+	}
 
 	if (fullauth) {
 		dword2byte(filelen, (Byte *) xcookie);

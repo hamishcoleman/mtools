@@ -1,6 +1,6 @@
 #ifndef MTOOLS_MTOOLS_H
 #define MTOOLS_MTOOLS_H
-/*  Copyright 1996-2005,2007-2009 Alain Knaff.
+/*  Copyright 1996-2005,2007-2010 Alain Knaff.
  *  This file is part of mtools.
  *
  *  Mtools is free software: you can redistribute it and/or modify
@@ -215,6 +215,7 @@ void mmd(int argc, char **argv, int type);
 void mmount(int argc, char **argv, int type);
 void mmove(int argc, char **argv, int type);
 void mpartition(int argc, char **argv, int type);
+void mshortname(int argc, char **argv, int mtype);
 void mshowfat(int argc, char **argv, int mtype);
 void mtoolstest(int argc, char **argv, int type);
 void mzip(int argc, char **argv, int type);

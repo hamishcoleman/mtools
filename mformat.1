@@ -1,5 +1,5 @@
 '\" t
-.TH mformat 1 "28Feb10" mtools-4.0.13
+.TH mformat 1 "17Oct10" mtools-4.0.14
 .SH Name
 mformat - add an MSDOS filesystem to a low-level formatted floppy disk
 '\" t
@@ -25,7 +25,7 @@ low-level formatted diskette. Its syntax is:
 .PP
 .ft I
 .nf
-\&\fR\&\f(CWmformat\fR [\fR\&\f(CW-t\fR \fIcylinders\fR] [\fR\&\f(CW-h\fR \fIheads\fR] [\fR\&\f(CW-s\fR \fIsectors\fR]
+\&\fR\&\f(CWmformat\fR [\fR\&\f(CW-t\fR \fIcylinders\fR|\fR\&\f(CW-T\fR \fItot_sectors\fR] [\fR\&\f(CW-h\fR \fIheads\fR] [\fR\&\f(CW-s\fR \fIsectors\fR]
   [\fR\&\f(CW-f\fR \fIsize\fR] [\fR\&\f(CW-1\fR] [\fR\&\f(CW-4\fR] [\fR\&\f(CW-8\fR]
   [\fR\&\f(CW-v\fR \fIvolume_label\fR]
   [\fR\&\f(CW-F\fR] [\fR\&\f(CW-S\fR \fIsizecode\fR] [\fR\&\f(CW-X\fR]
@@ -37,6 +37,7 @@ low-level formatted diskette. Its syntax is:
   [\fR\&\f(CW-r\fR \fIroot_sectors\fR] [\fR\&\f(CW-L\fR \fIfat_len\fR] 
   [\fR\&\f(CW-B\fR \fIboot_sector\fR] [\fR\&\f(CW-k\fR]
   [\fR\&\f(CW-m\fR \fImedia_descriptor\fR]
+  [\fR\&\f(CW-K\fR \fIbackup_boot\fR]
   \fIdrive:\fR
 .fi
 .ft R
@@ -93,10 +94,14 @@ the -h/-t/-s flags. The following sizes are supported:
 \&\fR\&\f(CWt\fR\ 
 Specifies the number of tracks on the disk.
 .TP
+\&\fR\&\f(CWT\fR\ 
+Specifies the number of total sectors on the disk. Only one of these 2
+options may be specified (tracks or total sectors)
+.TP
 \&\fR\&\f(CWh\fR\ 
 The number of heads (sides).
 .TP
-\&\fR\&\f(CWn\fR\ 
+\&\fR\&\f(CWs\fR\ 
 Specifies the number of sectors per track. If the 2m option is given,
 number of 512-byte sector equivalents on generic tracks (i.e. not head 0
 track 0).  If the 2m option is not given, number of physical sectors per
@@ -200,6 +205,10 @@ parameters.
 Keep the existing boot sector as much as possible.  Only the geometry
 fields and other similar file system data are updated to match the target
 disks parameters.
+.TP
+\&\fR\&\f(CWK\fR\ 
+Sets the sector number where the backup of the boot sector should be
+stored (only relevant on FAT32).
 .TP
 \&\fR\&\f(CWm\fR\ 
 Use a non-standard media descriptor byte for this disk. The media

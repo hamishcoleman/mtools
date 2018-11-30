@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 1997,1999,2001,2002,2004,2009 Alain Knaff.
+# Copyright 1997,1999,2001,2002,2004,2009,2010 Alain Knaff.
 # This file is part of mtools.
 #
 # Mtools is free software: you can redistribute it and/or modify
@@ -69,7 +69,7 @@ for name in `fgrep -v '#' cmdname | cut -f1 -d\  ` ; do
   extract $name
 done
 
-rm mtools.tmpl.1
+rm -f mtools.tmpl.1
 exec >mtools.tmpl.1
 echo \'\\\" t
 # '
@@ -110,10 +110,12 @@ echo mmount
 echo mmove
 echo mrd
 echo mren
+echo mshortname
+echo mshowfat
 echo mtoolstest
 echo mtype
 
-rm mtools.tmpl.5
+rm -f mtools.tmpl.5
 exec >mtools.tmpl.5
 echo \'\\\" t
 # '

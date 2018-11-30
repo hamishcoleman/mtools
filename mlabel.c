@@ -35,7 +35,7 @@ void label_name(doscp_t *cp, const char *filename, int verbose,
 	int have_lower, have_upper;
 	wchar_t wbuffer[12];
 
-	memset(ans, ' ', sizeof(ans)-1);
+	memset(ans, ' ', sizeof(*ans)-1);
 	ans->sentinel = '\0';
 	len = native_to_wchar(filename, wbuffer, 11, 0, 0);
 	if(len > 11){
@@ -147,7 +147,7 @@ void mlabel(int argc, char **argv, int type)
 				break;
 			case 'N':
 				set_serial = SER_SET;
-				serial = strtol(optarg, &eptr, 16);
+				serial = strtoul(optarg, &eptr, 16);
 				if(*eptr) {
 					fprintf(stderr,
 						"%s not a valid serial number\n",
@@ -178,6 +178,12 @@ void mlabel(int argc, char **argv, int type)
 	if(!clear && !newLabel[0]) {
 		isRop = &isRo;
 	}
+	if(clear && newLabel[0]) {
+		/* Clear and new label specified both */
+		fprintf(stderr, "Both clear and new label specified\n");
+		FREE(&RootDir);
+		exit(1);
+	}		
 	RootDir = open_root_dir(argv[optind][0], isRop ? 0 : O_RDWR, isRop);
 	if(isRo) {
 		show = 1;
@@ -217,6 +223,12 @@ void mlabel(int argc, char **argv, int type)
 		}
 		if(newLabel[0])
 			newLabel[strlen(newLabel)-1] = '\0';
+	}
+
+	if(strlen(newLabel) > 11) {
+		fprintf(stderr,"New label too long\n");
+		FREE(&RootDir);
+		exit(1);
 	}
 
 	if((!show || newLabel[0]) && !isNotFound(&entry)){
@@ -278,6 +290,13 @@ void mlabel(int argc, char **argv, int type)
 
 	if(need_write_boot) {
 		force_write(Fs, (char *)&boot, 0, sizeof(boot));
+		/* If this is fat 32, write backup boot sector too */
+		if(!WORD_S(fatlen)) {
+			int backupBoot = WORD_S(ext.fat32.backupBoot);
+			force_write(Fs, (char *)&boot, 
+				    backupBoot * WORD_S(secsiz),
+				    sizeof(boot));
+		}
 	}
 
 	FREE(&RootDir);

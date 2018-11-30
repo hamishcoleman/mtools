@@ -68,7 +68,9 @@ static int init_geometry_boot(union bootsector *boot, struct device *dev,
 	set_word(boot->boot.nsect, dev->sectors);
 	set_word(boot->boot.nheads, dev->heads);
 
-	*tot_sectors = dev->heads * dev->sectors * dev->tracks - DWORD(nhs);
+#ifdef HAVE_ASSERT_H
+	assert(*tot_sectors != 0);
+#endif
 
 	if (*tot_sectors < 0x10000){
 		set_word(boot->boot.psect, *tot_sectors);
@@ -548,6 +550,13 @@ static void calc_cluster_size(struct Fs_t *Fs, unsigned long tot_sectors,
 			exit(1);
 	}
 
+	if(tot_sectors <= Fs->fat_start + Fs->num_fat + Fs->dir_len) {
+		/* we need at least enough sectors to fit boot, fat and root
+		 * dir */
+		fprintf(stderr, "Not enough sectors\n");
+		exit(1);
+	}
+
 	rem_sect = tot_sectors - Fs->dir_len - Fs->fat_start;
 
 	/* double the cluster size until we can fill up the disk with
@@ -620,7 +629,7 @@ static void calc_fs_parameters(struct device *dev, unsigned long tot_sectors,
 		int may_change_root_size = (Fs->dir_len == 0);
 
 		/* a non-standard format */
-		if(DWORD(nhs))
+		if(DWORD(nhs) || tot_sectors % (dev->sectors * dev->heads))
 			boot->boot.descr = 0xf8;
 		  else
 			boot->boot.descr = 0xf0;
@@ -724,7 +733,7 @@ static int get_block_geom(int fd, struct MT_STAT *buf, struct device *dev,
 			strerror(errno));
 		return -1;
 	}
-	
+
 	if(!heads)
 		heads = geom.heads;
 	if(!sectors)
@@ -745,8 +754,7 @@ static int get_block_geom(int fd, struct MT_STAT *buf, struct device *dev,
 	dev->heads = heads;
 	dev->sectors = sectors;
 	if(!dev->tracks)
-		dev->tracks = (size + dev->hidden) / sect_per_track;
-	size = dev->tracks * dev->heads * dev->sectors + dev->hidden;
+		dev->tracks = (size + dev->hidden % sect_per_track) / sect_per_track;
 	return 0;
 }
 #endif
@@ -778,7 +786,7 @@ void mformat(int argc, char **argv, int dummy)
 	int keepBoot = 0;
 	struct device used_dev;
 	int argtracks, argheads, argsectors;
-	unsigned long tot_sectors;
+	unsigned long tot_sectors=0;
 	int blocksize;
 
 	char drive, name[EXPAND_BUF];
@@ -797,6 +805,8 @@ void mformat(int argc, char **argv, int dummy)
 	mt_size_t maxSize;
 
 	int Atari = 0; /* should we add an Atari-style serial number ? */
+
+	int backupBoot = 6;
 
 	hs = hs_set = 0;
 	argtracks = 0;
@@ -833,7 +843,7 @@ void mformat(int argc, char **argv, int dummy)
 		usage(0);
 	while ((c = getopt(argc,argv,
 			   "i:148f:t:n:v:qub"
-			   "kB:r:L:I:FCc:Xh:s:l:N:H:M:S:2:30:Aad:m:"))!= EOF) {
+			   "kK:B:r:L:I:FCc:Xh:s:T:l:N:H:M:S:2:30:Aad:m:"))!= EOF) {
 		switch (c) {
 			case 'i':
 				set_cmd_line_image(optarg, 0);
@@ -863,6 +873,10 @@ void mformat(int argc, char **argv, int dummy)
 				break;
 			case 't':
 				argtracks = atoi(optarg);
+				break;
+
+			case 'T':
+				tot_sectors = atoi(optarg);
 				break;
 
 			case 'n': /*non-standard*/
@@ -974,6 +988,13 @@ void mformat(int argc, char **argv, int dummy)
 			case 'k':
 				keepBoot = 1;
 				break;
+			case 'K':
+				backupBoot = atoi(optarg);
+				if(backupBoot < 2 || backupBoot >= 32) {
+				  fprintf(stderr, "Backupboot must be comprised between 2 and 32\n");
+				  exit(1);
+				}
+				break;
 			case 'h':
 				argheads = atoi(optarg);
 				break;
@@ -991,6 +1012,11 @@ void mformat(int argc, char **argv, int dummy)
 	if (argc - optind != 1 ||
 	    !argv[optind][0] || argv[optind][1] != ':')
 		usage(1);
+
+	if(argtracks && tot_sectors) {
+		fprintf(stderr, "Only one of -t or -T may be specified\n");
+		usage(1);
+	}
 
 #ifdef USE_XDF
 	if(create && format_xdf) {
@@ -1032,10 +1058,7 @@ void mformat(int argc, char **argv, int dummy)
 #ifdef USE_FLOPPYD
 			Fs.Direct = FloppydOpen(&used_dev, dev, name,
 						O_RDWR | create,
-						errmsg, 0, 1);
-			if(Fs.Direct) {
-				maxSize = max_off_t_31;
-			}
+						errmsg, 0, 1, &maxSize);
 #endif
 			if(!Fs.Direct) {			
 				Fs.Direct = SimpleFileOpen(&used_dev, dev, name,
@@ -1076,7 +1099,8 @@ void mformat(int argc, char **argv, int dummy)
 #endif
 
 		/* no way to find out geometry */
-		if (!used_dev.tracks || !used_dev.heads || !used_dev.sectors){
+		if ((!used_dev.tracks && !tot_sectors) ||
+		     !used_dev.heads || !used_dev.sectors){
 			sprintf(errmsg,
 				"Unknown geometry "
 				"(You must tell the complete geometry "
@@ -1139,7 +1163,10 @@ void mformat(int argc, char **argv, int dummy)
 	}
 
 	/* calculate the total number of sectors */
-	tot_sectors = used_dev.tracks*used_dev.heads*used_dev.sectors - used_dev.hidden;
+	if(tot_sectors == 0) {
+		unsigned long sect_per_track = used_dev.heads*used_dev.sectors; 
+		tot_sectors = used_dev.tracks*sect_per_track - used_dev.hidden%sect_per_track;
+	}
 
 	/* create the image file if needed */
 	if (create) {
@@ -1162,6 +1189,7 @@ void mformat(int argc, char **argv, int dummy)
 			exit(1);
 		}
 		keepBoot = 1;
+		close(fd);
 	}
 	if(!keepBoot && !(used_dev.use_2m & 0x7f)) {
 		memset(boot.characters, '\0', Fs.sector_size);
@@ -1214,7 +1242,7 @@ void mformat(int argc, char **argv, int dummy)
 		Fs.infoSectorLoc = 1;
 
 		/* no backup boot sector */
-		set_word(boot.boot.ext.fat32.backupBoot, 6);
+		set_word(boot.boot.ext.fat32.backupBoot, backupBoot);
 		
 		labelBlock = & boot.boot.ext.fat32.labelBlock;
 	} else {
@@ -1299,6 +1327,12 @@ void mformat(int argc, char **argv, int dummy)
 	format_root(&Fs, label, &boot);
 	WRITES((Stream_t *)&Fs, boot.characters,
 	       (mt_off_t) 0, Fs.sector_size);
+
+	if(used_dev.fat_bits == 32) {
+	  WRITES((Stream_t *)&Fs, boot.characters,
+		 (mt_off_t) backupBoot * Fs.sector_size, Fs.sector_size);
+	}
+
 	if(Fs.fat_bits == 32 && WORD_S(ext.fat32.backupBoot) != MAX16) {
 		WRITES((Stream_t *)&Fs, boot.characters,
 		       sectorsToBytes((Stream_t*)&Fs,

@@ -26,7 +26,8 @@
 /*extern int ConnectToFloppyd(const char* name, Class_t** ioclass);*/
 Stream_t *FloppydOpen(struct device *dev, struct device *dev2,
 					  char *name, int mode, char *errmsg,
-					  int mode2, int locked);
+					  int mode2, int locked,
+					  mt_size_t *maxSize);
 
 #define FLOPPYD_DEFAULT_PORT 5703
 
@@ -45,7 +46,8 @@ enum FloppydOpcodes {
 	OP_CLOSE,
 	OP_IOCTL,
 	OP_OPRO,
-	OP_OPRW
+	OP_OPRW,
+	OP_SEEK64
 };
 
 enum AuthErrorsEnum {

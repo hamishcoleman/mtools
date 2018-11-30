@@ -1,3 +1,20 @@
+v4_0_14
+	Fix floppyd for disks bigger than 2 Gig
+	Remove obsolete -z flag
+	Remove now unsupported AC_USE_SYSTEM_EXTENSIONS
+	Fixed output formatting of mdir if MTOOLS_DOTTED_DIR is set
+	Mformat now correctly writes backup boot sector
+	Fixed signedness of serial number in mlabel
+	Fixed buffer size problem in mlabel
+	Make mlabel write backup boot sector if FAT32
+	Catch situation where both clear and new label are given to mlabel
+	Quote filename parameters to scripts
+	Mformat: Close file descriptor for boot sector
+	Added lzip support to scripts/uz
+	Added Tot_sectors option to mformat
+	Fixed hidden sector handling in mformat
+	Minfo generates mformat command lines containing new -T option
+	Mlabel prints error if label too long
 v4_0_13
 	Merged Debian patches
 v4_0_12

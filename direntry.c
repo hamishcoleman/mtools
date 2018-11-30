@@ -1,5 +1,5 @@
-/*  Copyright 1997,2000-2003,2007-2009 Alain Knaff.
- *  This file is part of mtools.
+/*  Copyright 1997,2000-2003,2007-2010 Alain Knaff.  This file is
+ *  part of mtools.
  *
  *  Mtools is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -109,6 +109,33 @@ void fprintPwd(FILE *f, direntry_t *entry, int escape)
 	_fprintPwd(f, entry, 0, escape);
 	if(escape)
 		putc('"', f);
+}
+
+static void _fprintShortPwd(FILE *f, direntry_t *entry, int recurs)
+{
+	if(entry->entry == -3) {
+		putc(getDrive(entry->Dir), f);
+		putc(':', f);
+		if(!recurs)
+			putc('/', f);
+	} else {
+		int i,j;
+		_fprintShortPwd(f, getDirentry(entry->Dir), 1);
+		putc('/',f);
+		for(i=7; i>=0 && entry->dir.name[i] == ' ';i--);
+		for(j=0; j<=i; j++)
+			putc(entry->dir.name[j],f);
+		for(i=2; i>=0 && entry->dir.ext[i] == ' ';i--);
+		if(i > 0)
+			putc('.',f);
+		for(j=0; j<=i; j++)
+			putc(entry->dir.ext[j],f);
+	}
+}
+
+void fprintShortPwd(FILE *f, direntry_t *entry)
+{
+	_fprintShortPwd(f, entry, 0);
 }
 
 char *getPwd(direntry_t *entry)

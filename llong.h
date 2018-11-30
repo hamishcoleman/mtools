@@ -97,18 +97,8 @@ extern const mt_off_t max_off_t_seek;
 
 extern off_t truncBytes32(mt_off_t off);
 extern int fileTooBig(mt_off_t off);
-mt_off_t sectorsToBytes(Stream_t *This, off_t off);
-
-mt_size_t getfree(Stream_t *Stream);
-int getfreeMinBytes(Stream_t *Stream, mt_size_t ref);
-
-Stream_t *find_device(char drive, int mode, struct device *out_dev,
-		      union bootsector *boot,
-		      char *name, int *media, mt_size_t *maxSize,
-		      int *isRop);
 
 int mt_lseek(int fd, mt_off_t where, int whence);
-
 
 unsigned int log_2(int);
 

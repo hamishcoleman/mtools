@@ -1210,6 +1210,7 @@ description of those.
 * mrd::               remove an MS-DOS subdirectory
 * mmove::             move or rename an MS-DOS file or subdirectory
 * mren::              rename an existing MS-DOS file
+* mshortname::        shows the short name of a file
 * mshowfat::          shows the FAT map of a file
 * mtoolstest::        tests and displays the configuration
 * mtype::             display contents of an MS-DOS file
@@ -1723,7 +1724,7 @@ The @code{mformat} command is used to add an MS-DOS file system to a
 low-level formatted diskette. Its syntax is:
 
 @display
-@code{mformat} [@code{-t} @var{cylinders}] [@code{-h} @var{heads}] [@code{-s} @var{sectors}]
+@code{mformat} [@code{-t} @var{cylinders}|@code{-T} @var{tot_sectors}] [@code{-h} @var{heads}] [@code{-s} @var{sectors}]
   [@code{-f} @var{size}] [@code{-1}] [@code{-4}] [@code{-8}]
   [@code{-v} @var{volume_label}]
   [@code{-F}] [@code{-S} @var{sizecode}] [@code{-X}]
@@ -1735,6 +1736,7 @@ low-level formatted diskette. Its syntax is:
   [@code{-r} @var{root_sectors}] [@code{-L} @var{fat_len}] 
   [@code{-B} @var{boot_sector}] [@code{-k}]
   [@code{-m} @var{media_descriptor}]
+  [@code{-K} @var{backup_boot}]
   @var{drive:}
 @end display
 
@@ -1781,9 +1783,12 @@ the -h/-t/-s flags. The following sizes are supported:
 
 @item t
 Specifies the number of tracks on the disk.
+@item T
+Specifies the number of total sectors on the disk. Only one of these 2
+options may be specified (tracks or total sectors)
 @item h
 The number of heads (sides).
-@item n
+@item s
 Specifies the number of sectors per track. If the 2m option is given,
 number of 512-byte sector equivalents on generic tracks (i.e. not head 0
 track 0).  If the 2m option is not given, number of physical sectors per
@@ -1873,6 +1878,9 @@ parameters.
 Keep the existing boot sector as much as possible.  Only the geometry
 fields and other similar file system data are updated to match the target
 disks parameters.
+@item K
+Sets the sector number where the backup of the boot sector should be
+stored (only relevant on FAT32).
 
 @item m
 Use a non-standard media descriptor byte for this disk. The media
@@ -2205,7 +2213,7 @@ syntax is:
 @code{Mrd} removes a directory from an MS-DOS file system. An error occurs
 if the directory does not exist or is not empty.
 
-@node mren, mshowfat, mrd, Commands
+@node mren, mshortname, mrd, Commands
 @section Mren
 @pindex mren
 @cindex Renaming files (mren)
@@ -2231,7 +2239,21 @@ is renamed in the same directory, instead of being moved to the current
 MS-DOS version of @code{REN}, @code{mren} can be used to rename
 directories.
 
-@node mshowfat, mtoolstest, mren, Commands
+@node mshortname, mshowfat, mren, Commands
+@section Mshortname
+@pindex mshortname
+
+The @code{mshortname} command is used to display the short name of a
+file.  Syntax:
+
+@display
+@code{$ mshortname files}
+@end display
+
+The shortname is displayed as it is stored in raw format on disk,
+without any character set conversion.
+
+@node mshowfat, mtoolstest, mshortname, Commands
 @section Mshowfat
 @pindex mshowfat
 @cindex Clusters of a file

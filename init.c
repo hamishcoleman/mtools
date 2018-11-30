@@ -132,9 +132,7 @@ Stream_t *find_device(char drive, int mode, struct device *out_dev,
 		    Stream = 0;
 #ifdef USE_FLOPPYD
 		    Stream = FloppydOpen(out_dev, dev, name, mode,
-					 errmsg, 0, 1);
-		    if(Stream && maxSize)
-			*maxSize = max_off_t_31;
+					 errmsg, 0, 1, maxSize);
 #endif
 		} else {
 

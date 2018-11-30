@@ -26,12 +26,38 @@ static Dword byte2dword(Byte* val)
 	return l;
 }	
 
+UNUSED(static Qword byte2qword(Byte* val))
+{
+	Qword l;
+	l = val[0];
+	l = (l << 8) | val[1];
+	l = (l << 8) | val[2];
+	l = (l << 8) | val[3];
+	l = (l << 8) | val[4];
+	l = (l << 8) | val[5];
+	l = (l << 8) | val[6];
+	l = (l << 8) | val[7];
+	return l;
+}	
+
 static void dword2byte(Dword parm, Byte* rval)
 {
 	rval[0] = (parm >> 24) & 0xff;
 	rval[1] = (parm >> 16) & 0xff;
 	rval[2] = (parm >> 8)  & 0xff;
 	rval[3] = parm         & 0xff;
+}
+
+UNUSED(static void qword2byte(Qword parm, Byte* rval))
+{
+	rval[0] = (parm >> 56) & 0xff;
+	rval[1] = (parm >> 48) & 0xff;
+	rval[2] = (parm >> 40)  & 0xff;
+	rval[3] = (parm >> 32)  & 0xff;
+	rval[4] = (parm >> 24) & 0xff;
+	rval[5] = (parm >> 16) & 0xff;
+	rval[6] = (parm >> 8)  & 0xff;
+	rval[7] = parm         & 0xff;
 }
 
 #endif

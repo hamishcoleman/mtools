@@ -88,6 +88,15 @@ int get_data_pass_through(Stream_t *Stream, time_t *date, mt_size_t *size,
 int read_pass_through(Stream_t *Stream, char *buf, mt_off_t start, size_t len);
 int write_pass_through(Stream_t *Stream, char *buf, mt_off_t start, size_t len);
 
+mt_off_t sectorsToBytes(Stream_t *This, off_t off);
+
+mt_size_t getfree(Stream_t *Stream);
+int getfreeMinBytes(Stream_t *Stream, mt_size_t ref);
+
+Stream_t *find_device(char drive, int mode, struct device *out_dev,
+		      union bootsector *boot,
+		      char *name, int *media, mt_size_t *maxSize,
+		      int *isRop);
 
 #endif
 

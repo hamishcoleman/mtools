@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright 1994,2002 David C. Niemi.
-# Copyright 1996,1997,2001-2003 Alain Knaff.
+# Copyright 1996,1997,2001-2003,2010 Alain Knaff.
 # This file is part of mtools.
 #
 # Mtools is free software: you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 # 1994/02/19	DCN	Created (as a trivial, but useful script)
 # 1994/12/01	DCN	Combined uz and lz, added suffix handling
 # 2002/09/11	DCN	Added bzip2 support
+# 2010/10/16	AKN	Added lzip support
 #
 # Copyright (C) 1994, 2002 David C. Niemi (niemi at tuxers dot net)
 # The author requires that any copies or derived works include this
@@ -64,7 +65,7 @@ while [ $# -ge 1 ]; do
 	echo >&2
 	found=
 
-	for suffix in "" .gz .tgz .tar.gz .z .tar.z .taz .tpz .Z .tar.Z .tar.bz2; do
+	for suffix in "" .gz .tgz .tar.gz .z .tar.z .taz .tpz .Z .tar.Z .tar.bz2 tar.lz ; do
 		if [ -r "${1}$suffix" ]; then
 			found=$1$suffix
 			break
@@ -74,6 +75,9 @@ while [ $# -ge 1 ]; do
 	case $found in
 		*.tar.bz2 | *.tb2)
 			uzcmd='bzip2 -cd'
+			;;
+		*.tar.lz)
+			uzcmd='lzip -cd'
 			;;
 	esac
 	if [ -z "$found" ]; then

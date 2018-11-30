@@ -32,6 +32,7 @@
 #define DEBUG 0
 
 #include "sysincludes.h"
+#include "llong.h"
 
 #ifdef USE_FLOPPYD
 
@@ -103,7 +104,7 @@
 
 typedef unsigned char Byte;
 typedef unsigned long Dword;
-
+typedef mt_off_t Qword;
 
 #define MAX_XAUTHORITY_LENGTH    3000
 #define MAX_DATA_REQUEST         3000000
@@ -369,8 +370,16 @@ static void put_dword(Packet packet, int my_index, Dword val) {
 	dword2byte(val, packet->data+my_index);
 }
 
+static void put_qword(Packet packet, int my_index, Qword val) {
+	qword2byte(val, packet->data+my_index);
+}
+
 static Dword get_dword(Packet packet, int my_index) {
 	return byte2dword(packet->data+my_index);
+}	
+
+static Qword get_qword(Packet packet, int my_index) {
+	return byte2qword(packet->data+my_index);
 }	
 
 static Dword get_length(Packet packet) {
@@ -428,10 +437,14 @@ static char do_auth(io_buffer sock, int *version)
 	if(*version == FLOPPYD_PROTOCOL_VERSION_OLD) {
 		put_dword(reply, 0, AUTH_SUCCESS);
 	} else {
+		Dword cap = FLOPPYD_CAP_EXPLICIT_OPEN;
+		if(sizeof(mt_off_t) >= 8) {
+			cap |= FLOPPYD_CAP_LARGE_SEEK;
+		}
 		make_new(reply, 12);
 		put_dword(reply, 0, AUTH_SUCCESS);
 		put_dword(reply, 4, FLOPPYD_PROTOCOL_VERSION);
-		put_dword(reply, 8, FLOPPYD_CAP_EXPLICIT_OPEN);
+		put_dword(reply, 8, cap);
 	}
 	send_packet(reply, sock);
 	destroyPacket(proto_version);
@@ -1016,6 +1029,20 @@ static void send_reply(int rval, io_buffer sock, int len) {
 	destroyPacket(reply);
 }
 
+static void send_reply64(int rval, io_buffer sock, mt_off_t len) {
+	Packet reply = newPacket();
+
+	make_new(reply, 12);
+	put_qword(reply, 0, len);
+	if (rval == -1) {
+		put_dword(reply, 8, 0);
+	} else {
+		put_dword(reply, 8, errno);
+	}
+	send_packet(reply, sock);
+	destroyPacket(reply);
+}
+
 static void cleanup(int x) {
 	unlink(XauFileName());
 	exit(-1);
@@ -1090,12 +1117,12 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 	if(version == FLOPPYD_PROTOCOL_VERSION_OLD) {
 				/* old protocol */
 		readOnly = 0;
-		devFd = open(device_name[0], O_RDWR);
+		devFd = open(device_name[0], O_RDWR|O_LARGEFILE);
 		
 		if (devFd < 0) {
 			readOnly = 1;
 			devFd = open(device_name[0], 
-				     O_RDONLY);
+				     O_RDONLY|O_LARGEFILE);
 		}
 		if(devFd < 0) {
 			send_reply(0, sock, devFd);
@@ -1130,7 +1157,8 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 					break;
 				}
 
-				devFd = open(device_name[dev_nr], O_RDONLY);
+				devFd = open(device_name[dev_nr],
+					     O_RDONLY | O_LARGEFILE);
 #if DEBUG
 				fprintf(stderr, "Device opened\n");
 #endif
@@ -1189,6 +1217,24 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 				send_reply(devFd, 
 					   sock, 
 					   lseek(devFd, 0, SEEK_CUR));
+				break;
+			case OP_SEEK64:
+				if(sizeof(mt_off_t) < 8) {
+#if DEBUG
+					fprintf(stderr, "64 bit requested where not available!\n");
+#endif
+					errno = EINVAL;
+					send_reply(devFd, sock, -1);
+					break;
+				}
+#if DEBUG
+				fprintf(stderr, "SEEK64:\n");
+#endif
+				mt_lseek(devFd, 
+					 get_qword(parm,0), get_dword(parm,8));
+				send_reply64(devFd, 
+					     sock, 
+					     mt_lseek(devFd, 0, SEEK_CUR));
 				break;
 			case OP_FLUSH:
 #if DEBUG

@@ -1,4 +1,4 @@
-/*  Copyright 1996-2004,2007-2009 Alain Knaff.
+/*  Copyright 1996-2004,2007-2010 Alain Knaff.
  *  This file is part of mtools.
  *
  *  Mtools is free software: you can redistribute it and/or modify
@@ -50,6 +50,7 @@ static const struct dispatch {
 	{"mmove",mmove, 0},
 	{"mren",mmove, 1},
 	{"mshowfat", mshowfat, 0},
+	{"mshortname", mshortname, 0},
 	{"mtoolstest", mtoolstest, 0},
 	{"mtype",mcopy, 1},
 	{"mwrite",mcopy, 0},

@@ -1,4 +1,4 @@
-#  Copyright 1996-2004,2006-2009 Alain Knaff.
+#  Copyright 1996-2004,2006-2010 Alain Knaff.
 #  This file is part of mtools.
 #
 #  Mtools is free software: you can redistribute it and/or modify
@@ -62,7 +62,6 @@ LIBS        = @LIBS@
 SHLIB       = @SHLIB@
 MACHDEPLIBS = @MACHDEPLIBS@	
 LN_S        = @LN_S@
-EXE         = @EXEEXT@
 
 INSTALL         = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -76,7 +75,7 @@ INSTALL_INFO	= @INSTALL_INFO@
 MAN1 = floppyd.1 floppyd_installtest.1 mattrib.1 mbadblocks.1 mcat.1 mcd.1 \
 mclasserase.1 mcopy.1 mdel.1 mdeltree.1 mdir.1 mdu.1 mformat.1  minfo.1 \
 mkmanifest.1 mlabel.1 mmd.1 mmount.1 mmove.1 mpartition.1 \
-mrd.1 mren.1 mshowfat.1 mtoolstest.1 mtools.1 mtype.1 mzip.1
+mrd.1 mren.1 mshortname.1 mshowfat.1 mtoolstest.1 mtools.1 mtype.1 mzip.1
 MAN1EXT	= 1
 MAN1DIR	= $(DESTDIR)$(mandir)/man${MAN1EXT}
 MAN5	= mtools.5
@@ -100,7 +99,7 @@ mformat.c minfo.c \
 misc.c tty.c scsi.c missFuncs.c mk_direntry.c mkmanifest.1 mkmanifest.c \
 mlabel.1 mlabel.c mmd.1 mmd.c mmount.1 mmount.c mmove.1 mmove.c \
 mpartition.1 mpartition.c mrd.1 \
-mren.1 msdos.h mshowfat.1 mtoolstest.1 mtools.1 mtools.5 mtools.c \
+mren.1 msdos.h mshortname.1 mshowfat.1 mtoolstest.1 mtools.1 mtools.5 mtools.c \
 mtools.conf mtools.h mtype.1 nameclash.h patchlevel.c \
 plain_io.c plain_io.h precmd.c privileges.c scripts signal.c stream.c stream.h \
 streamcache.c streamcache.h subdir.c sysincludes.h unixdir.c todo \
@@ -112,13 +111,13 @@ file_name.o filter.o floppyd_io.o force_io.o hash.o init.o llong.o match.o \
 mainloop.o mattrib.o mbadblocks.o mcat.o mcd.o mclasserase.o mcopy.o mdel.o \
 mdir.o mdoctorfat.o mdu.o \
 mformat.o minfo.o misc.o missFuncs.o mk_direntry.o mlabel.o mmd.o mmount.o \
-mmove.o mpartition.o mshowfat.o mzip.o mtools.o patchlevel.o plain_io.o \
-precmd.o privileges.o scsi.o signal.o stream.o streamcache.o subdir.o \
-unixdir.o tty.o vfat.o xdf_io.o
+mmove.o mpartition.o mshortname.o mshowfat.o mzip.o mtools.o patchlevel.o \
+plain_io.o precmd.o privileges.o scsi.o signal.o stream.o streamcache.o \
+subdir.o unixdir.o tty.o vfat.o xdf_io.o
 
 OBJS2 = missFuncs.o mkmanifest.o misc.o patchlevel.o
 
-SRCS3 = floppyd.c
+OBJS3 = floppyd.o llong.o
 
 OBJS4 = floppyd_installtest.o misc.o expand.o privileges.o
 
@@ -128,16 +127,16 @@ file_read.c filter.c floppyd_io.c force_io.c hash.c init.c match.c mainloop.c \
 mattrib.c mbadblocks.c mcat.c mcd.c mclasserase.c mcopy.c mdel.c mdir.c \
 mdu.c mdoctorfat.c mformat.c minfo.c misc.c \
 missFuncs.c mk_direntry.c mlabel.c mmd.c mmount.c mmove.c mpartition.c \
-mshowfat.c mzip.c mtools.c plain_io.c precmd.c privileges.c scsi.o \
-signal.c stream.c streamcache.c subdir.c unixdir.c tty.o vfat.c \
+mshortname.c mshowfat.c mzip.c mtools.c plain_io.c precmd.c privileges.c \
+scsi.c signal.c stream.c streamcache.c subdir.c unixdir.c tty.o vfat.c \
 xdf_io.c mkmanifest.c
 
 
 SCRIPTS = mcheck mxtar uz tgz mcomp amuFormat.sh
 
 LINKS=mattrib mcat mcd mclasserase mcopy mdel mdeltree mdir mdu mformat minfo \
-mlabel mmd mmount mmove mpartition mrd mren mtype mtoolstest mshowfat \
-mbadblocks mzip
+mlabel mmd mmount mmove mpartition mrd mren mtype mtoolstest mshortname \
+mshowfat mbadblocks mzip
 
 X_CFLAGS = @X_CFLAGS@
 X_LIBS = @X_LIBS@
@@ -167,14 +166,14 @@ mkmanifest: $(OBJS2)
 floppyd.o: floppyd.c
 	$(CC) $(X_CCFLAGS) -c $?
 
-floppyd: floppyd.o
-	$(LINK) $? -o $@ $(X_LDFLAGS)
+floppyd: $(OBJS3)
+	$(LINK) $(OBJS3) -o $@ $(X_LDFLAGS)
 floppyd_installtest: $(OBJS4)
 	$(LINK) $(OBJS4) -o $@ $(ALLLIBS)
 
 
 $(LINKS): mtools
-	rm -f $@ && $(LN_S) mtools$(EXE) $@
+	rm -f $@ && $(LN_S) mtools $@
 
 mostlyclean:
 	-rm -f *~ *.orig *.o a.out core 2>/dev/null
@@ -270,7 +269,7 @@ $(DESTDIR)$(bindir)/mkmanifest: mkmanifest
 install-links: $(DESTDIR)$(bindir)/mtools
 	@for j in $(LINKS); do \
 		rm -f $(DESTDIR)$(bindir)/$$j ; \
-		$(LN_S) mtools$(EXE) $(DESTDIR)$(bindir)/$$j ; \
+		$(LN_S) mtools $(DESTDIR)$(bindir)/$$j ; \
 		echo $(DESTDIR)$(bindir)/$$j ; \
 	done
 

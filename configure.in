@@ -29,7 +29,6 @@ AC_PROG_LN_S
 AC_PATH_PROG(INSTALL_INFO, install-info, "")
 
 dnl Check for Systems
-AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_SYSTEM
 
 AC_C_CONST
@@ -315,11 +314,6 @@ fi
 
 if [ $host_os3 = hpux ] ; then
 	    LDFLAGS="$LDFLAGS -z"
-fi
-
-
-if [ $host_vendor = linux ] ; then
-    LDFLAGS="$LDFLAGS -z"
 fi
 
 if [ $host_os3 = xenix ] ; then

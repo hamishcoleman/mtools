@@ -419,7 +419,7 @@ static int list_file(direntry_t *entry, MainParam_t *mp)
 		if (name[0] == ' ') 
 			printf("             ");
 		else if(mtools_dotted_dir)
-			printf("%s", global_shortname);
+			printf("%-12s ", global_shortname);
 		else
 			printf("%s %s ", tmpBasename, tmpExt);
 		/* is a subdirectory */

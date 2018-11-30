@@ -62,7 +62,7 @@ void minfo(int argc, char **argv, int type)
 
 	char name[EXPAND_BUF];
 	int media;
-	int tot_sectors;
+	unsigned long tot_sectors;
 	int size_code;
 	int sector_size;
 	int i;
@@ -72,6 +72,10 @@ void minfo(int argc, char **argv, int type)
 	int c;
 	Stream_t *Stream;
 	struct label_blk_t *labelBlock;
+
+	unsigned long sect_per_track;
+	int tracks_match=0;
+	int hidden;
 	
 	if(helpFlag(argc, argv))
 		usage(0);
@@ -118,15 +122,26 @@ void minfo(int argc, char **argv, int type)
 		printf("sectors per track: %d\n", dev.sectors);
 		printf("heads: %d\n", dev.heads);
 		printf("cylinders: %d\n\n", dev.tracks);
-		printf("mformat command line: mformat -t %d -h %d -s %d ",
-		       dev.tracks, dev.heads, dev.sectors);
-		if(DWORD_S(nhs))
-			printf("-H %d ", DWORD_S(nhs));
-		if(size_code != 2)
-			printf("-S %d ",size_code);
-		printf("%c:\n", tolower(drive));
-		printf("\n");
-		
+
+		sect_per_track = dev.sectors * dev.heads;
+		if(sect_per_track != 0) {
+			printf("mformat command line: mformat ");
+			hidden = DWORD_S(nhs);
+			if(tot_sectors ==
+			   dev.tracks * sect_per_track - hidden % sect_per_track) {
+				tracks_match=1;
+				printf("-t %d", dev.tracks);
+			} else {
+				printf("-T %ld", tot_sectors);
+			}
+			printf (" -h %d -s %d ", dev.heads, dev.sectors);
+			if(hidden || !tracks_match)
+				printf("-H %d ", hidden);
+			if(size_code != 2)
+				printf("-S %d ",size_code);
+			printf("%c:\n", tolower(drive));
+			printf("\n");
+		}
 		printf("bootsector information\n");
 		printf("======================\n");
 		printf("banner:\"%8s\"\n", boot.boot.banner);

@@ -116,7 +116,7 @@ void mcat(int argc, char **argv, int type)
 #ifdef USE_FLOPPYD
                 if(!Stream)
                         Stream = FloppydOpen(&out_dev, dev, name, 
-					     mode, errmsg, 0, 1);
+					     mode, errmsg, 0, 1, NULL);
 #endif
 
 

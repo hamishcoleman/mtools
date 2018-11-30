@@ -40,6 +40,7 @@
 
 typedef unsigned char Byte;
 typedef unsigned long Dword;
+typedef mt_off_t Qword;
 
 const char* AuthErrors[] = {
 	"Auth success",
@@ -230,6 +231,35 @@ static int floppyd_lseek(int fd, mt_off_t offset, int whence)
 	return gotlen;
 }
 
+static mt_off_t floppyd_lseek64(int fd, mt_off_t offset, int whence) 
+{
+	Dword errcode;
+	Qword gotlen;
+	Byte buf[32];
+	
+	dword2byte(1, buf);
+	buf[4] = OP_SEEK64;
+	
+	dword2byte(12, buf+5);
+	qword2byte(offset, buf+9);
+	dword2byte(whence, buf+17);
+	
+	if(write(fd, buf, 21) < 21)
+		return AUTH_IO_ERROR;
+       
+	if (read_dword(fd) != 12) {
+		errno = EIO;
+		return -1;
+	}
+
+	gotlen = read_qword(fd);
+	errcode = read_dword(fd);
+
+	errno = errcode;
+	
+	return gotlen;
+}
+
 static int floppyd_open(RemoteFile_t *This, int mode) 
 {
 	Dword errcode;
@@ -279,10 +309,18 @@ static int floppyd_io(Stream_t *Stream, char *buf, mt_off_t where, int len,
 	where += This->offset;
 
 	if (where != This->lastwhere ){
-		if(floppyd_lseek( This->fd, where, SEEK_SET) < 0 ){
-			perror("floppyd_lseek");
-			This->lastwhere = (mt_off_t) -1;
-			return -1;
+		if(This->capabilities & FLOPPYD_CAP_LARGE_SEEK) {
+			if(floppyd_lseek64( This->fd, where, SEEK_SET) < 0 ){
+				perror("floppyd_lseek64");
+				This->lastwhere = (mt_off_t) -1;
+				return -1;
+			}
+		} else {
+			if(floppyd_lseek( This->fd, where, SEEK_SET) < 0 ){
+				perror("floppyd_lseek");
+				This->lastwhere = (mt_off_t) -1;
+				return -1;
+			}
 		}
 	}
 	ret = io(This->fd, buf, len);
@@ -543,7 +581,7 @@ static int ConnectToFloppyd(RemoteFile_t *floppyd, const char* name,
 
 Stream_t *FloppydOpen(struct device *dev, struct device *dev2,
 		      char *name, int mode, char *errmsg,
-		      int mode2, int locked)
+		      int mode2, int locked, mt_size_t *maxSize)
 {
 	RemoteFile_t *This;
 
@@ -576,6 +614,11 @@ Stream_t *FloppydOpen(struct device *dev, struct device *dev2,
 		return NULL;
 	}
 
+	if(maxSize) {
+		*maxSize = 
+			(This->capabilities & FLOPPYD_CAP_LARGE_SEEK) ?
+			max_off_t_seek : max_off_t_31;
+	}
 	return (Stream_t *) This;
 }
 

@@ -1,3 +1,23 @@
+mtools (4.0.14) stable; urgency=low
+
+  * Fix floppyd for disks bigger than 2 Gig
+  * Remove obsolete -z flag
+  * Remove now unsupported AC_USE_SYSTEM_EXTENSIONS
+  * Fixed output formatting of mdir if MTOOLS_DOTTED_DIR is set
+  * Mformat now correctly writes backup boot sector
+  * Fixed signedness of serial number in mlabel
+  * Fixed buffer size problem in mlabel
+  * Make mlabel write backup boot sector if FAT32
+  * Catch situation where both clear and new label are given to mlabel
+  * Quote filename parameters to scripts
+  * Mformat: Close file descriptor for boot sector
+  * Added lzip support to scripts/uz
+  * Added Tot_sectors option to mformat
+  * Fixed hidden sector handling in mformat
+  * Minfo generates mformat command lines containing new -T option
+  * Mlabel prints error if label too long
+
+ -- Alain Knaff <alain@knaff.lu>  Tue, 12 Oct 2010 00:19:48 +0200
 mtools (4.0.13) stable; urgency=low
 
   * Merged Debian patches

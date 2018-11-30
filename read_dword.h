@@ -27,4 +27,15 @@ static Dword read_dword(int handle)
 
 	return byte2dword(val);
 }
+
+UNUSED(static Qword read_qword(int handle) )
+{
+	Byte val[8];
+	
+	if(read(handle, (char *)val, 8) < 8)
+		return -1;
+
+	return byte2qword(val);
+}
+
 #endif
