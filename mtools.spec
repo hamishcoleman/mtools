@@ -1,6 +1,6 @@
 Name:           mtools
 Summary:        mtools, read/write/list/format DOS disks under Unix
-Version:        4.0.16
+Version:        4.0.17
 Release:        1
 License:        GPLv3+
 Group:          Utilities/System
@@ -31,7 +31,7 @@ make
 
 %clean
 echo rm -rf $RPM_BUILD_ROOT
-[ X%{buildroot} != X ] && [ X%{buildroot} != X/ ] && rm -r %{buildroot}
+[ X%{buildroot} != X ] && [ X%{buildroot} != X/ ] && rm -fr %{buildroot}
 
 %install
 make install
@@ -134,11 +134,24 @@ if [ -f %{_bindir}/install-info ] ; then
 fi
 
 %changelog
+* Wed Jun 29 2011 Alain Knaff <alain@knaff.lu>
+- mbadblocks now takes a list of bad blocks (either as sectors
+  or as clusters)
+- mbadblocks now is able to do write scanning for bad blocks
+- mshowfat can show cluster of specific offset
+- Enable mtools to deal with very small sector sizes...
+- Fixed encoding of all-lowercase names (no need to mangle
+  these)
+- Consider every directory entry after an ENDMARK (0x00) to be deleted
+- After writing a new entry at end of a directory, be sure to also add
+  an ENDMARK (0x00)
+- Deal with possibility of a NULL pointer being returned by
+  localtime during timestamp conversion
 * Sat Apr 16 2011 Alain Knaff <alain@knaff.lu>
 - configure.in fixes
 - fixed formatting of fat_size_calculation.tex document
 - compatibility with current autoconfig versions
-- Make it clear that label is limited to 13 characters
+- Make it clear that label is limited to 11 characters
 - Fixed typo in initialization of FAT32 info sector
 * Sun Oct 17 2010 Alain Knaff <alain@knaff.lu>
 - Added missing -i option to mshortname

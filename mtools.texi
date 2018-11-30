@@ -14,7 +14,7 @@ which is a collection of tools to allow Unix systems to manipulate
 MS-DOS files.
 
 Copyright @copyright{} 2007, 2009 Free Software Foundation, Inc.
-Copyright @copyright{} 1996-2005,2007-2010 Alain Knaff.
+Copyright @copyright{} 1996-2005,2007-2011 Alain Knaff.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -1422,19 +1422,40 @@ set that one itself.
 
 @node mbadblocks, mcat, mattrib, Commands
 @section Mbadblocks
-
-The @code{mbadblocks} command is used to scan an MS-DOS floppy and mark
-its unused bad blocks as bad. It uses the following syntax:
-
-@code{mbadblocks} @var{drive}@code{:}
 @pindex mbadblocks
 @cindex Marking blocks as bad
 @cindex Bad blocks
 @cindex Read errors
 
-@code{Mbadblocks} scans an MS-DOS floppy for bad blocks. All unused bad
-blocks are marked as such in the FAT. This is intended to be used right
-after @code{mformat}.  It is not intended to salvage bad disks.
+The @code{mbadblocks} command is used to mark some clusters on an
+MS-DOS filesystem bad. It has the following syntax:
+
+@code{mbadblocks} [@code{-s} @var{sectorlist}|@code{-c} @var{clusterlist}|-w] @var{drive}@code{:}
+
+If no command line flags are supplied, @code{Mbadblocks} scans an
+MS-DOS filesystem for bad blocks by simply trying to read them and
+flag them if read fails. All blocks that are unused are scanned, and
+if detected bad are marked as such in the FAT.
+
+This command is intended to be used right after @code{mformat}.  It is
+not intended to salvage data from bad disks.
+
+
+@subsection Command line options
+
+@table @code
+@item c @var{file}
+Use a list of bad clusters, rather than scanning for bad clusters
+itself.
+@item s @var{file}
+Use a list of bad sectors (counted from beginning of filesystem),
+rather than trying for bad clusters itself.
+@item w
+Write a random pattern to each cluster, then read it back and flag
+cluster as bad if mismatch. Only free clusters are tested in such a
+way, so any file data is preserved.
+@end table
+
 @subsection Bugs
 @code{Mbadblocks} should (but doesn't yet :-( ) also try to salvage bad
 blocks which are in use by reading them repeatedly, and then mark them
@@ -2250,7 +2271,7 @@ The @code{mshortname} command is used to display the short name of a
 file.  Syntax:
 
 @display
-@code{$ mshortname files}
+@code{mshortname} @var{files}
 @end display
 
 The shortname is displayed as it is stored in raw format on disk,
@@ -2266,8 +2287,12 @@ The @code{mshowfat} command is used to display the FAT entries for a
 file.  Syntax:
 
 @display
-@code{$ mshowfat files}
+@code{mshowfat} [@code{-o} @var{offset}] @var{files}
 @end display
+
+If no offset is given, a list of all clusters occupied by the file is
+printed. If an offset is given, only the number of the cluster
+containing that offset is printed.
 
 @node mtoolstest, mtype, mshowfat, Commands
 @section Mtoolstest

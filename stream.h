@@ -1,7 +1,7 @@
 #ifndef MTOOLS_STREAM_H
 #define MTOOLS_STREAM_H
 
-/*  Copyright 1996-1999,2001,2002,2005,2006,2008,2009 Alain Knaff.
+/*  Copyright 1996-1999,2001,2002,2005,2006,2008,2009,2011 Alain Knaff.
  *  This file is part of mtools.
  *
  *  Mtools is free software: you can redistribute it and/or modify
@@ -43,6 +43,8 @@ typedef struct Class_t {
 	int (*pre_allocate)(Stream_t *, mt_size_t);
 
 	doscp_t *(*get_dosConvert)(Stream_t *);
+
+	int (*discard)(Stream_t *);
 } Class_t;
 
 #define READS(stream, buf, address, size) \
@@ -62,6 +64,9 @@ typedef struct Class_t {
 
 #define GET_DOSCONVERT(stream)			\
 	(stream)->Class->get_dosConvert((stream))
+
+#define DISCARD(stream)			\
+	(stream)->Class->discard((stream))
 
 int flush_stream(Stream_t *Stream);
 Stream_t *copy_stream(Stream_t *Stream);

@@ -1,4 +1,4 @@
-/*  Copyright 1995-2007,2009 Alain Knaff.
+/*  Copyright 1995-2007,2009,2011 Alain Knaff.
  *  This file is part of mtools.
  *
  *  Mtools is free software: you can redistribute it and/or modify
@@ -31,6 +31,10 @@
 #include "scsi.h"
 #include "partition.h"
 #include "llong.h"
+
+#ifdef HAVE_LINUX_FS_H
+# include <linux/fs.h>
+#endif
 
 typedef struct SimpleFile_t {
     Class_t *Class;
@@ -277,6 +281,18 @@ static int file_data(Stream_t *Stream, time_t *date, mt_size_t *size,
 	return 0;
 }
 
+static int file_discard(Stream_t *Stream)
+{
+	int ret;
+	DeclareThis(SimpleFile_t);
+#ifdef BLKFLSBUF
+	ret= ioctl(This->fd, BLKFLSBUF);
+	if(ret < 0)
+		perror("BLKFLSBUF");
+	return ret;
+#endif
+}
+
 /* ZIP or other scsi device on Solaris or SunOS system.
    Since Sun won't accept a non-Sun label on a scsi disk, we must
    bypass Sun's disk interface and use low-level SCSI commands to read
@@ -455,7 +471,9 @@ static Class_t ScsiClass = {
 	file_free,
 	file_geom,
 	file_data,
-	0 /* pre-allocate */
+	0, /* pre-allocate */
+	0, /* dos-convert */
+	file_discard
 };
 
 
@@ -466,7 +484,9 @@ static Class_t SimpleFileClass = {
 	file_free,
 	file_geom,
 	file_data,
-	0 /* pre_allocate */
+	0, /* pre_allocate */
+	0, /* dos-convert */
+	file_discard
 };
 
 

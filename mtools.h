@@ -1,6 +1,6 @@
 #ifndef MTOOLS_MTOOLS_H
 #define MTOOLS_MTOOLS_H
-/*  Copyright 1996-2005,2007-2010 Alain Knaff.
+/*  Copyright 1996-2005,2007-2011 Alain Knaff.
  *  This file is part of mtools.
  *
  *  Mtools is free software: you can redistribute it and/or modify
@@ -189,6 +189,7 @@ extern int batchmode;
 char get_default_drive(void);
 void set_cmd_line_image(char *img, int flags);
 void read_config(void);
+off_t str_to_offset(char *str);
 extern struct device *devices;
 extern struct device const_devices[];
 extern const int nr_const_devices;

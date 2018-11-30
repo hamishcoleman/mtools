@@ -1,10 +1,10 @@
 This is mtools.info, produced by makeinfo version 4.13 from mtools.texi.
 
-This manual is for Mtools (version 4.0.16, April 2011), which is a
+This manual is for Mtools (version 4.0.17, June 2011), which is a
 collection of tools to allow Unix systems to manipulate MS-DOS files.
 
    Copyright (C) 2007, 2009 Free Software Foundation, Inc.  Copyright
-(C) 1996-2005,2007-2010 Alain Knaff.
+(C) 1996-2005,2007-2011 Alain Knaff.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -42,11 +42,11 @@ any preliminary mounting or initialization (assuming the default
 `/etc/mtools.conf' works on your machine).  With mtools, one can change
 floppies too without unmounting and mounting.
 
-   This manual is for Mtools (version 4.0.16, April 2011), which is a
+   This manual is for Mtools (version 4.0.17, June 2011), which is a
 collection of tools to allow Unix systems to manipulate MS-DOS files.
 
    Copyright (C) 2007, 2009 Free Software Foundation, Inc.  Copyright
-(C) 1996-2005,2007-2010 Alain Knaff.
+(C) 1996-2005,2007-2011 Alain Knaff.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -76,10 +76,10 @@ File: mtools.info,  Node: Location,  Next: Common features,  Prev: Top,  Up: Top
 *********************
 
 Mtools can be found at the following places (and their mirrors):
-     http://ftp.gnu.org/gnu/mtools/mtools-4.0.16.tar.gz
-     http://mtools.linux.lu/mtools-4.0.16.tar.gz
-     ftp://www.tux.org/pub/knaff/mtools/mtools-4.0.16.tar.gz
-     ftp://ibiblio.unc.edu/pub/Linux/utils/disk-management/mtools-4.0.16.tar.gz
+     http://ftp.gnu.org/gnu/mtools/mtools-4.0.17.tar.gz
+     http://mtools.linux.lu/mtools-4.0.17.tar.gz
+     ftp://www.tux.org/pub/knaff/mtools/mtools-4.0.17.tar.gz
+     ftp://ibiblio.unc.edu/pub/Linux/utils/disk-management/mtools-4.0.17.tar.gz
 
    Before reporting a bug, make sure that it has not yet been fixed in
 the Alpha patches which can be found at:
@@ -1284,16 +1284,36 @@ File: mtools.info,  Node: mbadblocks,  Next: mcat,  Prev: mattrib,  Up: Commands
 4.4 Mbadblocks
 ==============
 
-The `mbadblocks' command is used to scan an MS-DOS floppy and mark its
-unused bad blocks as bad. It uses the following syntax:
+The `mbadblocks' command is used to mark some clusters on an MS-DOS
+filesystem bad. It has the following syntax:
 
-   `mbadblocks' DRIVE`:' 
+   `mbadblocks' [`-s' SECTORLIST|`-c' CLUSTERLIST|-w] DRIVE`:'
 
-   `Mbadblocks' scans an MS-DOS floppy for bad blocks. All unused bad
-blocks are marked as such in the FAT. This is intended to be used right
-after `mformat'.  It is not intended to salvage bad disks.
+   If no command line flags are supplied, `Mbadblocks' scans an MS-DOS
+filesystem for bad blocks by simply trying to read them and flag them
+if read fails. All blocks that are unused are scanned, and if detected
+bad are marked as such in the FAT.
 
-4.4.1 Bugs
+   This command is intended to be used right after `mformat'.  It is
+not intended to salvage data from bad disks.
+
+4.4.1 Command line options
+--------------------------
+
+`c FILE'
+     Use a list of bad clusters, rather than scanning for bad clusters
+     itself.
+
+`s FILE'
+     Use a list of bad sectors (counted from beginning of filesystem),
+     rather than trying for bad clusters itself.
+
+`w'
+     Write a random pattern to each cluster, then read it back and flag
+     cluster as bad if mismatch. Only free clusters are tested in such a
+     way, so any file data is preserved.
+
+4.4.2 Bugs
 ----------
 
 `Mbadblocks' should (but doesn't yet :-( ) also try to salvage bad
@@ -2071,7 +2091,7 @@ File: mtools.info,  Node: mshortname,  Next: mshowfat,  Prev: mren,  Up: Command
 The `mshortname' command is used to display the short name of a file.
 Syntax:
 
-     `$ mshortname files'
+     `mshortname' FILES
 
    The shortname is displayed as it is stored in raw format on disk,
 without any character set conversion.
@@ -2085,7 +2105,11 @@ File: mtools.info,  Node: mshowfat,  Next: mtoolstest,  Prev: mshortname,  Up: C
 The `mshowfat' command is used to display the FAT entries for a file.
 Syntax:
 
-     `$ mshowfat files'
+     `mshowfat' [`-o' OFFSET] FILES
+
+   If no offset is given, a list of all clusters occupied by the file is
+printed. If an offset is given, only the number of the cluster
+containing that offset is printed.
 
 
 File: mtools.info,  Node: mtoolstest,  Next: mtype,  Prev: mshowfat,  Up: Commands
@@ -2461,7 +2485,7 @@ Concept index
 * Atari Ram disk:                        location information. (line 28)
 * Backwards compatibility:               old style configuration.
                                                                (line  6)
-* Bad blocks:                            mbadblocks.           (line  9)
+* Bad blocks:                            mbadblocks.           (line  6)
 * bigger sectors:                        bigger sectors.       (line  6)
 * blocksize:                             miscellaneous variables.
                                                                (line 34)
@@ -2571,9 +2595,9 @@ Concept index
 * Magneto-optical disks:                 location information. (line 14)
 * mailing list:                          Location.             (line  6)
 * Making a directory:                    mmd.                  (line  6)
-* Marking blocks as bad:                 mbadblocks.           (line  9)
+* Marking blocks as bad:                 mbadblocks.           (line  6)
 * mattrib:                               mattrib.              (line  6)
-* mbadblocks:                            mbadblocks.           (line  9)
+* mbadblocks:                            mbadblocks.           (line  6)
 * mcat:                                  mcat.                 (line  9)
 * mcd:                                   mcd.                  (line  6)
 * mcd (introduction):                    directory.            (line  6)
@@ -2633,7 +2657,7 @@ Concept index
 * Ram disk:                              location information. (line 28)
 * raw device:                            miscellaneous variables.
                                                                (line 34)
-* Read errors:                           mbadblocks.           (line  9)
+* Read errors:                           mbadblocks.           (line  6)
 * Read-only files (changing the attribute): mattrib.           (line  6)
 * Read-only files (listing them):        mdir.                 (line  6)
 * Reading MS-DOS files:                  mcopy.                (line  6)
@@ -2705,71 +2729,71 @@ Concept index
 
 
 Tag Table:
-Node: Top866
-Node: Location2944
-Node: Common features4330
-Node: arguments5094
-Node: drive letters6748
-Node: directory8100
-Node: long names8545
-Node: name clashes11091
-Node: case sensitivity13374
-Node: high capacity formats14603
-Node: more sectors15722
-Node: bigger sectors16771
-Node: 2m17493
-Node: XDF18672
-Node: exit codes20007
-Node: bugs20643
-Node: Configuration21175
-Node: configuration file location22310
-Node: general syntax22734
-Node: default values23561
-Node: global variables24088
-Node: per drive variables26169
-Node: general information27004
-Node: location information27445
-Node: geometry description28963
-Node: open flags32815
-Node: miscellaneous variables33414
-Node: miscellaneous flags35482
-Node: multiple descriptions39112
-Node: parsing order40782
-Node: old style configuration41813
-Node: Commands42508
-Node: floppyd44429
-Node: floppyd_installtest49214
-Node: mattrib49845
-Node: mbadblocks51641
-Node: mcat52280
-Node: mcd53091
-Node: mclasserase53952
-Node: mcopy54631
-Node: mdel57664
-Node: mdeltree58002
-Node: mdir58419
-Node: mdu59695
-Node: mformat60201
-Node: mkmanifest67078
-Node: minfo69050
-Node: mlabel69621
-Node: mmd70773
-Node: mmount71120
-Node: mmove71716
-Node: mpartition72522
-Node: mrd76043
-Node: mren76399
-Node: mshortname77146
-Node: mshowfat77478
-Node: mtoolstest77702
-Node: mtype78272
-Node: mzip79123
-Ref: mzip-Footnote-181156
-Ref: mzip-Footnote-281237
-Node: Compiling mtools81523
-Node: Porting mtools82618
-Node: Command Index88533
-Node: Variable Index88681
-Node: Concept Index90212
+Node: Top865
+Node: Location2942
+Node: Common features4328
+Node: arguments5092
+Node: drive letters6746
+Node: directory8098
+Node: long names8543
+Node: name clashes11089
+Node: case sensitivity13372
+Node: high capacity formats14601
+Node: more sectors15720
+Node: bigger sectors16769
+Node: 2m17491
+Node: XDF18670
+Node: exit codes20005
+Node: bugs20641
+Node: Configuration21173
+Node: configuration file location22308
+Node: general syntax22732
+Node: default values23559
+Node: global variables24086
+Node: per drive variables26167
+Node: general information27002
+Node: location information27443
+Node: geometry description28961
+Node: open flags32813
+Node: miscellaneous variables33412
+Node: miscellaneous flags35480
+Node: multiple descriptions39110
+Node: parsing order40780
+Node: old style configuration41811
+Node: Commands42506
+Node: floppyd44427
+Node: floppyd_installtest49212
+Node: mattrib49843
+Node: mbadblocks51639
+Node: mcat52932
+Node: mcd53743
+Node: mclasserase54604
+Node: mcopy55283
+Node: mdel58316
+Node: mdeltree58654
+Node: mdir59071
+Node: mdu60347
+Node: mformat60853
+Node: mkmanifest67730
+Node: minfo69702
+Node: mlabel70273
+Node: mmd71425
+Node: mmount71772
+Node: mmove72368
+Node: mpartition73174
+Node: mrd76695
+Node: mren77051
+Node: mshortname77798
+Node: mshowfat78128
+Node: mtoolstest78536
+Node: mtype79106
+Node: mzip79957
+Ref: mzip-Footnote-181990
+Ref: mzip-Footnote-282071
+Node: Compiling mtools82357
+Node: Porting mtools83452
+Node: Command Index89367
+Node: Variable Index89515
+Node: Concept Index91046
 
 End Tag Table

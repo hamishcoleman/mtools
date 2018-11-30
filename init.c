@@ -40,7 +40,9 @@ unsigned int num_clus;			/* total number of cluster */
  * Read the boot sector.  We glean the disk parameters from this sector.
  */
 static int read_boot(Stream_t *Stream, union bootsector * boot, int size)
-{	
+{
+	short boot_sector_size; /* sector size, as stored in boot sector */
+
 	/* read the first sector, or part of it */
 	if(!size)
 		size = BOOTSIZE;
@@ -49,6 +51,15 @@ static int read_boot(Stream_t *Stream, union bootsector * boot, int size)
 
 	if (force_read(Stream, boot->characters, 0, size) != size)
 		return -1;
+
+	boot_sector_size = WORD(secsiz);		
+	if(boot_sector_size >= 0 && 
+	   boot_sector_size < sizeof(boot->bytes)) {
+		/* zero rest of in-memory boot sector */
+		memset(boot->bytes+boot_sector_size, 0,
+		       sizeof(boot->bytes) - boot_sector_size);
+	}
+
 	return 0;
 }
 
@@ -69,7 +80,7 @@ static doscp_t *get_dosConvert(Stream_t *Stream)
 Class_t FsClass = {
 	read_pass_through, /* read */
 	write_pass_through, /* write */
-	fs_flush, 
+	fs_flush,
 	fs_free, /* free */
 	0, /* set geometry */
 	get_data_pass_through,
@@ -115,7 +126,7 @@ Stream_t *find_device(char drive, int mode, struct device *out_dev,
 	int isRo=0;
 
 	Stream = NULL;
-	sprintf(errmsg, "Drive '%c:' not supported", drive);	
+	sprintf(errmsg, "Drive '%c:' not supported", drive);
 					/* open the device */
 	for (dev=devices; dev->name; dev++) {
 		FREE(&Stream);
@@ -145,12 +156,12 @@ Stream_t *find_device(char drive, int mode, struct device *out_dev,
 		    }
 #endif
 
-		
+
 		    if (!Stream)
 			Stream = SimpleFileOpen(out_dev, dev, name,
 						isRop ? mode | O_RDWR: mode,
 						errmsg, 0, 1, maxSize);
-		
+
 		    if(Stream) {
 			isRo=0;
 		    } else if(isRop &&
@@ -207,7 +218,7 @@ Stream_t *find_device(char drive, int mode, struct device *out_dev,
 		break;
 	}
 
-	/* print error msg if needed */	
+	/* print error msg if needed */
 	if ( dev->drive == 0 ){
 		FREE(&Stream);
 		fprintf(stderr,"%s\n",errmsg);
@@ -255,7 +266,7 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 				   &maxSize, isRop);
 	if(!This->Direct)
 		return NULL;
-	
+
 	This->sector_size = WORD_S(secsiz);
 	if(This->sector_size > MAX_SECTOR){
 		fprintf(stderr,"init %c: sector size too big\n", drive);
@@ -272,7 +283,6 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 	}
 	This->sectorShift = i;
 	This->sectorMask = This->sector_size - 1;
-
 
 	cylinder_size = dev.heads * dev.sectors;
 	This->serialized = 0;
@@ -297,13 +307,13 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 		 */
 		tot_sectors = WORD_S(psect);
 		if(!tot_sectors) {
-			tot_sectors = DWORD_S(bigsect);			
+			tot_sectors = DWORD_S(bigsect);	
 			nhs = DWORD_S(nhs);
 		} else
 			nhs = WORD_S(nhs);
 
 
-		This->cluster_size = boot.boot.clsiz; 		
+		This->cluster_size = boot.boot.clsiz;
 		This->fat_start = WORD_S(nrsvsect);
 		This->fat_len = WORD_S(fatlen);
 		This->dir_len = WORD_S(dirents) * MDIR_SIZE / This->sector_size;

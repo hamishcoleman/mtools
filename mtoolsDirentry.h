@@ -43,6 +43,7 @@ int isNotFound(direntry_t *entry);
 direntry_t *getParent(direntry_t *entry);
 void dir_write(direntry_t *entry);
 void low_level_dir_write(direntry_t *entry);
+void low_level_dir_write_end(Stream_t *Dir, int entry);
 int fatFreeWithDirentry(direntry_t *entry);
 int labelit(struct dos_name_t *dosname,
 	    char *longname,

@@ -83,6 +83,11 @@ void low_level_dir_write(direntry_t *entry)
 		    (mt_off_t) entry->entry * MDIR_SIZE, MDIR_SIZE);
 }
 
+void low_level_dir_write_end(Stream_t *Dir, int entry)
+{
+	char zero = ENDMARK;
+	force_write(Dir, &zero, (mt_off_t) entry * MDIR_SIZE, 1);
+}
 
 /*
  * Make a directory entry.  Builds a directory entry based on the

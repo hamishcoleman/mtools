@@ -17,8 +17,8 @@
 #include "sysincludes.h"
 #include "vfat.h"
 #include "dirCache.h"
-
-
+#include "dirCacheP.h"
+#include <assert.h>
 
 
 #define BITS_PER_INT (sizeof(unsigned int) * 8)
@@ -159,9 +159,17 @@ dirCache_t *allocDirCache(Stream_t *Stream, int slot)
 	return *dcp;
 }
 
-static void freeDirCacheRange(dirCache_t *cache,
-			      unsigned int beginSlot,
-			      unsigned int endSlot)
+/* Free a range of entries. The range being cleared is always aligned
+ * on the begin of an entry. Entries which are cleared entirely are
+ * free'd. Entries which are cleared half-way (can only happen at end)
+ * are "shortened" by moving its beginSlot
+ * If this was a range representing space after end-mark, return beginning
+ * of range if it had been shortened in its lifetime (which means that end
+ * mark must have moved => may need to be rewritten)
+ */
+static int freeDirCacheRange(dirCache_t *cache,
+			     unsigned int beginSlot,
+			     unsigned int endSlot)
 {
 	dirCacheEntry_t *entry;
 	unsigned int clearBegin;
@@ -181,6 +189,10 @@ static void freeDirCacheRange(dirCache_t *cache,
 			continue;
 		}
 		
+		/* Due to the way this is called, we _always_ de-allocate
+		 * starting from beginning... */
+		assert(entry->beginSlot == beginSlot);
+
 		clearEnd = entry->endSlot;
 		if(clearEnd > endSlot)
 			clearEnd = endSlot;
@@ -189,29 +201,27 @@ static void freeDirCacheRange(dirCache_t *cache,
 		for(i = clearBegin; i <clearEnd; i++)
 			cache->entries[i] = 0;
 
-		if(entry->endSlot == endSlot)
-			entry->endSlot = beginSlot;
-		else if(entry->beginSlot == beginSlot)
-			entry->beginSlot = endSlot;
-		else {
-			fprintf(stderr,
-				"Internal error, non contiguous de-allocation\n");
-			fprintf(stderr, "%d %d\n", beginSlot, endSlot);
-			fprintf(stderr, "%d %d\n", entry->beginSlot,
-				entry->endSlot);
-			exit(1);			
-		}
+		entry->beginSlot = clearEnd;
 
 		if(entry->beginSlot == entry->endSlot) {
+			int needWriteEnd = 0;
+			if(entry->endMarkPos != -1 &&
+			   entry->endMarkPos < beginSlot)
+				needWriteEnd = 1;
+
 			if(entry->longName)
 				free(entry->longName);
 			if(entry->shortName)
 				free(entry->shortName);
 			free(entry);
+			if(needWriteEnd) {
+				return beginSlot;
+			}
 		}
 
 		beginSlot = clearEnd;
 	}
+	return -1;
 }
 
 static dirCacheEntry_t *allocDirCacheEntry(dirCache_t *cache, int beginSlot,
@@ -232,6 +242,7 @@ static dirCacheEntry_t *allocDirCacheEntry(dirCache_t *cache, int beginSlot,
 	entry->shortName = 0;
 	entry->beginSlot = beginSlot;
 	entry->endSlot = endSlot;
+	entry->endMarkPos = -1;
 
 	freeDirCacheRange(cache, beginSlot, endSlot);
 	for(i=beginSlot; i<endSlot; i++) {
@@ -268,6 +279,11 @@ dirCacheEntry_t *addUsedEntry(dirCache_t *cache, int beginSlot, int endSlot,
 	return entry;
 }
 
+/* Try to merge free slot at position "slot" with slot at previous position
+ * After successful merge, both will point to a same DCE (the one which used
+ * to be previous)
+ * Only does something if both of these slots are actually free
+ */
 static void mergeFreeSlots(dirCache_t *cache, int slot)
 {
 	dirCacheEntry_t *previous, *next;
@@ -282,13 +298,17 @@ static void mergeFreeSlots(dirCache_t *cache, int slot)
 		for(i=next->beginSlot; i < next->endSlot; i++)
 			cache->entries[i] = previous;
 		previous->endSlot = next->endSlot;
+		previous->endMarkPos = next->endMarkPos;
 		free(next);		
 	}
 }
 
-dirCacheEntry_t *addFreeEntry(dirCache_t *cache,
-			      unsigned int beginSlot,
-			      unsigned int endSlot)
+/* Create a free range extending from beginSlot to endSlot, and try to merge
+ * it with any neighboring free ranges */
+dirCacheEntry_t *addFreeEndEntry(dirCache_t *cache,
+				 unsigned int beginSlot,
+				 unsigned int endSlot,
+				 int isAtEnd)
 {
 	dirCacheEntry_t *entry;
 
@@ -304,11 +324,19 @@ dirCacheEntry_t *addFreeEntry(dirCache_t *cache,
 	if(endSlot == beginSlot)
 		return 0;
 	entry = allocDirCacheEntry(cache, beginSlot, endSlot, DCET_FREE);
+	if(isAtEnd)
+		entry->endMarkPos = beginSlot;
 	mergeFreeSlots(cache, beginSlot);
 	mergeFreeSlots(cache, endSlot);
 	return cache->entries[beginSlot];
 }
 
+dirCacheEntry_t *addFreeEntry(dirCache_t *cache,
+			      unsigned int beginSlot,
+			      unsigned int endSlot)
+{
+	return addFreeEndEntry(cache, beginSlot, endSlot, 0);
+}
 
 dirCacheEntry_t *addEndEntry(dirCache_t *cache, int pos)
 {
@@ -329,7 +357,10 @@ void freeDirCache(Stream_t *Stream)
 	dcp = getDirCacheP(Stream);
 	cache = *dcp;
 	if(cache) {
-		freeDirCacheRange(cache, 0, cache->nr_entries);
+		int n;
+		n=freeDirCacheRange(cache, 0, cache->nr_entries);
+		if(n >= 0)
+			low_level_dir_write_end(Stream, n);
 		free(cache);
 		*dcp = 0;
 	}

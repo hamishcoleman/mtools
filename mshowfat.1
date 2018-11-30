@@ -1,5 +1,5 @@
 '\" t
-.TH mshowfat 1 "16Apr11" mtools-4.0.16
+.TH mshowfat 1 "29Jun11" mtools-4.0.17
 .SH Name
 mshowfat - shows FAT clusters allocated to file
 '\" t
@@ -25,10 +25,14 @@ file.  Syntax:
 .PP
 .ft I
 .nf
-\&\fR\&\f(CW$ mshowfat files\fR
+\&\fR\&\f(CWmshowfat\fR [\fR\&\f(CW-o\fR \fIoffset\fR] \fIfiles\fR
 .fi
 .ft R
  
+.PP
+If no offset is given, a list of all clusters occupied by the file is
+printed. If an offset is given, only the number of the cluster
+containing that offset is printed.
 .PP
 .SH See\ Also
 Mtools' texinfo doc

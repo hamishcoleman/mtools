@@ -26,6 +26,7 @@
 #include "vfat.h"
 #include "file.h"
 #include "dirCache.h"
+#include "dirCacheP.h"
 #include "file_name.h"
 
 /* #define DEBUG */
@@ -228,7 +229,7 @@ int clear_vses(Stream_t *Dir, int entrySlot, size_t last)
 #endif
 		dir_read(&entry, &error);
 		if(error)
-		    return error;
+			return error;
 		if(!entry.dir.name[0] || entry.dir.name[0] == DELMARK)
 			break;
 		entry.dir.name[0] = DELMARK;
@@ -406,7 +407,10 @@ static __inline__ void parse_vses(direntry_t *entry,
 		*c = '\0';	/* Null terminate long name */
 }
 
-
+/**
+ * Read one complete entry from directory (main name plus any VSEs
+ * belonging to it)
+ */
 static dirCacheEntry_t *vfat_lookup_loop_common(doscp_t *cp,
 						direntry_t *direntry,
 						dirCache_t *cache,
@@ -418,6 +422,7 @@ static dirCacheEntry_t *vfat_lookup_loop_common(doscp_t *cp,
 	struct vfat_state vfat;
 	wchar_t *longname;
 	int error;
+	int endmarkSeen = 0;
 
 	/* not yet cached */
 	*io_error = 0;
@@ -429,14 +434,17 @@ static dirCacheEntry_t *vfat_lookup_loop_common(doscp_t *cp,
 			    *io_error = error;
 			    return NULL;
 			}
-			addFreeEntry(cache, initpos, direntry->entry);
+			addFreeEndEntry(cache, initpos, direntry->entry,
+					endmarkSeen);
 			return addEndEntry(cache, direntry->entry);
 		}
 		
-		if (direntry->dir.name[0] == '\0'){
+		if (endmarkSeen || direntry->dir.name[0] == ENDMARK){
 				/* the end of the directory */
-			if(lookForFreeSpace)
+			if(lookForFreeSpace) {
+				endmarkSeen = 1;
 				continue;
+			}
 			return addEndEntry(cache, direntry->entry);
 		}
 		if(direntry->dir.name[0] != DELMARK &&
@@ -702,7 +710,7 @@ static void clear_scan(wchar_t *longname, int use_longname,
 	s->shortmatch = s->longmatch = s->slot = -1;
 	s->free_end = s->got_slots = s->free_start = 0;
 
-	if (use_longname)
+	if (use_longname & 1)
 		s->size_needed = 1 +
 			(wcslen(longname) + VSE_NAMELEN - 1)/VSE_NAMELEN;
 	else

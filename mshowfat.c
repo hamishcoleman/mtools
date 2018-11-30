@@ -1,4 +1,4 @@
-/*  Copyright 1997,2000-2002,2009 Alain Knaff.
+/*  Copyright 1997,2000-2002,2009,2011 Alain Knaff.
  *  This file is part of mtools.
  *
  *  Mtools is free software: you can redistribute it and/or modify
@@ -32,22 +32,22 @@
 #include "file.h"
 #include "fs.h"
 
-
-
 typedef struct Arg_t {
-	char *target;
 	MainParam_t mp;
-	ClashHandling_t ch;
-	Stream_t *sourcefile;
+	off_t offset;
 } Arg_t;
 
 static int dos_showfat(direntry_t *entry, MainParam_t *mp)
 {
 	Stream_t *File=mp->File;
-
+	Arg_t *arg = (Arg_t *) mp->arg;
 	fprintPwd(stdout, entry,0);
 	putchar(' ');
-	printFat(File);
+	if(arg->offset == -1) {
+		printFat(File);
+	} else {
+		printFatWithOffset(File, arg->offset);
+	}
 	printf("\n");
 	return GOT_ONE;
 }
@@ -75,14 +75,14 @@ void mshowfat(int argc, char **argv, int mtype)
 	int c, ret;
 	
 	/* get command line options */
-
-	init_clash_handling(& arg.ch);
-
-	/* get command line options */
 	if(helpFlag(argc, argv))
 		usage(0);
-	while ((c = getopt(argc, argv, "i:h")) != EOF) {
+	arg.offset = -1;
+	while ((c = getopt(argc, argv, "i:ho:")) != EOF) {
 		switch (c) {
+			case 'o':
+				arg.offset = str_to_offset(optarg);
+				break;
 			case 'i':
 				set_cmd_line_image(optarg, 0);
 				break;
@@ -97,7 +97,7 @@ void mshowfat(int argc, char **argv, int mtype)
 	if (argc - optind < 1)
 		usage(1);
 
-	/* only 1 file to copy... */
+	/* only 1 file to handle... */
 	init_mp(&arg.mp);
 	arg.mp.arg = (void *) &arg;
 

@@ -1,9 +1,24 @@
+mtools (4.0.17) stable; urgency=low
+
+  * mbadblocks now takes a list of bad blocks (either as sectors
+    or as clusters)
+  * mbadblocks now is able to do write scanning for bad blocks
+  * mshowfat can show cluster of specific offset
+  * Enable mtools to deal with very small sector sizes...
+  * Fixed encoding of all-lowercase names (no need to mangle
+    these)
+  * Consider every directory entry after an ENDMARK (0x00) to be deleted
+  * After writing a new entry at end of a directory, be sure to also add
+    an ENDMARK (0x00)
+  * Deal with possibility of a NULL pointer being returned by
+    localtime during timestamp conversion
+ -- Alain Knaff <alain@knaff.lu>  Wed, 29 Jun 2011 00:21:20 +0200
 mtools (4.0.16) stable; urgency=low
 
   * configure.in fixes
   * fixed formatting of fat_size_calculation.tex document
   * compatibility with current autoconfig versions
-  * Make it clear that label is limited to 13 characters
+  * Make it clear that label is limited to 11 characters
   * Fixed typo in initialization of FAT32 info sector
 
  -- Alain Knaff <alain@knaff.lu>  Sat, 16 Apr 2011 18:00:30 +0200
@@ -111,7 +126,7 @@ mtools (4.0.2) stable; urgency=low
  -- Alain Knaff <alain@knaff.lu>  Mon, 26 Jan 2009 22:58:06 +0100
 mtools (4.0.1) stable; urgency=low
 
-  * Missing functions on Solaris 
+  * Missing functions on Solaris
 
  -- Alain Knaff <alain@knaff.lu>  Sun,  7 Dec 2008 21:38:55 +0100
 mtools (4.0.0) stable; urgency=low

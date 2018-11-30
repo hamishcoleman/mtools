@@ -37,6 +37,7 @@
 #define _DWORD(x) ((unsigned int)(_WORD(x) + (_WORD((x)+2) << 16)))
 
 #define DELMARK ((char) 0xe5)
+#define ENDMARK ((char) 0x00)
 
 struct directory {
 	char name[8];			/*  0 file name */

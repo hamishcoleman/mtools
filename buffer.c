@@ -85,11 +85,6 @@ static int _buf_flush(Buffer_t *Buffer)
 
 static int invalidate_buffer(Buffer_t *Buffer, mt_off_t start)
 {
-	/*fprintf(stderr, "invalidate %x\n", Buffer);*/
-	if(Buffer->sectorSize == 32) {
-		fprintf(stderr, "refreshing directory\n");
-	}
-
 	if(_buf_flush(Buffer) < 0)
 		return -1;
 

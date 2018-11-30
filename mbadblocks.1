@@ -1,5 +1,5 @@
 '\" t
-.TH mbadblocks 1 "16Apr11" mtools-4.0.16
+.TH mbadblocks 1 "29Jun11" mtools-4.0.17
 .SH Name
 mbadblocks - tests a floppy disk, and marks the bad blocks in the FAT
 '\" t
@@ -20,14 +20,34 @@ end of this man page for details.
 .PP
 .SH Description
 .PP
-The \fR\&\f(CWmbadblocks\fR command is used to scan an MS-DOS floppy and mark
-its unused bad blocks as bad. It uses the following syntax:
+The \fR\&\f(CWmbadblocks\fR command is used to mark some clusters on an
+MS-DOS filesystem bad. It has the following syntax:
 .PP
-\&\fR\&\f(CWmbadblocks\fR \fIdrive\fR\fR\&\f(CW:\fR
+\&\fR\&\f(CWmbadblocks\fR [\fR\&\f(CW-s\fR \fIsectorlist\fR|\fR\&\f(CW-c\fR \fIclusterlist\fR|-w] \fIdrive\fR\fR\&\f(CW:\fR
 .PP
-\&\fR\&\f(CWMbadblocks\fR scans an MS-DOS floppy for bad blocks. All unused bad
-blocks are marked as such in the FAT. This is intended to be used right
-after \fR\&\f(CWmformat\fR.  It is not intended to salvage bad disks.
+If no command line flags are supplied, \fR\&\f(CWMbadblocks\fR scans an
+MS-DOS filesystem for bad blocks by simply trying to read them and
+flag them if read fails. All blocks that are unused are scanned, and
+if detected bad are marked as such in the FAT.
+.PP
+This command is intended to be used right after \fR\&\f(CWmformat\fR.  It is
+not intended to salvage data from bad disks.
+.PP
+.SH Command\ line\ options
+.TP
+\&\fR\&\f(CWc\ \fIfile\fR\&\f(CW\fR\ 
+Use a list of bad clusters, rather than scanning for bad clusters
+itself.
+.TP
+\&\fR\&\f(CWs\ \fIfile\fR\&\f(CW\fR\ 
+Use a list of bad sectors (counted from beginning of filesystem),
+rather than trying for bad clusters itself.
+.TP
+\&\fR\&\f(CWw\fR\ 
+Write a random pattern to each cluster, then read it back and flag
+cluster as bad if mismatch. Only free clusters are tested in such a
+way, so any file data is preserved.
+.PP
 .SH Bugs
 \&\fR\&\f(CWMbadblocks\fR should (but doesn't yet :-( ) also try to salvage bad
 blocks which are in use by reading them repeatedly, and then mark them

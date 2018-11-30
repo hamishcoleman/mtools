@@ -1,4 +1,4 @@
-/*  Copyright 1996-2005,2007-2009 Alain Knaff.
+/*  Copyright 1996-2005,2007-2009,2011 Alain Knaff.
  *  This file is part of mtools.
  *
  *  Mtools is free software: you can redistribute it and/or modify
@@ -509,31 +509,13 @@ static int parse_one(int privilege);
 
 /* check for offset embedded in file name, in the form file@@offset[SKMG] */
 static off_t get_offset(char *name) {
-  char s, *ofsp, *endp = NULL;
+  char *ofsp;
   off_t ofs;
 
   ofsp = strstr(devices[cur_dev].name, "@@");
   if (ofsp == NULL)
     return 0; /* no separator */
-  ofs = strtol(ofsp+2, &endp, 0);
-  if (ofs <= 0)
-    return 0; /* invalid or missing offset */
-  s = *endp++;
-  if (s) {   /* trailing char, see if it is a size specifier */
-    endp++;
-    if (s == 's' || s == 'S')       /* sector */
-      ofs <<= 9;
-    else if (s == 'k' || s == 'K')  /* kb */
-      ofs <<= 10;
-    else if (s == 'm' || s == 'M')  /* Mb */
-      ofs <<= 20;
-    else if (s == 'g' || s == 'G')  /* Gb */
-      ofs <<= 30;
-    else
-      return 0;      /* invalid character */
-    if (*endp)
-      return 0;      /* extra char, invalid */
-  }
+  ofs = str_to_offset(ofsp+2);
   *ofsp = '\0';                              /* truncate file name */
   return ofs;
 }

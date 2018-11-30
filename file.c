@@ -1,4 +1,4 @@
-/*  Copyright 1996-1999,2001-2003,2007-2009 Alain Knaff.
+/*  Copyright 1996-1999,2001-2003,2007-2009,2011 Alain Knaff.
  *  This file is part of mtools.
  *
  *  Mtools is free software: you can redistribute it and/or modify
@@ -211,6 +211,34 @@ void printFat(Stream_t *Stream)
 			printf("-%lu", end);
 		printf(">");
 	}
+}
+
+void printFatWithOffset(Stream_t *Stream, off_t offset) {
+	File_t *This = getUnbufferedFile(Stream);
+	unsigned long n;
+	int rel;
+	off_t clusSize;
+
+	n = This->FirstAbsCluNr;
+	if(!n) {
+		printf("Root directory or empty file\n");
+		return;
+	}
+
+	clusSize = This->Fs->cluster_size * This->Fs->sector_size;
+
+	rel = 0;
+	while(offset >= clusSize) {
+		n = fatDecode(This->Fs, n);
+		rel++;
+		if(loopDetect(This, rel, n) < 0)
+			return;
+		if(n > This->Fs->last_fat)
+			return;
+		offset -= clusSize;
+	}
+
+	printf("%lu", n);
 }
 
 static int normal_map(File_t *This, off_t where, size_t *len, int mode,
@@ -445,9 +473,10 @@ static __inline__ time_t conv_stamp(struct directory *dir)
 	/* correct for Daylight Saving Time */
 	tmp = accum;
 	tmbuf = localtime(&tmp);
-	dst = (tmbuf->tm_isdst) ? (-60L * 60L) : 0L;
-	accum += dst;
-	
+	if(tmbuf) {
+		dst = (tmbuf->tm_isdst) ? (-60L * 60L) : 0L;
+		accum += dst;
+	}
 	return accum;
 }
 

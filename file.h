@@ -1,6 +1,6 @@
 #ifndef MTOOLS_FILE_H
 #define MTOOLS_FILE_H
-/*  Copyright 1996,1997,2001,2002,2009 Alain Knaff.
+/*  Copyright 1996,1997,2001,2002,2009,2011 Alain Knaff.
  *  This file is part of mtools.
  *
  *  Mtools is free software: you can redistribute it and/or modify
@@ -23,5 +23,6 @@
 Stream_t *OpenFileByDirentry(direntry_t *entry);
 Stream_t *OpenRoot(Stream_t *Dir);
 void printFat(Stream_t *Stream);
+void printFatWithOffset(Stream_t *Stream, off_t offset);
 direntry_t *getDirentry(Stream_t *Stream);
 #endif

@@ -25,14 +25,7 @@ typedef enum {
 
 #define DC_BITMAP_SIZE 128
 
-typedef struct dirCacheEntry_t {
-	dirCacheEntryType_t type;
-	unsigned int beginSlot;
-	unsigned int endSlot;
-	wchar_t *shortName;
-	wchar_t *longName;
-	struct directory dir;
-} dirCacheEntry_t;
+typedef struct dirCacheEntry_t dirCacheEntry_t;
 
 typedef struct dirCache_t {
 	struct dirCacheEntry_t **entries;
@@ -52,6 +45,9 @@ dirCacheEntry_t *addUsedEntry(dirCache_t *Stream, int begin, int end,
 void freeDirCache(Stream_t *Stream);
 dirCacheEntry_t *addFreeEntry(dirCache_t *Stream, 
 			      unsigned int begin, unsigned int end);
+dirCacheEntry_t *addFreeEndEntry(dirCache_t *Stream, 
+				 unsigned int begin, unsigned int end,
+				 int isAtEnd);
 dirCacheEntry_t *addEndEntry(dirCache_t *Stream, int pos);
 dirCacheEntry_t *lookupInDircache(dirCache_t *Stream, int pos);
 #endif

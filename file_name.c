@@ -140,10 +140,6 @@ void dos_name(doscp_t *toDos, const char *name, int verbose, int *mangled,
 			*mangled |= BASECASE;
 		if(ExtCase == LOWER)
 			*mangled |= EXTCASE;
-		if((BaseCase == LOWER || ExtCase == LOWER) &&
-		   !mtools_no_vfat) {
-			*mangled |= 1;
-		}
 	}
 }
 
