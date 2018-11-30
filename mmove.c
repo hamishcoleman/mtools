@@ -51,7 +51,7 @@ typedef struct Arg_t {
  * directory structure or NULL on error.
  */
 static int renameit(dos_name_t *dosname,
-		    char *longname,
+		    char *longname UNUSEDP,
 		    void *arg0,
 		    direntry_t *targetEntry)
 {

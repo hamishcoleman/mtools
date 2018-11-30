@@ -163,6 +163,35 @@ time_t getTimeNow(time_t *now)
 	static time_t sharedNow;
 
 	if(!haveTime) {
+		const char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
+		if (source_date_epoch) {
+			char *endptr;
+			unsigned long long epoch =
+				strtoll(source_date_epoch, &endptr, 10);
+
+			if (endptr == source_date_epoch)
+				fprintf(stderr, "SOURCE_DATE_EPOCH invalid\n");
+			else if ((errno == ERANGE &&
+				  (epoch == ULLONG_MAX || epoch == 0))
+				 || (errno != 0 && epoch == 0))
+				fprintf(stderr,
+					"SOURCE_DATE_EPOCH: strtoll: %s: %llu\n",
+					strerror(errno), epoch);
+			else if (*endptr != '\0')
+				fprintf(stderr,
+					"SOURCE_DATE_EPOCH has trailing garbage\n");
+			else if (epoch > ULONG_MAX)
+				fprintf(stderr,
+					"SOURCE_DATE_EPOCH must be <= %lu but saw: %llu\n",
+					ULONG_MAX, epoch);
+			else {
+				sharedNow = epoch;
+				haveTime = 1;
+			}
+		}
+	}
+	
+	if(!haveTime) {
 		time(&sharedNow);
 		haveTime = 1;
 	}

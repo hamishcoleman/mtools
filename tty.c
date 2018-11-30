@@ -87,7 +87,7 @@ static Terminal in_orig;
 
 /*--------------- Signal Handler routines -------------*/
 
-static void tty_time_out(int dummy)
+static void tty_time_out(int dummy UNUSEDP)
 {
 	int exit_code;
 	signal(SIGALRM, SIG_IGN);

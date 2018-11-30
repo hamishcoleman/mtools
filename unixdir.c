@@ -73,7 +73,9 @@ static Class_t DirClass = {
 	dir_free, /* free */
 	0, /* get_geom */
 	get_dir_data ,
-	0 /* pre-allocate */
+	0, /* pre-allocate */
+	0, /* get_dosConvert */
+	0 /* discard */
 };
 
 #ifdef HAVE_FCHDIR

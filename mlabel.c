@@ -27,7 +27,7 @@
 #include "nameclash.h"
 #include "file_name.h"
 
-static void _label_name(doscp_t *cp, const char *filename, int verbose,
+static void _label_name(doscp_t *cp, const char *filename, int verbose UNUSEDP,
 			int *mangled, dos_name_t *ans, int preserve_case)
 {
 	int len;
@@ -81,8 +81,8 @@ void label_name_pc(doscp_t *cp, const char *filename, int verbose,
 }
 
 int labelit(struct dos_name_t *dosname,
-	    char *longname,
-	    void *arg0,
+	    char *longname UNUSEDP,
+	    void *arg0 UNUSEDP,
 	    direntry_t *entry)
 {
 	time_t now;
@@ -103,7 +103,7 @@ static void usage(int ret)
 }
 
 
-void mlabel(int argc, char **argv, int type)
+void mlabel(int argc, char **argv, int type UNUSEDP)
 {
 
 	const char *newLabel="";
@@ -133,6 +133,7 @@ void mlabel(int argc, char **argv, int type)
 	init_clash_handling(&ch);
 	ch.name_converter = label_name_uc;
 	ch.ignore_entry = -2;
+	ch.is_label = 1;
 
 	verbose = 0;
 	clear = 0;
@@ -299,8 +300,7 @@ void mlabel(int argc, char **argv, int type)
 		cp = GET_DOSCONVERT(Fs);
 		label_name_pc(cp, shrtLabel, verbose, &mangled, &dosname);
 
-		if(have_boot && boot.boot.descr >= 0xf0 &&
-		   labelBlock->dos4 == 0x29) {
+		if(have_boot && boot.boot.descr >= 0xf0 && has_BPB4) {
 			strncpy(labelBlock->label, dosname.base, 11);
 			need_write_boot = 1;
 
@@ -308,8 +308,7 @@ void mlabel(int argc, char **argv, int type)
 	}
 
 	if((set_serial != SER_NONE) & have_boot) {
-		if(have_boot && boot.boot.descr >= 0xf0 &&
-		   labelBlock->dos4 == 0x29) {
+		if(have_boot && boot.boot.descr >= 0xf0 && has_BPB4) {
 			set_dword(labelBlock->serial, serial);	
 			need_write_boot = 1;
 		}

@@ -56,27 +56,83 @@ static void displayInfosector(Stream_t *Stream, union bootsector *boot)
 }
 
 
-void minfo(int argc, char **argv, int type)
+static void displayBPB(Stream_t *Stream, union bootsector *boot) {
+	struct label_blk_t *labelBlock;
+
+	printf("bootsector information\n");
+	printf("======================\n");
+	printf("banner:\"%.8s\"\n", boot->boot.banner);
+	printf("sector size: %d bytes\n", WORD(secsiz));
+	printf("cluster size: %d sectors\n", boot->boot.clsiz);
+	printf("reserved (boot) sectors: %d\n", WORD(nrsvsect));
+	printf("fats: %d\n", boot->boot.nfat);
+	printf("max available root directory slots: %d\n", 
+	       WORD(dirents));
+	printf("small size: %d sectors\n", WORD(psect));
+	printf("media descriptor byte: 0x%x\n", boot->boot.descr);
+	printf("sectors per fat: %d\n", WORD(fatlen));
+	printf("sectors per track: %d\n", WORD(nsect));
+	printf("heads: %d\n", WORD(nheads));
+	printf("hidden sectors: %d\n", DWORD(nhs));
+	printf("big size: %d sectors\n", DWORD(bigsect));
+
+	if(WORD(fatlen)) {
+		labelBlock = &boot->boot.ext.old.labelBlock;
+	} else {
+		labelBlock = &boot->boot.ext.fat32.labelBlock;
+	}
+
+	if(has_BPB4) {
+		printf("physical drive id: 0x%x\n", 
+		       labelBlock->physdrive);
+		printf("reserved=0x%x\n", 
+		       labelBlock->reserved);
+		printf("dos4=0x%x\n", 
+		       labelBlock->dos4);
+		printf("serial number: %08X\n", 
+		       _DWORD(labelBlock->serial));
+		printf("disk label=\"%11.11s\"\n", 
+		       labelBlock->label);
+		printf("disk type=\"%8.8s\"\n", 
+		       labelBlock->fat_type);
+	}
+		
+	if(!WORD(fatlen)){
+		printf("Big fatlen=%u\n",
+		       DWORD(ext.fat32.bigFat));
+		printf("Extended flags=0x%04x\n",
+		       WORD(ext.fat32.extFlags));
+		printf("FS version=0x%04x\n",
+		       WORD(ext.fat32.fsVersion));
+		printf("rootCluster=%u\n",
+		       DWORD(ext.fat32.rootCluster));
+		if(WORD(ext.fat32.infoSector) != MAX16)
+			printf("infoSector location=%d\n",
+			       WORD(ext.fat32.infoSector));
+		if(WORD(ext.fat32.backupBoot) != MAX16)
+			printf("backup boot sector=%d\n",
+			       WORD(ext.fat32.backupBoot));
+		displayInfosector(Stream, boot);
+	}
+}
+
+void minfo(int argc, char **argv, int type UNUSEDP)
 {
 	union bootsector boot;
 
 	char name[EXPAND_BUF];
 	int media;
-	unsigned long tot_sectors;
+	int haveBPB;
 	int size_code;
-	int sector_size;
 	int i;
 	struct device dev;
 	char drive;
 	int verbose=0;
 	int c;
 	Stream_t *Stream;
-	struct label_blk_t *labelBlock;
 	int have_drive = 0;
 
 	unsigned long sect_per_track;
-	int tracks_match=0;
-	int hidden;
 
 	char *imgFile=NULL;
 	
@@ -114,27 +170,46 @@ void minfo(int argc, char **argv, int type)
 					   name, &media, 0, NULL)))
 			exit(1);
 
-		tot_sectors = DWORD_S(bigsect);
-		SET_INT(tot_sectors, WORD_S(psect));
-		sector_size = WORD_S(secsiz);
-		size_code=2;
-		for(i=0; i<7; i++) {
-			if(sector_size == 128 << i) {
-				size_code = i;
-				break;
-			}
-		}
+		haveBPB = media >= 0x100;
+		media = media & 0xff;
+		
 		printf("device information:\n");
 		printf("===================\n");
 		printf("filename=\"%s\"\n", name);
 		printf("sectors per track: %d\n", dev.sectors);
 		printf("heads: %d\n", dev.heads);
 		printf("cylinders: %d\n\n", dev.tracks);
+		printf("media byte: %02x\n\n", media & 0xff);
 
 		sect_per_track = dev.sectors * dev.heads;
 		if(sect_per_track != 0) {
+			int hidden;
+			unsigned long tot_sectors;
+			int tracks_match=0;
 			printf("mformat command line: mformat ");
-			hidden = DWORD_S(nhs);
+
+			if(haveBPB) {
+				int sector_size;
+				tot_sectors = DWORD_S(bigsect);
+				SET_INT(tot_sectors, WORD_S(psect));
+				sector_size = WORD_S(secsiz);
+				size_code=2;
+				for(i=0; i<7; i++) {
+					if(sector_size == 128 << i) {
+						size_code = i;
+						break;
+					}
+				}
+				if(media == 0xf0)
+					hidden = DWORD_S(nhs);
+				else
+					hidden = 0;
+			} else {
+				tot_sectors = dev.tracks * sect_per_track;
+				size_code=2;
+				hidden = 0;
+			}
+
 			if(tot_sectors ==
 			   dev.tracks * sect_per_track - hidden % sect_per_track) {
 				tracks_match=1;
@@ -142,69 +217,19 @@ void minfo(int argc, char **argv, int type)
 			} else {
 				printf("-T %ld ", tot_sectors);
 			}
-			if(imgFile != NULL)
-				printf("-i %s ", imgFile);
-			printf (" -h %d -s %d ", dev.heads, dev.sectors);
-			if(hidden || !tracks_match)
+			printf ("-h %d -s %d ", dev.heads, dev.sectors);
+			if(haveBPB && (hidden || !tracks_match))
 				printf("-H %d ", hidden);
 			if(size_code != 2)
 				printf("-S %d ",size_code);
+			if(imgFile != NULL)
+				printf("-i \"%s\" ", imgFile);
 			printf("%c:\n", tolower(drive));
 			printf("\n");
 		}
-		printf("bootsector information\n");
-		printf("======================\n");
-		printf("banner:\"%.8s\"\n", boot.boot.banner);
-		printf("sector size: %d bytes\n", WORD_S(secsiz));
-		printf("cluster size: %d sectors\n", boot.boot.clsiz);
-		printf("reserved (boot) sectors: %d\n", WORD_S(nrsvsect));
-		printf("fats: %d\n", boot.boot.nfat);
-		printf("max available root directory slots: %d\n", 
-		       WORD_S(dirents));
-		printf("small size: %d sectors\n", WORD_S(psect));
-		printf("media descriptor byte: 0x%x\n", boot.boot.descr);
-		printf("sectors per fat: %d\n", WORD_S(fatlen));
-		printf("sectors per track: %d\n", WORD_S(nsect));
-		printf("heads: %d\n", WORD_S(nheads));
-		printf("hidden sectors: %d\n", DWORD_S(nhs));
-		printf("big size: %d sectors\n", DWORD_S(bigsect));
 
-		if(WORD_S(fatlen)) {
-		    labelBlock = &boot.boot.ext.old.labelBlock;
-		} else {
-		    labelBlock = &boot.boot.ext.fat32.labelBlock;
-		}
-
-		printf("physical drive id: 0x%x\n", 
-		       labelBlock->physdrive);
-		printf("reserved=0x%x\n", 
-		       labelBlock->reserved);
-		printf("dos4=0x%x\n", 
-		       labelBlock->dos4);
-		printf("serial number: %08X\n", 
-		       _DWORD(labelBlock->serial));
-		printf("disk label=\"%11.11s\"\n", 
-		       labelBlock->label);
-		printf("disk type=\"%8.8s\"\n", 
-		       labelBlock->fat_type);
-
-		if(!WORD_S(fatlen)){
-			printf("Big fatlen=%u\n",
-			       DWORD_S(ext.fat32.bigFat));
-			printf("Extended flags=0x%04x\n",
-			       WORD_S(ext.fat32.extFlags));
-			printf("FS version=0x%04x\n",
-			       WORD_S(ext.fat32.fsVersion));
-			printf("rootCluster=%u\n",
-			       DWORD_S(ext.fat32.rootCluster));
-			if(WORD_S(ext.fat32.infoSector) != MAX16)
-				printf("infoSector location=%d\n",
-				       WORD_S(ext.fat32.infoSector));
-			if(WORD_S(ext.fat32.backupBoot) != MAX16)
-				printf("backup boot sector=%d\n",
-				       WORD_S(ext.fat32.backupBoot));
-			displayInfosector(Stream,&boot);
-		}
+		if(haveBPB || verbose)
+			displayBPB(Stream, &boot);
 
 		if(verbose) {
 			int size;

@@ -86,8 +86,14 @@ Class_t FsClass = {
 	get_data_pass_through,
 	0, /* pre allocate */
 	get_dosConvert, /* dosconvert */
+	0 /* discard */
 };
 
+/**
+ * Get media type byte from boot sector (BIOS Parameter Block 2) or
+ * from FAT (if media byte from BPB 2 looks fishy)
+ * Return the media byte + 0x100 if found in BPB 2, or as is if found in FAT.
+ */
 static int get_media_type(Stream_t *St, union bootsector *boot)
 {
 	int media;
@@ -96,7 +102,7 @@ static int get_media_type(Stream_t *St, union bootsector *boot)
 	if(media < 0xf0){
 		char temp[512];
 		/* old DOS disk. Media descriptor in the first FAT byte */
-		/* old DOS disk always have 512-byte sectors */
+		/* we assume 512-byte sectors here */
 		if (force_read(St,temp,(mt_off_t) 512,512) == 512)
 			media = (unsigned char) temp[0];
 		else
@@ -114,6 +120,22 @@ Stream_t *GetFs(Stream_t *Fs)
 	return Fs;
 }
 
+/**
+ * Tries out all device definitions for the given drive number, until one
+ * is found that is able to read from the device
+ * Parameters
+ *  - drive: drive letter to check
+ *  - mode: file open mode
+ *  - out_dev: device parameters (geometry, etc.) are returned here
+ *  - boot: boot sector is read from the disk into this structure
+ *  - name: "name" of device definition (returned)
+ *  - media: media byte is returned here (ored with 0x100 if there is a
+ *    BIOS Parameter block present)
+ *  - maxSize: maximal size supported by (physical) drive returned here
+ *  - isRop: whether device is read-only is returned here
+ * Return value:
+ *  - a Stream allowing to read from this device, must be closed by caller
+ */
 Stream_t *find_device(char drive, int mode, struct device *out_dev,
 		      union bootsector *boot,
 		      char *name, int *media, mt_size_t *maxSize,
@@ -233,7 +255,7 @@ Stream_t *find_device(char drive, int mode, struct device *out_dev,
 Stream_t *fs_init(char drive, int mode, int *isRop)
 {
 	int blocksize;
-	int media,i;
+	int media;
 	int disk_size = 0;	/* In case we don't happen to set this below */
 	size_t tot_sectors;
 	char name[EXPAND_BUF];
@@ -266,32 +288,20 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 	if(!This->Direct)
 		return NULL;
 
-	This->sector_size = WORD_S(secsiz);
-	if(This->sector_size > MAX_SECTOR){
-		fprintf(stderr,"init %c: sector size too big\n", drive);
-		return NULL;
-	}
-
-	i = log_2(This->sector_size);
-
-	if(i == 24) {
-		fprintf(stderr,
-			"init %c: sector size (%d) not a small power of two\n",
-			drive, This->sector_size);
-		return NULL;
-	}
-	This->sectorShift = i;
-	This->sectorMask = This->sector_size - 1;
-
 	cylinder_size = dev.heads * dev.sectors;
 	This->serialized = 0;
 	if ((media & ~7) == 0xf8){
-		i = media & 3;
-		This->cluster_size = old_dos[i].cluster_size;
-		tot_sectors = cylinder_size * old_dos[i].tracks;
+		/* This bit of code is only entered if there is no BPB, or
+		 * else result of the AND would be 0x1xx
+		 */
+		struct OldDos_t *params=getOldDosByMedia(media);
+		if(params == NULL)
+			return NULL;
+		This->cluster_size = params->cluster_size;
+		tot_sectors = cylinder_size * params->tracks;
 		This->fat_start = 1;
-		This->fat_len = old_dos[i].fat_len;
-		This->dir_len = old_dos[i].dir_len;
+		This->fat_len = params->fat_len;
+		This->dir_len = params->dir_len;
 		This->num_fat = 2;
 		This->sector_size = 512;
 		This->sectorShift = 9;
@@ -299,6 +309,25 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 		This->fat_bits = 12;
 	} else {
 		struct label_blk_t *labelBlock;
+		int i;
+		
+		This->sector_size = WORD_S(secsiz);
+		if(This->sector_size > MAX_SECTOR){
+			fprintf(stderr,"init %c: sector size too big\n", drive);
+			return NULL;
+		}
+
+		i = log_2(This->sector_size);
+
+		if(i == 24) {
+			fprintf(stderr,
+				"init %c: sector size (%d) not a small power of two\n",
+				drive, This->sector_size);
+			return NULL;
+		}
+		This->sectorShift = i;
+		This->sectorMask = This->sector_size - 1;
+
 		/*
 		 * all numbers are in sectors, except num_clus
 		 * (which is in clusters)
@@ -319,7 +348,7 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 			labelBlock = &boot.boot.ext.fat32.labelBlock;
 		}
 
-		if(labelBlock->dos4 == 0x29) {
+		if(has_BPB4) {
 			This->serialized = 1;
 			This->serial_number = _DWORD(labelBlock->serial);
 		}
@@ -327,17 +356,6 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 
 	if (tot_sectors >= (maxSize >> This->sectorShift)) {
 		fprintf(stderr, "Big disks not supported on this architecture\n");
-		exit(1);
-	}
-
-	if(!mtools_skip_check && (tot_sectors % dev.sectors)){
-		fprintf(stderr,
-			"Total number of sectors (%d) not a multiple of"
-			" sectors per track (%d)!\n", (int) tot_sectors,
-			dev.sectors);
-		fprintf(stderr,
-			"Add mtools_skip_check=1 to your .mtoolsrc file "
-			"to skip this test\n");
 		exit(1);
 	}
 

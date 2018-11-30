@@ -1,3 +1,19 @@
+mtools (4.0.20) stable; urgency=low
+  * initialize directory entries to 0
+  * bad message "Too few sectors" replaced with "Too many sectors"
+  * apostrophe in mlabel no longer causes generation of long entry
+  * option to fake system date for file creation using the SOURCE_DATE_EPOCH environment variables
+  * can now be compiled with "clang" compiler
+  * fallback function for strndup, for those platforms that don't have it
+  * fixed a number of -Wextra warnings
+  * new compressed archive formats for uz/lz
+  * allow to specify number of reserved sectors for FAT32.
+  * file/device locking with timeout (rather than immediate failure)
+  * fixed support for BPB-less legacy formats.
+  * removed check that disk must be an integer number of tracks.
+  * removed .eh/.oh macros from manual pages
+ -- Alain Knaff <alain@knaff.lu>  Sun, 11 Nov 2018 14:56:06 +0100
+
 mtools (4.0.19) stable; urgency=low
   * Fix for short file names starting with character 0xE5
   (by remapping it to 0x5)

@@ -319,7 +319,7 @@ static void usage(int ret)
 	exit(ret);
 }
 
-void mpartition(int argc, char **argv, int dummy)
+void mpartition(int argc, char **argv, int dummy UNUSEDP)
 {
 	Stream_t *Stream;
 	unsigned int dummy2;

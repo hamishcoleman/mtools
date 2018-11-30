@@ -22,7 +22,7 @@
 
 int got_signal = 0;
 
-static void signal_handler(int dummy)
+static void signal_handler(int dummy UNUSEDP)
 {
 	got_signal = 1;
 #if 0

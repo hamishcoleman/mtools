@@ -63,6 +63,7 @@ unsigned int mtools_no_vfat=0;
 unsigned int mtools_numeric_tail=1;
 unsigned int mtools_dotted_dir=0;
 unsigned int mtools_twenty_four_hour_clock=1;
+unsigned int mtools_lock_timeout=30;
 unsigned int mtools_default_codepage=850;
 const char *mtools_date_string="yyyy-mm-dd";
 char *country_string=0;
@@ -90,6 +91,7 @@ static switches_t global_switches[] = {
       (caddr_t) &mtools_twenty_four_hour_clock, T_UINT },
     { "MTOOLS_DATE_STRING",
       (caddr_t) &mtools_date_string, T_STRING },
+    { "MTOOLS_LOCK_TIMEOUT", (caddr_t) &mtools_lock_timeout, T_UINT },
     { "DEFAULT_CODEPAGE", (caddr_t) &mtools_default_codepage, T_UINT }
 };
 

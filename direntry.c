@@ -24,8 +24,8 @@
 
 void initializeDirentry(direntry_t *entry, Stream_t *Dir)
 {
+	memset(entry, 0, sizeof(direntry_t));
 	entry->entry = -1;
-/*	entry->parent = getDirentry(Dir);*/
 	entry->Dir = Dir;
 	entry->beginSlot = 0;
 	entry->endSlot = 0;

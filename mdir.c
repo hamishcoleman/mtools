@@ -130,11 +130,6 @@ static const char *dotted_num(mt_size_t num, int width, char **buf)
 	unsigned long numlo;
 	unsigned long numhi;
 
-	if (num < 0) {
-	    /* warn about negative numbers here.  They should not occur */
-	    fprintf(stderr, "Invalid negative number\n");
-	}
-
 	size = width + width;
 	*buf = malloc(size+1);
 

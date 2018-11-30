@@ -53,13 +53,6 @@ static __inline__ int forceReadSector(Fs_t *This, char *buf, unsigned int off,
 }
 
 
-static __inline__ int writeSector(Fs_t *This, char *buf, unsigned int off,
-				  size_t size)
-{
-	return WRITES(This->Next, buf, sectorsToBytes((Stream_t*)This, off), 
-				  size << This->sectorShift);
-}
-
 static __inline__ int forceWriteSector(Fs_t *This, char *buf, unsigned int off,
 				       size_t size)
 {

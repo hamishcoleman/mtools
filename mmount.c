@@ -32,7 +32,7 @@
 #include "mainloop.h"
 #include "fs.h"
 
-void mmount(int argc, char **argv, int type)
+void mmount(int argc, char **argv, int type UNUSEDP)
 {
 	char drive;
 	int pid;

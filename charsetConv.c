@@ -152,13 +152,15 @@ void cp_close(doscp_t *cp)
 	free(cp);
 }
 
-int dos_to_wchar(doscp_t *cp, char *dos, wchar_t *wchar, size_t len)
+int dos_to_wchar(doscp_t *cp, const char *dos, wchar_t *wchar, size_t len)
 {
 	int r;
 	size_t in_len=len;
 	size_t out_len=len*sizeof(wchar_t);
 	wchar_t *dptr=wchar;
-	r=iconv(cp->from, &dos, &in_len, (char **)&dptr, &out_len);
+	char *dos2 = (char *) dos; /* Magic to be able to call iconv with its 
+				      buggy prototype */
+	r=iconv(cp->from, &dos2, &in_len, (char **)&dptr, &out_len);
 	if(r < 0)
 		return r;
 	*dptr = L'\0';

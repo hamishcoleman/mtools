@@ -331,7 +331,8 @@ static Class_t BufferClass = {
 	0, /* set_geom */
 	get_data_pass_through, /* get_data */
 	0, /* pre-allocate */
-	get_dosConvert_pass_through /* dos convert */
+	get_dosConvert_pass_through, /* dos convert */
+	0, /* discard */
 };
 
 Stream_t *buf_init(Stream_t *Next, int size,

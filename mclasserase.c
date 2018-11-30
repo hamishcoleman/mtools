@@ -284,7 +284,7 @@ void mclasserase(int argc, char **argv, int type UNUSEDP)
   /* char* tempFilePath=NULL; */
   char drive='a';
 
-  int extern optind;
+  extern int optind;
 
   destroy_privs();
 

@@ -54,6 +54,7 @@ typedef struct ClashHandling_t {
 	void (*name_converter)(doscp_t *cp,
 			       const char *filename, int verbose, 
 			       int *mangled, dos_name_t *ans);
+	int is_label;
 } ClashHandling_t;
 
 /* write callback */

@@ -1,6 +1,6 @@
 This is mtools.info, produced by makeinfo version 6.3 from mtools.texi.
 
-This manual is for Mtools (version 4.0.19, September 2018), which is a
+This manual is for Mtools (version 4.0.20, November 2018), which is a
 collection of tools to allow Unix systems to manipulate MS-DOS files.
 
    Copyright (C) 2007, 2009 Free Software Foundation, Inc.  Copyright
@@ -41,8 +41,8 @@ preliminary mounting or initialization (assuming the default
 '/etc/mtools.conf' works on your machine).  With mtools, one can change
 floppies too without unmounting and mounting.
 
-   This manual is for Mtools (version 4.0.19, September 2018), which is
-a collection of tools to allow Unix systems to manipulate MS-DOS files.
+   This manual is for Mtools (version 4.0.20, November 2018), which is a
+collection of tools to allow Unix systems to manipulate MS-DOS files.
 
    Copyright (C) 2007, 2009 Free Software Foundation, Inc.  Copyright
 (C) 1996-2005,2007-2011,2013 Alain Knaff.
@@ -75,10 +75,10 @@ File: mtools.info,  Node: Location,  Next: Common features,  Prev: Top,  Up: Top
 *********************
 
 Mtools can be found at the following places (and their mirrors):
-     http://ftp.gnu.org/gnu/mtools/mtools-4.0.19.tar.gz
-     http://mtools.linux.lu/mtools-4.0.19.tar.gz
-     ftp://www.tux.org/pub/knaff/mtools/mtools-4.0.19.tar.gz
-     ftp://ibiblio.unc.edu/pub/Linux/utils/disk-management/mtools-4.0.19.tar.gz
+     http://ftp.gnu.org/gnu/mtools/mtools-4.0.20.tar.gz
+     http://mtools.linux.lu/mtools-4.0.20.tar.gz
+     ftp://www.tux.org/pub/knaff/mtools/mtools-4.0.20.tar.gz
+     ftp://ibiblio.unc.edu/pub/Linux/utils/disk-management/mtools-4.0.20.tar.gz
 
    Before reporting a bug, make sure that it has not yet been fixed in
 the Alpha patches which can be found at:
@@ -614,6 +614,9 @@ Global flags may be set to 1 or to 0.
 'MTOOLS_TWENTY_FOUR_HOUR_CLOCK'
      If 1, uses the European notation for times (twenty four hour
      clock), else uses the UK/US notation (am/pm)
+'MTOOLS_LOCK_TIMEOUT'
+     How long, in seconds, to wait for a locked device to become free.
+     Defaults to 30.
 
    Example: Inserting the following line into your configuration file
 instructs mtools to skip the sanity checks:
@@ -1522,6 +1525,7 @@ low-level formatted diskette.  Its syntax is:
        ['-B' BOOT_SECTOR] ['-k']
        ['-m' MEDIA_DESCRIPTOR]
        ['-K' BACKUP_BOOT]
+       ['-R' NB_RESERVED_SECTORS]
        ['-c' CLUSTERS_PER_SECTOR]
        ['-d' FAT_COPIES]
        ['-X'] ['-2' SECTORS_ON_TRACK_0] ['-3']
@@ -1674,6 +1678,11 @@ has a different meaning.
 'K'
      Sets the sector number where the backup of the boot sector should
      be stored (only relevant on FAT32).
+'R'
+     Sets the number of reserved sectors for this filesystem.  This must
+     be at least 1 for non-FAT32 disks, and at least 3 for FAT disks (in
+     order to accomodate the boot sector, the info sector and the backup
+     boot sector).
 
 'm'
      Use a non-standard media descriptor byte for this disk.  The media
@@ -2397,10 +2406,14 @@ Variable index
 * heads:                                 geometry description. (line 63)
 * mformat_only:                          miscellaneous flags.  (line 74)
 * MTOOLSRC:                              Configuration.        (line  9)
+* MTOOLS_DOTTED_DIR:                     global variables.     (line  6)
 * MTOOLS_FAT_COMPATIBILITY:              global variables.     (line  6)
+* MTOOLS_LOCK_TIMEOUT:                   global variables.     (line  6)
 * MTOOLS_LOWER_CASE:                     global variables.     (line  6)
+* MTOOLS_NAME_NUMERIC_TAIL:              global variables.     (line  6)
 * MTOOLS_NO_VFAT:                        global variables.     (line  6)
 * MTOOLS_SKIP_CHECK:                     global variables.     (line  6)
+* MTOOLS_TWENTY_FOUR_HOUR_CLOCK:         global variables.     (line  6)
 * nodelay:                               open flags.           (line  6)
 * sectors:                               geometry description. (line 65)
 * sync:                                  open flags.           (line  6)
@@ -2668,71 +2681,71 @@ Concept index
 
 
 Tag Table:
-Node: Top873
-Node: Location2962
-Node: Common features4351
-Node: arguments5115
-Node: drive letters6776
-Node: directory8130
-Node: long names8576
-Node: name clashes11122
-Node: case sensitivity13406
-Node: high capacity formats14640
-Node: more sectors15758
-Node: bigger sectors16813
-Node: 2m17539
-Node: XDF18721
-Node: exit codes20064
-Node: bugs20702
-Node: Configuration21235
-Node: configuration file location22372
-Node: general syntax22796
-Node: default values23627
-Node: global variables24155
-Node: per drive variables26234
-Node: general information27069
-Node: location information27511
-Node: geometry description29040
-Node: open flags32901
-Node: miscellaneous variables33501
-Node: miscellaneous flags35577
-Node: multiple descriptions39207
-Node: parsing order40881
-Node: old style configuration41912
-Node: Commands42611
-Node: floppyd44533
-Node: floppyd_installtest49326
-Node: mattrib49957
-Node: mbadblocks51750
-Node: mcat53044
-Node: mcd53858
-Node: mclasserase54719
-Node: mcopy55395
-Node: mdel58409
-Node: mdeltree58748
-Node: mdir59167
-Node: mdu60443
-Node: mformat60949
-Node: mkmanifest69183
-Node: minfo71157
-Node: mlabel71727
-Node: mmd72880
-Node: mmount73229
-Node: mmove73828
-Node: mpartition74635
-Node: mrd80148
-Node: mren80506
-Node: mshortname81255
-Node: mshowfat81585
-Node: mtoolstest81994
-Node: mtype82566
-Node: mzip83417
-Ref: mzip-Footnote-185442
-Ref: mzip-Footnote-285523
-Node: Compiling mtools85810
-Node: Porting mtools86909
-Node: Command Index92813
-Node: Variable Index92941
-Node: Concept Index94472
+Node: Top872
+Node: Location2960
+Node: Common features4349
+Node: arguments5113
+Node: drive letters6774
+Node: directory8128
+Node: long names8574
+Node: name clashes11120
+Node: case sensitivity13404
+Node: high capacity formats14638
+Node: more sectors15756
+Node: bigger sectors16811
+Node: 2m17537
+Node: XDF18719
+Node: exit codes20062
+Node: bugs20700
+Node: Configuration21233
+Node: configuration file location22370
+Node: general syntax22794
+Node: default values23625
+Node: global variables24153
+Node: per drive variables26346
+Node: general information27181
+Node: location information27623
+Node: geometry description29152
+Node: open flags33013
+Node: miscellaneous variables33613
+Node: miscellaneous flags35689
+Node: multiple descriptions39319
+Node: parsing order40993
+Node: old style configuration42024
+Node: Commands42723
+Node: floppyd44645
+Node: floppyd_installtest49438
+Node: mattrib50069
+Node: mbadblocks51862
+Node: mcat53156
+Node: mcd53970
+Node: mclasserase54831
+Node: mcopy55507
+Node: mdel58521
+Node: mdeltree58860
+Node: mdir59279
+Node: mdu60555
+Node: mformat61061
+Node: mkmanifest69571
+Node: minfo71545
+Node: mlabel72115
+Node: mmd73268
+Node: mmount73617
+Node: mmove74216
+Node: mpartition75023
+Node: mrd80536
+Node: mren80894
+Node: mshortname81643
+Node: mshowfat81973
+Node: mtoolstest82382
+Node: mtype82954
+Node: mzip83805
+Ref: mzip-Footnote-185830
+Ref: mzip-Footnote-285911
+Node: Compiling mtools86198
+Node: Porting mtools87297
+Node: Command Index93201
+Node: Variable Index93329
+Node: Concept Index95152
 
 End Tag Table

@@ -79,6 +79,24 @@ typedef struct device {
 	const char *cfg_filename; /* used for debugging purposes */
 } device_t;
 
+struct OldDos_t {
+	unsigned int tracks;
+	unsigned int sectors;
+	unsigned int heads;
+	
+	unsigned int dir_len;
+	unsigned int cluster_size;
+	unsigned int fat_len;
+
+	int media;
+};
+
+extern struct OldDos_t *getOldDosBySize(size_t size);
+extern struct OldDos_t *getOldDosByMedia(int media);
+extern struct OldDos_t *getOldDosByParams(int tracks, int heads, int sectors,
+					  int dir_len, int cluster_size);
+int setDeviceFromOldDos(int media, struct device *dev);
+
 
 #ifndef OS_linux
 #define BOOTSIZE 512
@@ -94,6 +112,12 @@ typedef struct doscp_t doscp_t;
 extern const char *short_illegals, *long_illegals;
 
 #define maximize(target, max) do { \
+  if(target > max) { \
+    target = max; \
+  } \
+} while(0)
+
+#define smaximize(target, max) do {		\
   if(max < 0) { \
     if(target > 0) \
       target = 0; \
@@ -188,6 +212,7 @@ extern unsigned int mtools_ignore_short_case;
 extern unsigned int mtools_no_vfat;
 extern unsigned int mtools_numeric_tail;
 extern unsigned int mtools_dotted_dir;
+extern unsigned int mtools_lock_timeout;
 extern unsigned int mtools_twenty_four_hour_clock;
 extern const char *mtools_date_string;
 extern unsigned int mtools_rate_0, mtools_rate_any;

@@ -119,7 +119,7 @@ void mbadblocks(int argc, char **argv, int type UNUSEDP)
 	Stream_t *Dir;
 	int ret;
 	char *filename = NULL;
-	char c;
+	int c;
 	unsigned int badClus;
 	int sectorMode=0;
 	int writeMode=0;

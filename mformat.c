@@ -587,65 +587,40 @@ static void calc_cluster_size(struct Fs_t *Fs, unsigned long tot_sectors,
 }
 
 
-struct OldDos_t old_dos[]={
-{   40,  9,  1, 4, 1, 2, 0xfc },
-{   40,  9,  2, 7, 2, 2, 0xfd },
-{   40,  8,  1, 4, 1, 1, 0xfe },
-{   40,  8,  2, 7, 2, 1, 0xff },
-{   80,  9,  2, 7, 2, 3, 0xf9 },
-{   80, 15,  2,14, 1, 7, 0xf9 },
-{   80, 18,  2,14, 1, 9, 0xf0 },
-{   80, 36,  2,15, 2, 9, 0xf0 },
-{    1,  8,  1, 1, 1, 1, 0xf0 },
-};
-
 static int old_dos_size_to_geom(size_t size, int *cyls, int *heads, int *sects)
 {
-	unsigned int i;
-	size = size * 2;
-	for(i=0; i < sizeof(old_dos) / sizeof(old_dos[0]); i++){
-		if (old_dos[i].sectors *
-		    old_dos[i].tracks *
-		    old_dos[i].heads == size) {
-			*cyls = old_dos[i].tracks;
-			*heads = old_dos[i].heads;
-			*sects = old_dos[i].sectors;
-			return 0;
-		}
-	}
-	return 1;
+	struct OldDos_t *params = getOldDosBySize(size);
+	if(params != NULL) {
+		*cyls = params->tracks;
+		*heads = params->heads;
+		*sects = params->sectors;
+		return 0;
+	} else
+		return 1;
 }
 
 
 static void calc_fs_parameters(struct device *dev, unsigned long tot_sectors,
 			       struct Fs_t *Fs, union bootsector *boot)
 {
-	unsigned int i;
-
-	for(i=0; i < sizeof(old_dos) / sizeof(old_dos[0]); i++){
-		if (dev->sectors == old_dos[i].sectors &&
-		    dev->tracks == old_dos[i].tracks &&
-		    dev->heads == old_dos[i].heads &&
-		    (dev->fat_bits == 0 || abs(dev->fat_bits) == 12) &&
-		    (Fs->dir_len == 0 || Fs->dir_len == old_dos[i].dir_len) &&
-		    (Fs->cluster_size == 0 ||
-		     Fs->cluster_size == old_dos[i].cluster_size)) {
-			boot->boot.descr = old_dos[i].media;
-			Fs->cluster_size = old_dos[i].cluster_size;
-			Fs->dir_len = old_dos[i].dir_len;
-			Fs->fat_len = old_dos[i].fat_len;
-			Fs->fat_bits = 12;
-			break;
-		}
-	}
-	if (i == sizeof(old_dos) / sizeof(old_dos[0]) ){
+	struct OldDos_t *params=NULL;
+	if(dev->fat_bits == 0 || abs(dev->fat_bits) == 12)
+		params = getOldDosByParams(dev->tracks,dev->heads,dev->sectors,
+					   Fs->dir_len, Fs->cluster_size);
+	if(params != NULL) {
+		boot->boot.descr = params->media;
+		Fs->cluster_size = params->cluster_size;
+		Fs->dir_len = params->dir_len;
+		Fs->fat_len = params->fat_len;
+		Fs->fat_bits = 12;
+	} else {
 		int may_change_cluster_size = (Fs->cluster_size == 0);
 		int may_change_root_size = (Fs->dir_len == 0);
 
 		/* a non-standard format */
 		if(DWORD(nhs) || tot_sectors % (dev->sectors * dev->heads))
 			boot->boot.descr = 0xf8;
-		  else
+		else
 			boot->boot.descr = 0xf0;
 
 
@@ -885,7 +860,7 @@ static int get_lba_geom(Stream_t *Direct, unsigned long tot_sectors, struct devi
 	return 0;
 }
 
-void mformat(int argc, char **argv, int dummy)
+void mformat(int argc, char **argv, int dummy UNUSEDP)
 {
 	int r; /* generic return value */
 	Fs_t Fs;
@@ -933,7 +908,10 @@ void mformat(int argc, char **argv, int dummy)
 	int Atari = 0; /* should we add an Atari-style serial number ? */
 
 	int backupBoot = 6;
+	int backupBootSet = 0;
 
+	int resvSects = 0;
+	
 	char *endptr;
 
 	hs = hs_set = 0;
@@ -971,7 +949,7 @@ void mformat(int argc, char **argv, int dummy)
 		usage(0);
 	while ((c = getopt(argc,argv,
 			   "i:148f:t:n:v:qub"
-			   "kK:B:r:L:I:FCc:Xh:s:T:l:N:H:M:S:2:30:Aad:m:"))!= EOF) {
+			   "kK:R:B:r:L:I:FCc:Xh:s:T:l:N:H:M:S:2:30:Aad:m:"))!= EOF) {
 		endptr = NULL;
 		switch (c) {
 			case 'i':
@@ -1119,10 +1097,14 @@ void mformat(int argc, char **argv, int dummy)
 				break;
 			case 'K':
 				backupBoot = atoi(optarg);
-				if(backupBoot < 2 || backupBoot >= 32) {
-				  fprintf(stderr, "Backupboot must be comprised between 2 and 32\n");
+				backupBootSet=1;
+				if(backupBoot < 2) {
+				  fprintf(stderr, "Backupboot must be greater than 2\n");
 				  exit(1);
 				}
+				break;
+			case 'R':
+				resvSects = atoi(optarg);
 				break;
 			case 'h':
 				argheads = atoi(optarg);
@@ -1321,7 +1303,7 @@ void mformat(int argc, char **argv, int dummy)
 		tot_sectors = used_dev.tracks*sect_per_track - used_dev.hidden%sect_per_track;
 		/* Number of sectors must fit into 32bit value */
 		if (tot_sectors > 0xFFFFFFFF) {
-			fprintf(stderr, "Too few sectors\n");
+			fprintf(stderr, "Too many sectors\n");
 			exit(1);
 		}
 	}
@@ -1385,7 +1367,26 @@ void mformat(int argc, char **argv, int dummy)
 	if(used_dev.fat_bits == 32) {
 		Fs.primaryFat = 0;
 		Fs.writeAllFats = 1;
-		Fs.fat_start = 32;
+		if(resvSects) {
+			if(resvSects < 3) {
+				fprintf(stderr,
+					"For FAT 32, reserved sectors need to be at least 3\n");
+				resvSects = 32;
+			}
+
+			if(resvSects <= backupBoot && !backupBootSet)
+				backupBoot = resvSects - 1;
+			Fs.fat_start = resvSects;
+		} else 
+			Fs.fat_start = 32;
+
+		if(Fs.fat_start <= backupBoot) {
+			fprintf(stderr,
+				"Reserved sectors (%d) must be more than backupBoot (%d)\n", Fs.fat_start, backupBoot);
+			backupBoot = 6;
+			Fs.fat_start = 32;
+		}
+
 		calc_fs_parameters_32(tot_sectors, &Fs, &boot);
 
 		Fs.clus_start = Fs.num_fat * Fs.fat_len + Fs.fat_start;
@@ -1409,7 +1410,15 @@ void mformat(int argc, char **argv, int dummy)
 		labelBlock = & boot.boot.ext.fat32.labelBlock;
 	} else {
 		Fs.infoSectorLoc = 0;
-		Fs.fat_start = 1;
+		if(resvSects) {
+			if(resvSects < 1) {
+				fprintf(stderr,
+					"Reserved sectors need to be at least 1\n");
+				resvSects = 1;
+			}
+			Fs.fat_start = resvSects;
+		} else 
+			Fs.fat_start = 1;
 		calc_fs_parameters(&used_dev, tot_sectors, &Fs, &boot);
 		Fs.dir_start = Fs.num_fat * Fs.fat_len + Fs.fat_start;
 		Fs.clus_start = Fs.dir_start + Fs.dir_len;

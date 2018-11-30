@@ -150,7 +150,9 @@ static Class_t FilterClass = {
 	free_filter,
 	0, /* set geometry */
 	get_data_pass_through,
-	0
+	0,
+	0, /* get_dosconvert */
+	0  /* discard */
 };
 
 Stream_t *open_filter(Stream_t *Next, int convertCharset UNUSEDP)

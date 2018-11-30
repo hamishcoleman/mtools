@@ -130,6 +130,8 @@ typedef struct label_blk_t {
 	char fat_type[8];		/* 54 FAT type */
 } label_blk_t;
 
+#define has_BPB4 (labelBlock->dos4 == 0x28 || labelBlock->dos4 == 0x29)
+
 /* FAT32 specific info in the bootsector */
 struct fat32_t {
 	unsigned char bigFat[4];	/* 36 nb of sectors per FAT */
@@ -198,19 +200,6 @@ union bootsector {
 #define DWORD_S(x) (_DWORD(boot.boot.x))
 
 #define OFFSET(x) (((char *) (boot->x)) - ((char *)(boot->jump)))
-
-
-extern struct OldDos_t {
-	unsigned int tracks;
-	unsigned int sectors;
-	unsigned int heads;
-	
-	unsigned int dir_len;
-	unsigned int cluster_size;
-	unsigned int fat_len;
-
-	int media;
-} old_dos[];
 
 /* max FAT12/FAT16 sizes, according to
    

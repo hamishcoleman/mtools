@@ -364,7 +364,7 @@ static int root_map(File_t *This, off_t where, size_t *len, int mode UNUSEDP,
 		return -2;
 	}
 
-	maximize(*len, Fs->dir_len * Fs->sector_size - where);
+	smaximize(*len, Fs->dir_len * Fs->sector_size - where);
         if (*len == 0)
             return 0;
 	
@@ -549,7 +549,8 @@ static Class_t FileClass = {
 	0, /* get_geom */
 	get_file_data,
 	pre_allocate_file,
-	get_dosConvert_pass_through
+	get_dosConvert_pass_through,
+	0 /* discard */
 };
 
 static unsigned int getAbsCluNr(File_t *This)

@@ -408,7 +408,7 @@ static void decompose(Xdf_t *This, int where, int len, off_t *begin,
 	
 	*begin = where - track * This->track_size * 1024;
 	*end = where + len - track * This->track_size * 1024;
-	maximize(*end, This->track_size * 1024);
+	smaximize(*end, This->track_size * 1024);
 
 	if(This->current_track == track && !boot)
 		/* already OK, return immediately */
@@ -485,8 +485,6 @@ static int xdf_read(Stream_t *Stream, char *buf, mt_off_t where, size_t len)
 
 	decompose(This, truncBytes32(where), len, &begin, &end, 0);
 	len2 = load_data(This, begin, end, 4);
-	if(len2 < 0)
-		return len2;
 	len2 -= begin;
 	maximize(len, len2);
 	memcpy(buf, This->buffer + begin, len);
@@ -501,11 +499,9 @@ static int xdf_write(Stream_t *Stream, char *buf, mt_off_t where, size_t len)
 
 	decompose(This, truncBytes32(where), len, &begin, &end, 0);
 	len2 = load_bounds(This, begin, end);
-	if(len2 < 0)
-		return len2;
-	maximize(end, (off_t)len2);
+	smaximize(end, (off_t)len2);
 	len2 -= begin;
-	maximize(len, (off_t)len2);
+	smaximize(len, (off_t)len2);
 	memcpy(This->buffer + begin, buf, len);
 	mark_dirty(This, begin, end);
 	return end - begin;
@@ -571,8 +567,8 @@ static void set_geom(union bootsector *boot, struct device *dev)
 	}
 }
 
-static int config_geom(Stream_t *Stream, struct device *dev, 
-		       struct device *orig_dev, int media,
+static int config_geom(Stream_t *Stream UNUSEDP, struct device *dev, 
+		       struct device *orig_dev UNUSEDP, int media,
 		       union bootsector *boot)
 {
 	if(check_geom(dev, media, boot))
@@ -588,7 +584,9 @@ static Class_t XdfClass = {
 	xdf_free, 
 	config_geom, 
 	0, /* get_data */
-	0 /* pre-allocate */
+	0, /* pre-allocate */
+	0, /* get_dosConvert */
+	0 /* discard */
 };
 
 Stream_t *XdfOpen(struct device *dev, char *name,

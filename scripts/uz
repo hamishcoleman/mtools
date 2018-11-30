@@ -43,10 +43,12 @@ uzcmd='gzip -cd'
 case $0 in
 *uz)
 	tarparam="-pxvf"
+	zipparam=""
 	action="Extracting from "
 	;;
 *lz)
 	tarparam="-tvf"
+	zipparam="-l"
 	action="Reading directory of "
 	;;
 *)
@@ -65,26 +67,37 @@ while [ $# -ge 1 ]; do
 	echo >&2
 	found=
 
-	for suffix in "" .gz .tgz .tar.gz .z .tar.z .taz .tpz .Z .tar.Z .tar.bz2 tar.lz ; do
+	for suffix in "" .gz .tgz .tar.gz .z .tar.z .taz .tpz .Z .tar.Z .tar.bz2 tar.lz .zip .jar .war .ear .aar .tar.xz; do
 		if [ -r "${1}$suffix" ]; then
 			found=$1$suffix
 			break
 		fi
 	done
 
+	unzip=0
 	case $found in
 		*.tar.bz2 | *.tb2)
 			uzcmd='bzip2 -cd'
 			;;
+		*.zip | *.jar | *.war | *.ear | *.aar)
+			unzip=1
+			;;
 		*.tar.lz)
 			uzcmd='lzip -cd'
 			;;
+		*.tar.xz)
+			uzcmd='xz -cd'
+			;;	
 	esac
 	if [ -z "$found" ]; then
 		echo "$0: could not read \"$1\"." >&2
 	else
 		echo "$action \"$found\"." >&2
-		$uzcmd -- "$found" | tar "$tarparam" -
+		if [ $unzip = 1 ]; then
+			unzip $zipparam -- "$found"
+		else
+			$uzcmd -- "$found" | tar "$tarparam" -
+		fi
 	fi
 	shift
 done

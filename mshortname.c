@@ -23,7 +23,7 @@
 #include "mtools.h"
 #include "mainloop.h"
 
-static int print_short_name(direntry_t *entry, MainParam_t *mp)
+static int print_short_name(direntry_t *entry, MainParam_t *mp UNUSEDP)
 {
 	fprintShortPwd(stdout, entry);
 	putchar('\n');
@@ -42,7 +42,7 @@ static void usage(int ret)
 	exit(ret);
 }
 
-void mshortname(int argc, char **argv, int type)
+void mshortname(int argc, char **argv, int type UNUSEDP)
 {
 	struct MainParam_t mp;
 	int c;

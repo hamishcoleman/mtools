@@ -1,7 +1,7 @@
 %define _binary_payload w9.gzdio
 Name:           mtools
 Summary:        mtools, read/write/list/format DOS disks under Unix
-Version:        4.0.19
+Version:        4.0.20
 Release:        1
 License:        GPLv3+
 Group:          Utilities/System
@@ -135,6 +135,30 @@ if [ -f %{_bindir}/install-info ] ; then
 fi
 
 %changelog
+* Sun Nov 11 2018 Alain Knaff <alain@knaff.lu>
+- initialize directory entries to 0
+- bad message "Too few sectors" replaced with "Too many sectors"
+- apostrophe in mlabel no longer causes generation of long entry
+- option to fake system date for file creation using the SOURCE_DATE_EPOCH environment variables
+- can now be compiled with "clang" compiler
+- fallback function for strndup, for those platforms that do not have it
+- fixed a number of -Wextra warnings
+- new compressed archive formats for uz/lz
+- allow to specify number of reserved sectors for FAT32.
+- file/device locking with timeout (rather than immediate failure)
+- fixed support for BPB-less legacy formats.
+- removed check that disk must be an integer number of tracks.
+- removed .eh/.oh macros from manual pages
+* Sat Sep 29 2018 Alain Knaff <alain@knaff.lu>
+- Fix for short file names starting with character 0xE5	(by remapping it to 0x5)
+- mpartition: Partition types closer to what Microsoft uses
+- mformat: figure out LBA geometry as last resort if geometry
+is neither specified in config and/or commandline, nor can be
+queried from the device
+- mformat: use same default cluster size by size as Microsoft for FAT32
+- additional sanity checks
+- document how cluster size is picked in mformat.c man page
+- document how partition types are picked in mpartition.c man page
 * Wed Jan 09 2013 Alain Knaff <alain@knaff.lu>
 - Fix for names of iconv encodings on AIX
 - Fix mt_size_t on NetBSD

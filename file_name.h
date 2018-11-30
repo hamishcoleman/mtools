@@ -31,7 +31,7 @@ struct dos_name_t {
   char sentinel;
 };
 
-int dos_to_wchar(doscp_t *fromDos, char *dos, wchar_t *wchar, size_t len);
+int dos_to_wchar(doscp_t *fromDos, const char *dos, wchar_t *wchar, size_t len);
 void wchar_to_dos(doscp_t *toDos, wchar_t *wchar, char *dos, size_t len, int *mangled);
 
 doscp_t *cp_open(int codepage);

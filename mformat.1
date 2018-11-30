@@ -1,5 +1,5 @@
 '\" t
-.TH mformat 1 "29Sep18" mtools-4.0.19
+.TH mformat 1 "11Nov18" mtools-pre-4.0.20
 .SH Name
 mformat - add an MSDOS filesystem to a low-level formatted floppy disk
 '\" t
@@ -36,6 +36,7 @@ low-level formatted diskette. Its syntax is:
   [\fR\&\f(CW-B\fR \fIboot_sector\fR] [\fR\&\f(CW-k\fR]
   [\fR\&\f(CW-m\fR \fImedia_descriptor\fR]
   [\fR\&\f(CW-K\fR \fIbackup_boot\fR]
+  [\fR\&\f(CW-R\fR \fInb_reserved_sectors\fR]
   [\fR\&\f(CW-c\fR \fIclusters_per_sector\fR]
   [\fR\&\f(CW-d\fR \fIfat_copies\fR]
   [\fR\&\f(CW-X\fR] [\fR\&\f(CW-2\fR \fIsectors_on_track_0\fR] [\fR\&\f(CW-3\fR]
@@ -213,6 +214,12 @@ disks parameters.
 \&\fR\&\f(CWK\fR\ 
 Sets the sector number where the backup of the boot sector should be
 stored (only relevant on FAT32).
+.TP
+\&\fR\&\f(CWR\fR\ 
+Sets the number of reserved sectors for this filesystem. This must be
+at least 1 for non-FAT32 disks, and at least 3 for FAT disks (in order
+to accomodate the boot sector, the info sector and the backup boot
+sector).
 .TP
 \&\fR\&\f(CWm\fR\ 
 Use a non-standard media descriptor byte for this disk. The media

@@ -1,5 +1,5 @@
 '\" t
-.TH mtools 5 "29Sep18" MTOOLS MTOOLS
+.TH mtools 5 "11Nov18" MTOOLS MTOOLS
 .SH Name
 mtools.conf - mtools configuration files
 '\" t
@@ -13,9 +13,7 @@ mtools.conf - mtools configuration files
 .tr \(if`
 .tr \(pd"
 
-.ds St Mtools\ 4.0.19
-.oh '\\*(St''%'
-.eh '%''\\*(St'
+.ds St Mtools\ 4.0.20
 .PP
 .SH Description
 .PP
@@ -106,6 +104,10 @@ clash would have happened.
 \&\fR\&\f(CWMTOOLS_TWENTY_FOUR_HOUR_CLOCK\fR\ 
 If 1, uses the European notation for times (twenty four hour clock),
 else uses the UK/US notation (am/pm)
+.TP
+\&\fR\&\f(CWMTOOLS_LOCK_TIMEOUT\fR\ 
+How long, in seconds, to wait for a locked device to become free.
+Defaults to 30.
 .PP
 Example:
 Inserting the following line into your configuration file instructs

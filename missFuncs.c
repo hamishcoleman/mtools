@@ -43,6 +43,27 @@ char *strdup(const char *str)
 }
 #endif /* HAVE_STRDUP */
 
+#ifndef HAVE_STRNDUP
+char *strndup( const char *s, size_t n )
+{
+    size_t nAvail;
+    char *p;
+
+    if ( !s )
+        return 0;
+
+    nAvail = min( strlen(s) + 1, n + 1 );
+    p      = malloc( nAvail );
+    if ( !p )
+	    return 0;
+    memcpy( p, s, nAvail );
+    p[nAvail - 1] = '\0';
+
+    return p;
+}
+#endif /* HAVE_STRNDUP */
+
+
 #ifdef HAVE_WCHAR_H
 #ifndef HAVE_WCSDUP
 wchar_t *wcsdup(const wchar_t *wcs)

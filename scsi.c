@@ -79,7 +79,8 @@ int scsi_max_length(void)
 #endif
 }
 
-int scsi_open(const char *name, int flag, int mode, void **extra_data)
+int scsi_open(const char *name, int flag UNUSEDP, int mode UNUSEDP,
+	      void **extra_data UNUSEDP)
 {
 #if (defined(OS_freebsd)) && (__FreeBSD__ >= 2)
     struct cam_device *cam_dev;
@@ -99,7 +100,7 @@ int scsi_open(const char *name, int flag, int mode, void **extra_data)
 }
 
 int scsi_cmd(int fd, unsigned char *cdb, int cmdlen, scsi_io_mode_t mode,
-	     void *data, size_t len, void *extra_data)
+	     void *data, size_t len, void *extra_data UNUSEDP)
 {
 #if defined OS_hpux
 	struct sctl_io sctl_io;

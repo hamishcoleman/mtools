@@ -371,7 +371,8 @@ static __inline__ clash_action get_slots(Stream_t *Dir,
 		reason = RESERVED;
 		ch->use_longname = 1;
 		isprimary = 0;
-	} else if(contains_illegals(dosname->base,short_illegals,11)) {
+	} else if(!ch->is_label &&
+		  contains_illegals(dosname->base,short_illegals,11)) {
 		reason = ILLEGALS;
 		ch->use_longname = 1;
 		isprimary = 0;
@@ -671,6 +672,7 @@ void init_clash_handling(ClashHandling_t *ch)
 	ch->namematch_default[1] = NAMEMATCH_NONE;
 	ch->name_converter = dos_name; /* changed by mlabel */
 	ch->source = -2;
+	ch->is_label = 0;
 }
 
 int handle_clash_options(ClashHandling_t *ch, char c)

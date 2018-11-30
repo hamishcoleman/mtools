@@ -119,7 +119,7 @@ static int _unix_write(MainParam_t *mp, int needfilter, const char *unixFile)
 
 	/* if we are creating a file, check whether it already exists */
 	if(!arg->type) {
-		if (!arg->nowarn && &arg->type && !access(unixFile, 0)){
+		if (!arg->nowarn && !access(unixFile, 0)){
 			if(arg->noClobber) {
 				fprintf(stderr, "File \"%s\" exists. To overwrite, try again, and explicitly specify target directory\n",unixFile);
 				return ERROR_ONE;
