@@ -1,3 +1,12 @@
+mtools (4.0.16) stable; urgency=low
+
+  * configure.in fixes
+  * fixed formatting of fat_size_calculation.tex document
+  * compatibility with current autoconfig versions
+  * Make it clear that label is limited to 13 characters
+  * Fixed typo in initialization of FAT32 info sector
+
+ -- Alain Knaff <alain@knaff.lu>  Sat, 16 Apr 2011 18:00:30 +0200
 mtools (4.0.15) stable; urgency=low
 
   * Added missing -i option to mshortname
@@ -41,7 +50,7 @@ mtools (4.0.11) stable; urgency=low
   * Fixed compiler in mlabel.c and elsewhere
   * Fixed h flag in mattrib.c
   * Added missing error checking in floppyd and elsewhere
-	
+
  -- Alain Knaff <alain@knaff.lu>  Sat, 29 Aug 2009 14:38:19 +0200
 mtools (4.0.10) stable; urgency=low
 

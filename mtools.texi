@@ -1756,7 +1756,7 @@ The following options are the same as for MS-DOS's format command:
 @table @code
 @item v
 Specifies the volume label. A volume label identifies the disk and can
-be a maximum of 11 characters. If you omit the -v switch, mlabel will
+be a maximum of 11 characters. If you omit the -v switch, mformat will
 assign no label to the disk.
 @item f
 Specifies the size of the DOS file system to format. Only a certain
@@ -2011,6 +2011,9 @@ The @code{mlabel} command adds a volume label to a disk. Its syntax is:
 @var{new_label} is not given, and if neither the @code{c} nor the
 @code{s} options are set, it prompts the user for a new volume label.
 To delete an existing volume label, press return at the prompt.
+
+The label is limited to 11 single-byte characters,
+e.g. @code{Name1234567}.
 
 Reasonable care is taken to create a valid MS-DOS volume label.  If an
 invalid label is specified, @code{mlabel} changes the label (and

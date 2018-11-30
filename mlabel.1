@@ -1,5 +1,5 @@
 '\" t
-.TH mlabel 1 "17Oct10" mtools-4.0.15
+.TH mlabel 1 "16Apr11" mtools-4.0.16
 .SH Name
 mlabel - make an MSDOS volume label
 '\" t
@@ -32,6 +32,9 @@ The \fR\&\f(CWmlabel\fR command adds a volume label to a disk. Its syntax is:
 \&\fInew_label\fR is not given, and if neither the \fR\&\f(CWc\fR nor the
 \&\fR\&\f(CWs\fR options are set, it prompts the user for a new volume label.
 To delete an existing volume label, press return at the prompt.
+.PP
+The label is limited to 11 single-byte characters,
+e.g. \fR\&\f(CWName1234567\fR.
 .PP
 Reasonable care is taken to create a valid MS-DOS volume label.  If an
 invalid label is specified, \fR\&\f(CWmlabel\fR changes the label (and

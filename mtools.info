@@ -1,6 +1,6 @@
 This is mtools.info, produced by makeinfo version 4.13 from mtools.texi.
 
-This manual is for Mtools (version 4.0.15, October 2010), which is a
+This manual is for Mtools (version 4.0.16, April 2011), which is a
 collection of tools to allow Unix systems to manipulate MS-DOS files.
 
    Copyright (C) 2007, 2009 Free Software Foundation, Inc.  Copyright
@@ -42,7 +42,7 @@ any preliminary mounting or initialization (assuming the default
 `/etc/mtools.conf' works on your machine).  With mtools, one can change
 floppies too without unmounting and mounting.
 
-   This manual is for Mtools (version 4.0.15, October 2010), which is a
+   This manual is for Mtools (version 4.0.16, April 2011), which is a
 collection of tools to allow Unix systems to manipulate MS-DOS files.
 
    Copyright (C) 2007, 2009 Free Software Foundation, Inc.  Copyright
@@ -76,10 +76,10 @@ File: mtools.info,  Node: Location,  Next: Common features,  Prev: Top,  Up: Top
 *********************
 
 Mtools can be found at the following places (and their mirrors):
-     http://ftp.gnu.org/gnu/mtools/mtools-4.0.15.tar.gz
-     http://mtools.linux.lu/mtools-4.0.15.tar.gz
-     ftp://www.tux.org/pub/knaff/mtools/mtools-4.0.15.tar.gz
-     ftp://ibiblio.unc.edu/pub/Linux/utils/disk-management/mtools-4.0.15.tar.gz
+     http://ftp.gnu.org/gnu/mtools/mtools-4.0.16.tar.gz
+     http://mtools.linux.lu/mtools-4.0.16.tar.gz
+     ftp://www.tux.org/pub/knaff/mtools/mtools-4.0.16.tar.gz
+     ftp://ibiblio.unc.edu/pub/Linux/utils/disk-management/mtools-4.0.16.tar.gz
 
    Before reporting a bug, make sure that it has not yet been fixed in
 the Alpha patches which can be found at:
@@ -1583,7 +1583,7 @@ option)
 `v'
      Specifies the volume label. A volume label identifies the disk and
      can be a maximum of 11 characters. If you omit the -v switch,
-     mlabel will assign no label to the disk.
+     mformat will assign no label to the disk.
 
 `f'
      Specifies the size of the DOS file system to format. Only a certain
@@ -1858,6 +1858,9 @@ The `mlabel' command adds a volume label to a disk. Its syntax is:
 is not given, and if neither the `c' nor the `s' options are set, it
 prompts the user for a new volume label.  To delete an existing volume
 label, press return at the prompt.
+
+   The label is limited to 11 single-byte characters, e.g.
+`Name1234567'.
 
    Reasonable care is taken to create a valid MS-DOS volume label.  If
 an invalid label is specified, `mlabel' changes the label (and displays
@@ -2702,71 +2705,71 @@ Concept index
 
 
 Tag Table:
-Node: Top868
-Node: Location2948
-Node: Common features4334
-Node: arguments5098
-Node: drive letters6752
-Node: directory8104
-Node: long names8549
-Node: name clashes11095
-Node: case sensitivity13378
-Node: high capacity formats14607
-Node: more sectors15726
-Node: bigger sectors16775
-Node: 2m17497
-Node: XDF18676
-Node: exit codes20011
-Node: bugs20647
-Node: Configuration21179
-Node: configuration file location22314
-Node: general syntax22738
-Node: default values23565
-Node: global variables24092
-Node: per drive variables26173
-Node: general information27008
-Node: location information27449
-Node: geometry description28967
-Node: open flags32819
-Node: miscellaneous variables33418
-Node: miscellaneous flags35486
-Node: multiple descriptions39116
-Node: parsing order40786
-Node: old style configuration41817
-Node: Commands42512
-Node: floppyd44433
-Node: floppyd_installtest49218
-Node: mattrib49849
-Node: mbadblocks51645
-Node: mcat52284
-Node: mcd53095
-Node: mclasserase53956
-Node: mcopy54635
-Node: mdel57668
-Node: mdeltree58006
-Node: mdir58423
-Node: mdu59699
-Node: mformat60205
-Node: mkmanifest67081
-Node: minfo69053
-Node: mlabel69624
-Node: mmd70701
-Node: mmount71048
-Node: mmove71644
-Node: mpartition72450
-Node: mrd75971
-Node: mren76327
-Node: mshortname77074
-Node: mshowfat77406
-Node: mtoolstest77630
-Node: mtype78200
-Node: mzip79051
-Ref: mzip-Footnote-181084
-Ref: mzip-Footnote-281165
-Node: Compiling mtools81451
-Node: Porting mtools82546
-Node: Command Index88461
-Node: Variable Index88609
-Node: Concept Index90140
+Node: Top866
+Node: Location2944
+Node: Common features4330
+Node: arguments5094
+Node: drive letters6748
+Node: directory8100
+Node: long names8545
+Node: name clashes11091
+Node: case sensitivity13374
+Node: high capacity formats14603
+Node: more sectors15722
+Node: bigger sectors16771
+Node: 2m17493
+Node: XDF18672
+Node: exit codes20007
+Node: bugs20643
+Node: Configuration21175
+Node: configuration file location22310
+Node: general syntax22734
+Node: default values23561
+Node: global variables24088
+Node: per drive variables26169
+Node: general information27004
+Node: location information27445
+Node: geometry description28963
+Node: open flags32815
+Node: miscellaneous variables33414
+Node: miscellaneous flags35482
+Node: multiple descriptions39112
+Node: parsing order40782
+Node: old style configuration41813
+Node: Commands42508
+Node: floppyd44429
+Node: floppyd_installtest49214
+Node: mattrib49845
+Node: mbadblocks51641
+Node: mcat52280
+Node: mcd53091
+Node: mclasserase53952
+Node: mcopy54631
+Node: mdel57664
+Node: mdeltree58002
+Node: mdir58419
+Node: mdu59695
+Node: mformat60201
+Node: mkmanifest67078
+Node: minfo69050
+Node: mlabel69621
+Node: mmd70773
+Node: mmount71120
+Node: mmove71716
+Node: mpartition72522
+Node: mrd76043
+Node: mren76399
+Node: mshortname77146
+Node: mshowfat77478
+Node: mtoolstest77702
+Node: mtype78272
+Node: mzip79123
+Ref: mzip-Footnote-181156
+Ref: mzip-Footnote-281237
+Node: Compiling mtools81523
+Node: Porting mtools82618
+Node: Command Index88533
+Node: Variable Index88681
+Node: Concept Index90212
 
 End Tag Table

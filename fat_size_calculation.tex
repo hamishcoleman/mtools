@@ -77,6 +77,7 @@ Length of the FAT, in sectors\\
 
 \end{tabular}
 
+\ \\
 
 Taking into account both data and fat, each cluster takes up the
 following number of nybbles (units of 4 bytes):
@@ -222,6 +223,6 @@ Oh, and before somebody points it out: the formula in this document
 occassionnally wastes sectors too, although not as much (Example: With
 $remsect=685$, $clusSiz=1$ and $nfats=2$ our formula gives $fatLen=3$,
 which leaves 679 clusters. However, we could use $fatLen=2$, leaving
-681 clusters,
+681 clusters.
 
 \end{document}

@@ -468,7 +468,7 @@ void fat_write(Fs_t *This)
 		set_dword(infoSector->signature2, INFOSECT_SIGNATURE2);
 		set_dword(infoSector->pos, This->last);
 		set_dword(infoSector->count, This->freeSpace);
-		set_dword(infoSector->signature3, 0xaa55);
+		set_word(infoSector->signature3, 0xaa55);
 		if(forceWriteSector(This, (char *)infoSector, This->infoSectorLoc, 1) !=
 		   (signed int) This->sector_size)
 			fprintf(stderr,"Trouble writing the info sector\n");

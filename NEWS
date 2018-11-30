@@ -1,3 +1,9 @@
+v4_0_16
+	configure.in fixes
+	fixed formatting of fat_size_calculation.tex document
+	compatibility with current autoconfig versions
+	Make it clear that label is limited to 13 characters
+	Fixed typo in initialization of FAT32 info sector
 v4_0_15
 	Added missing -i option to mshortname
 	Splitted .deb package into mtools and floppyd in order to

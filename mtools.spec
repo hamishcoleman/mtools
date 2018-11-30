@@ -1,6 +1,6 @@
 Name:           mtools
 Summary:        mtools, read/write/list/format DOS disks under Unix
-Version:        4.0.15
+Version:        4.0.16
 Release:        1
 License:        GPLv3+
 Group:          Utilities/System
@@ -134,6 +134,12 @@ if [ -f %{_bindir}/install-info ] ; then
 fi
 
 %changelog
+* Sat Apr 16 2011 Alain Knaff <alain@knaff.lu>
+- configure.in fixes
+- fixed formatting of fat_size_calculation.tex document
+- compatibility with current autoconfig versions
+- Make it clear that label is limited to 13 characters
+- Fixed typo in initialization of FAT32 info sector
 * Sun Oct 17 2010 Alain Knaff <alain@knaff.lu>
 - Added missing -i option to mshortname
 * Sun Oct 17 2010 Alain Knaff <alain@knaff.lu>
