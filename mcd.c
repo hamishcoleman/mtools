@@ -40,6 +40,7 @@ static int mcd_callback(direntry_t *entry, MainParam_t *mp UNUSEDP)
 }
 
 
+void mcd(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mcd(int argc, char **argv, int type UNUSEDP)
 {
 	struct MainParam_t mp;

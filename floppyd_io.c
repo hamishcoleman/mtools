@@ -42,7 +42,7 @@ typedef unsigned char Byte;
 typedef unsigned long Dword;
 typedef mt_off_t Qword;
 
-const char* AuthErrors[] = {
+static const char* AuthErrors[] = {
 	"Auth success",
 	"Auth failed: Packet oversized",
 	"Auth failed: X-Cookie doesn't match",
@@ -133,7 +133,6 @@ static int floppyd_reader(int fd, char* buffer, int len)
 	Dword errcode;
 	Dword gotlen;
 	int l;
-	int start;
 	Byte buf[16];
 
 	dword2byte(1, buf);
@@ -151,7 +150,8 @@ static int floppyd_reader(int fd, char* buffer, int len)
 	gotlen = read_dword(fd);
 	errcode = read_dword(fd);
 
-	if (gotlen != -1) {
+	if (gotlen != (Dword) -1) {
+		unsigned int start;
 		if (read_dword(fd) != gotlen) {
 			errno = EIO;
 			return -1;

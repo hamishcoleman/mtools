@@ -17,8 +17,6 @@
  * Do filename expansion with the shell.
  */
 
-#define EXPAND_BUF	2048
-
 #include "sysincludes.h"
 #include "mtools.h"
 
@@ -35,7 +33,6 @@ void precmd(struct device *dev)
 		case -1:
 			perror("Could not fork");
 			exit(1);
-			break;
 		case 0: /* the son */
 			execl("/bin/sh", "sh", "-c", dev->precmd, (char *)NULL);
 			break;

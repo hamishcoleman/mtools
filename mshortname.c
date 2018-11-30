@@ -42,6 +42,7 @@ static void usage(int ret)
 	exit(ret);
 }
 
+void mshortname(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mshortname(int argc, char **argv, int type UNUSEDP)
 {
 	struct MainParam_t mp;

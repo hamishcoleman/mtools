@@ -14,3 +14,4 @@
 dir=`dirname $0`
 $dir/configure --srcdir $dir  --host i586-mingw32msvc --disable-floppyd
 make
+mv mtools mtools.exe

@@ -80,9 +80,6 @@ static __inline__ int ask_rename(doscp_t *cp, ClashHandling_t *ch,
 	if(!opentty(0))
 		return 0;
 
-#define maxsize (isprimary ?  MAX_VNAMELEN+1 : 11+1)
-#define name (isprimary ? argname : shortname)
-
 	mangled = 0;
 	do {
 		char tname[4*MAX_VNAMELEN+1];
@@ -99,8 +96,6 @@ static __inline__ int ask_rename(doscp_t *cp, ClashHandling_t *ch,
 						       ch, tname, shortname);
 	} while (mangled & 1);
 	return 1;
-#undef maxsize
-#undef name
 }
 
 /**

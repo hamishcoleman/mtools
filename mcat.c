@@ -28,6 +28,7 @@
 #include "floppyd_io.h"
 #include "plain_io.h"
 
+static void usage(void) NORETURN;
 static void usage(void) 
 {
 	fprintf(stderr, "Mtools version %s, dated %s\n", 
@@ -38,9 +39,9 @@ static void usage(void)
 }
 
 #ifdef __CYGWIN__
-#define BUF_SIZE 512
+#define BUF_SIZE 512u
 #else
-#define BUF_SIZE 16000
+#define BUF_SIZE 16000u
 #endif
 
 static size_t bufLen(size_t blocksize, mt_size_t totalSize, mt_off_t address)
@@ -52,6 +53,7 @@ static size_t bufLen(size_t blocksize, mt_size_t totalSize, mt_off_t address)
 	return blocksize;
 }
 
+void mcat(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mcat(int argc, char **argv, int type UNUSEDP)
 {
 	struct device *dev;

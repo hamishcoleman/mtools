@@ -34,48 +34,57 @@ static int exactcmp(wchar_t a,wchar_t b)
 }
 
 
+static int is_in_range(wchar_t ch, const wchar_t **p, int *reverse) {
+	wchar_t first, last;
+	int found=0;
+	if (**p == '^') {
+		*reverse = 1;
+		(*p)++;
+	} else
+		*reverse=0;
+	while( (first = **p) != ']') {
+		if(!first)
+			/* Malformed pattern, range not closed */
+			return 0;
+		if(*(++(*p)) == '-') {
+			last = *(++(*p));				
+			if(last==']') {
+				/* Last "-" in range designates itself */
+				if(ch == first || ch == '-')
+					found = 1;
+				break;
+			}
+			(*p)++;
+
+			/* a proper range */
+			if(ch >= first && ch <= last)
+				found = 1;
+		} else
+			/* a Just one character */
+			if(ch == first)
+				found = 1;
+	}
+	return found;
+}
+
 static int parse_range(const wchar_t **p, const wchar_t *s, wchar_t *out,
 		       int (*compfn)(wchar_t a, wchar_t b))
 {
-	wchar_t table[256];
 	int reverse;
-	int i;
-	short first, last;
-
-	if (**p == '^') {
-		reverse = 1;
-		(*p)++;
-	} else
-		reverse=0;	
-	for(i=0; i<256; i++)
-		table[i]=0;
-	while(**p != ']') {
-		if(!**p)
-			return 0;
-		if((*p)[1] == '-') {
-			first = **p;
-			(*p)+=2;
-			if(**p == ']')
-				last = 256;
-			else
-				last = *((*p)++);				
-			for(i=first; i<=last; i++)
-				table[i] = 1;
-		} else
-			table[(int) *((*p)++)] = 1;
-	}
+	const wchar_t *p0 = *p;
+	const wchar_t *p1 = *p;
 	if(out)
 		*out = *s;
-	if(table[(int) *s])
+	if(is_in_range(*s, p, &reverse))
 		return 1 ^ reverse;
 	if(compfn == exactcmp)
 		return reverse;
-	if(table[tolower(*s)]) {
+	if(is_in_range((wchar_t)towlower((wint_t)*s), &p0, &reverse)) {
 		if(out)
 			*out = tolower(*s);
 		return 1 ^ reverse;
 	}
-	if(table[toupper(*s)]) {
+	if(is_in_range((wchar_t)towupper((wint_t)*s), &p1, &reverse)) {
 		if(out)
 			*out = toupper(*s);
 		return 1 ^ reverse;

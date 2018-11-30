@@ -24,16 +24,16 @@
 #define BITS_PER_INT (sizeof(unsigned int) * 8)
 
 
-static __inline__ unsigned int rol(unsigned int arg, int shift)
+static __inline__ uint32_t rol(uint32_t arg, int shift)
 {
 	arg &= 0xffffffff; /* for 64 bit machines */
 	return (arg << shift) | (arg >> (32 - shift));
 }
 
 
-static int calcHash(wchar_t *name)
+static uint32_t calcHash(wchar_t *name)
 {
-	unsigned long hash;
+	uint32_t hash;
 	int i;
 	wchar_t c;
 
@@ -46,7 +46,7 @@ static int calcHash(wchar_t *name)
 				     * prime with 32, which makes sure that
 				     * successive letters cannot cover each
 				     * other easily */
-		c = towupper(*name);		
+		c = (wchar_t)towupper((wint_t)*name);		
 		hash ^=  (c * (c+2)) ^ (i * (i+2));
 		hash &= 0xffffffff;
 		i++, name++;
@@ -59,11 +59,13 @@ static int calcHash(wchar_t *name)
 	return hash;
 }
 
-static int addBit(unsigned int *bitmap, int hash, int checkOnly)
+static unsigned int addBit(unsigned int *bitmap,
+			   unsigned int hash, int checkOnly)
 {
-	int bit, entry;
+	unsigned int bit;
+	int entry;
 
-	bit = 1 << (hash % BITS_PER_INT);
+	bit = 1u << (hash % BITS_PER_INT);
 	entry = (hash / BITS_PER_INT) % DC_BITMAP_SIZE;
 	
 	if(checkOnly)
@@ -106,15 +108,15 @@ int isHashed(dirCache_t *cache, wchar_t *name)
 	return ret;
 }
 
-int growDirCache(dirCache_t *cache, int slot)
+int growDirCache(dirCache_t *cache, unsigned int slot)
 {
-	if(slot < 0) {
+	if((int) slot < 0) {
 		fprintf(stderr, "Bad slot %d\n", slot);
 		exit(1);
 	}
 
 	if( cache->nr_entries <= slot) {
-		int i;
+		unsigned int i;
 		
 		cache->entries = realloc(cache->entries,
 					 (slot+1) * 2 *
@@ -129,11 +131,11 @@ int growDirCache(dirCache_t *cache, int slot)
 	return 0;
 }
 
-dirCache_t *allocDirCache(Stream_t *Stream, int slot)
+dirCache_t *allocDirCache(Stream_t *Stream, unsigned int slot)
 {
 	dirCache_t **dcp;
 
-	if(slot < 0) {
+	if((int)slot < 0) {
 		fprintf(stderr, "Bad slot %d\n", slot);
 		exit(1);
 	}
@@ -206,7 +208,7 @@ static int freeDirCacheRange(dirCache_t *cache,
 		if(entry->beginSlot == entry->endSlot) {
 			int needWriteEnd = 0;
 			if(entry->endMarkPos != -1 &&
-			   entry->endMarkPos < beginSlot)
+			   entry->endMarkPos < (int) beginSlot)
 				needWriteEnd = 1;
 
 			if(entry->longName)
@@ -224,12 +226,13 @@ static int freeDirCacheRange(dirCache_t *cache,
 	return -1;
 }
 
-static dirCacheEntry_t *allocDirCacheEntry(dirCache_t *cache, int beginSlot,
-					   int endSlot,
+static dirCacheEntry_t *allocDirCacheEntry(dirCache_t *cache,
+					   int beginSlot,
+					   unsigned int endSlot,
 					   dirCacheEntryType_t type)
 {
 	dirCacheEntry_t *entry;
-	int i;
+	unsigned int i;
 
 	if(growDirCache(cache, endSlot) < 0)
 		return 0;
@@ -251,7 +254,9 @@ static dirCacheEntry_t *allocDirCacheEntry(dirCache_t *cache, int beginSlot,
 	return entry;
 }
 
-dirCacheEntry_t *addUsedEntry(dirCache_t *cache, int beginSlot, int endSlot,
+dirCacheEntry_t *addUsedEntry(dirCache_t *cache,
+			      unsigned int beginSlot,
+			      unsigned int endSlot,
 			      wchar_t *longName, wchar_t *shortName,
 			      struct directory *dir)
 {
@@ -284,7 +289,7 @@ dirCacheEntry_t *addUsedEntry(dirCache_t *cache, int beginSlot, int endSlot,
  * to be previous)
  * Only does something if both of these slots are actually free
  */
-static void mergeFreeSlots(dirCache_t *cache, int slot)
+static void mergeFreeSlots(dirCache_t *cache, unsigned int slot)
 {
 	dirCacheEntry_t *previous, *next;
 	unsigned int i;
@@ -338,12 +343,12 @@ dirCacheEntry_t *addFreeEntry(dirCache_t *cache,
 	return addFreeEndEntry(cache, beginSlot, endSlot, 0);
 }
 
-dirCacheEntry_t *addEndEntry(dirCache_t *cache, int pos)
+dirCacheEntry_t *addEndEntry(dirCache_t *cache, unsigned int pos)
 {
-	return allocDirCacheEntry(cache, pos, pos+1, DCET_END);
+	return allocDirCacheEntry(cache, pos, pos+1u, DCET_END);
 }
 
-dirCacheEntry_t *lookupInDircache(dirCache_t *cache, int pos)
+dirCacheEntry_t *lookupInDircache(dirCache_t *cache, unsigned int pos)
 {
 	if(growDirCache(cache, pos+1) < 0)
 		return 0;

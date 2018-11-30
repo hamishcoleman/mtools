@@ -93,6 +93,7 @@ static int dir_mdu(direntry_t *entry, MainParam_t *mp)
 	return ret;
 }
 
+void mdu(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mdu(int argc, char **argv, int type UNUSEDP)
 {
 	Arg_t arg;

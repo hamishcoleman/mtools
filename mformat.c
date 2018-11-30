@@ -686,6 +686,7 @@ static void calc_fs_parameters_32(unsigned long tot_sectors,
 
 
 
+static void usage(int ret) NORETURN;
 static void usage(int ret)
 {
 	fprintf(stderr,
@@ -860,6 +861,7 @@ static int get_lba_geom(Stream_t *Direct, unsigned long tot_sectors, struct devi
 	return 0;
 }
 
+void mformat(int argc, char **argv, int dummy UNUSEDP) NORETURN;
 void mformat(int argc, char **argv, int dummy UNUSEDP)
 {
 	int r; /* generic return value */
@@ -907,10 +909,10 @@ void mformat(int argc, char **argv, int dummy UNUSEDP)
 
 	int Atari = 0; /* should we add an Atari-style serial number ? */
 
-	int backupBoot = 6;
+	unsigned int backupBoot = 6;
 	int backupBootSet = 0;
 
-	int resvSects = 0;
+	unsigned int resvSects = 0;
 	
 	char *endptr;
 
@@ -1439,7 +1441,7 @@ void mformat(int argc, char **argv, int dummy UNUSEDP)
 	labelBlock->dos4 = 0x29;
 
 	if (!serial_set || Atari)
-		srandom((long)time (0));
+		srandom(time (0));
 	if (!serial_set)
 		serial=random();
 	set_dword(labelBlock->serial, serial);

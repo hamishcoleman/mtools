@@ -159,7 +159,7 @@ static int letterToCode(int letter)
 	}
 }
 
-
+void mattrib(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mattrib(int argc, char **argv, int type UNUSEDP)
 {
 	Arg_t arg;

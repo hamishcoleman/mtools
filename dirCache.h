@@ -29,7 +29,7 @@ typedef struct dirCacheEntry_t dirCacheEntry_t;
 
 typedef struct dirCache_t {
 	struct dirCacheEntry_t **entries;
-	int nr_entries;
+	unsigned int nr_entries;
 	unsigned int nrHashed;
 	unsigned int bm0[DC_BITMAP_SIZE];
 	unsigned int bm1[DC_BITMAP_SIZE];
@@ -37,9 +37,11 @@ typedef struct dirCache_t {
 } dirCache_t;
 
 int isHashed(dirCache_t *cache, wchar_t *name);
-int growDirCache(dirCache_t *cache, int slot);
-dirCache_t *allocDirCache(Stream_t *Stream, int slot);
-dirCacheEntry_t *addUsedEntry(dirCache_t *Stream, int begin, int end,
+int growDirCache(dirCache_t *cache, unsigned int slot);
+dirCache_t *allocDirCache(Stream_t *Stream, unsigned int slot);
+dirCacheEntry_t *addUsedEntry(dirCache_t *Stream,
+			      unsigned int begin,
+			      unsigned int end,
 			      wchar_t *longName, wchar_t *shortName,
 			      struct directory *dir);
 void freeDirCache(Stream_t *Stream);
@@ -48,6 +50,6 @@ dirCacheEntry_t *addFreeEntry(dirCache_t *Stream,
 dirCacheEntry_t *addFreeEndEntry(dirCache_t *Stream, 
 				 unsigned int begin, unsigned int end,
 				 int isAtEnd);
-dirCacheEntry_t *addEndEntry(dirCache_t *Stream, int pos);
-dirCacheEntry_t *lookupInDircache(dirCache_t *Stream, int pos);
+dirCacheEntry_t *addEndEntry(dirCache_t *Stream, unsigned int pos);
+dirCacheEntry_t *lookupInDircache(dirCache_t *Stream, unsigned int pos);
 #endif

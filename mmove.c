@@ -20,8 +20,6 @@
  */
 
 
-#define LOWERCASE
-
 #include "sysincludes.h"
 #include "msdos.h"
 #include "mtools.h"
@@ -227,12 +225,13 @@ static void usage(int ret)
 	exit(ret);
 }
 
+void mmove(int argc, char **argv, int oldsyntax) NORETURN;
 void mmove(int argc, char **argv, int oldsyntax)
 {
 	Arg_t arg;
 	int c;
-	char shortname[13];
-	char longname[VBUFSIZE];
+	char shortname[12*4+1];
+	char longname[4*MAX_VNAMELEN+1];
 	char def_drive;
 	int i;
 

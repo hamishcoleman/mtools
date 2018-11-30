@@ -58,8 +58,8 @@ static mt_size_t bytesOnDrive;
 static Stream_t *RootDir;	
 
 
-static char global_shortname[13];
-static char global_longname[VBUFSIZE];
+static char global_shortname[4*12+1];
+static char global_longname[4*MAX_VNAMELEN+1];
 
 
 /*
@@ -123,7 +123,7 @@ static __inline__ void print_time(struct directory *dir)
  */
 static const char *dotted_num(mt_size_t num, int width, char **buf)
 {
-	int      len;
+	size_t len;
 	register char *srcp, *dstp;
 	int size;
 
@@ -412,7 +412,7 @@ static int list_file(direntry_t *entry, MainParam_t *mp UNUSEDP)
 			printf("%-15s", global_shortname);
 	} else if(!concise) {				
 		char tmpBasename[4*8+1];
-		char tmpExt[4*8+1];
+		char tmpExt[4*3+1];
 		wchar_to_native(name,tmpBasename,8);
 		wchar_to_native(ext,tmpExt,3);
 
@@ -530,7 +530,7 @@ static void usage(int ret)
 		exit(ret);
 }
 
-
+void mdir(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mdir(int argc, char **argv, int type UNUSEDP)
 {
 	int ret;

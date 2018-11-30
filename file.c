@@ -54,7 +54,7 @@ typedef struct File_t {
 } File_t;
 
 static Class_t FileClass;
-T_HashTable *filehash;
+static T_HashTable *filehash;
 
 static File_t *getUnbufferedFile(Stream_t *Stream)
 {
@@ -364,7 +364,7 @@ static int root_map(File_t *This, off_t where, size_t *len, int mode UNUSEDP,
 		return -2;
 	}
 
-	smaximize(*len, Fs->dir_len * Fs->sector_size - where);
+	sizemaximize(*len, Fs->dir_len * Fs->sector_size - where);
         if (*len == 0)
             return 0;
 	

@@ -62,7 +62,7 @@ static void mark(Fs_t *Fs, long offset, unsigned int badClus) {
 
 static char *in_buf;
 static char *pat_buf;
-static int in_len;
+static size_t in_len;
 
 
 static void progress(unsigned int i, unsigned int total) {
@@ -85,14 +85,14 @@ static int scan(Fs_t *Fs, Stream_t *dev,
 	pos = sectorsToBytes((Stream_t*)Fs, start);
 	if(doWrite) {
 		ret = force_write(dev, buffer, pos, in_len);
-		if(ret < in_len )
+		if(ret < (off_t) in_len )
 			bad = 1;
 	} else {
 		ret = force_read(dev, in_buf, pos, in_len);
-		if(ret < in_len )
+		if(ret < (off_t) in_len )
 			bad = 1;
 		else if(buffer) {
-			int i;
+			size_t i;
 			for(i=0; i<in_len; i++)
 				if(in_buf[i] != buffer[i]) {
 					bad = 1;
@@ -109,6 +109,7 @@ static int scan(Fs_t *Fs, Stream_t *dev,
 	return 0;
 }
 
+void mbadblocks(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mbadblocks(int argc, char **argv, int type UNUSEDP)
 {
 	unsigned int i;

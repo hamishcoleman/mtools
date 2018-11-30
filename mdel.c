@@ -149,6 +149,7 @@ static void usage(int ret)
 	exit(ret);
 }
 
+void mdel(int argc, char **argv, int deltype) NORETURN;
 void mdel(int argc, char **argv, int deltype)
 {
 	Arg_t arg;
@@ -194,7 +195,8 @@ void mdel(int argc, char **argv, int deltype)
 	}
 	mp.lookupflags |= NO_DOTS;
 	for(i=optind;i<argc;i++) {
-		int b,l;
+		int b;
+		size_t l;
 		if(argv[i][0] && argv[i][1] == ':')
 			b = 2;
 		else

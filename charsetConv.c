@@ -59,8 +59,8 @@ static int try(const char *testCp) {
 	char outbuf[3];
 	char *outbufP = outbuf;
 	size_t outbufLen = 2*sizeof(char);
-	iconv_t test;
-	int i;
+	iconv_t test = 0;
+	size_t i;
 	
 	for(i=0; i < sizeof(asciiTries) / sizeof(asciiTries[0]); i++) {
 		test = iconv_open(asciiTries[i], testCp);
@@ -178,7 +178,7 @@ static int safe_iconv(iconv_t conv, const wchar_t *wchar, char *dest,
 	int r;
 	unsigned int i;
 	size_t in_len=len*sizeof(wchar_t);
-	size_t out_len=len*4;
+	size_t out_len=len;
 	char *dptr = dest;
 
 	while(in_len > 0) {
@@ -192,7 +192,7 @@ static int safe_iconv(iconv_t conv, const wchar_t *wchar, char *dest,
 
 		if(dptr)
 			*dptr++ = '_';
-		in_len--;
+		in_len -= sizeof(wchar_t);
 
 		wchar++;
 		out_len--;
@@ -266,7 +266,7 @@ void cp_close(doscp_t *cp)
 	free(cp);
 }
 
-int dos_to_wchar(doscp_t *cp, char *dos, wchar_t *wchar, size_t len)
+int dos_to_wchar(doscp_t *cp, const char *dos, wchar_t *wchar, size_t len)
 {
 	int i;
 
@@ -368,7 +368,7 @@ int wchar_to_native(const wchar_t *wchar, char *native, size_t len)
 	int r;
 	initialize_to_native();
 	len = wcsnlen(wchar,len);
-	r=safe_iconv(to_native, wchar, native, len, &mangled);
+	r=safe_iconv(to_native, wchar, native, len*4, &mangled);
 	native[r]='\0';
 	return r;
 #else

@@ -94,7 +94,7 @@ AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(getopt.h sys/stat.h stdlib.h unistd.h linux/unistd.h \
 libc.h fcntl.h limits.h sys/file.h sys/ioctl.h sys/time.h strings.h string.h \
-sys/param.h memory.h malloc.h signal.h sys/signal.h utime.h sgtty.h \
+sys/param.h memory.h malloc.h io.h signal.h sys/signal.h utime.h sgtty.h \
 sys/floppy.h mntent.h sys/sysmacros.h netinet/in.h assert.h \
 iconv.h wctype.h wchar.h locale.h linux/fs.h)
 AC_CHECK_HEADERS(termio.h sys/termio.h, [break])
@@ -102,6 +102,9 @@ AC_CHECK_HEADERS(termios.h sys/termios.h, [break])
 
 AC_CHECK_TYPES(caddr_t)
 AC_CHECK_SIZEOF(size_t)
+AC_CHECK_SIZEOF(time_t)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(long long)
 
 dnl
 dnl Check to see if llseek() is declared in unistd.h.  On some libc's
@@ -152,13 +155,13 @@ dnl Checks for library functions.
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(strerror random srandom strchr strrchr lockf flock \
 strcasecmp strncasecmp strnlen atexit on_exit getpass memmove \
-strdup strndup strcspn strspn strtoul strtol memcpy strpbrk memset setenv \
-seteuid setresuid setpgrp \
+strdup strndup strcspn strspn strtoul strtol strtoll memcpy strpbrk memset \
+setenv seteuid setresuid setpgrp \
 tcsetattr tcflush basename fchdir media_oldaliases llseek lseek64 \
 snprintf stat64 setlocale \
 wcsdup wcscasecmp wcsnlen putwc \
 getuserid getgroupid \
-sigaction usleep)
+alarm sigaction usleep)
 
 dnl
 dnl Check for 64-bit off_t

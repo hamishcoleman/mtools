@@ -576,7 +576,7 @@ struct device devices[] = {
 
 #ifdef OS_linux
 
-const char *error_msg[22]={
+static const char *error_msg[22]={
 "Missing Data Address Mark",
 "Bad cylinder",
 "Scan not satisfied",
@@ -764,7 +764,7 @@ static __inline__ void set_2m(struct floppy_struct *floppy, int value)
 		value = FD_2M;
 	else
 		value = 0;
-	floppy->rate = (floppy->rate & ~FD_2M) | value;       
+	floppy->rate = (floppy->rate & ~FD_2M) | value;
 }
 #define SET_2M set_2m
 
@@ -772,7 +772,7 @@ static __inline__ void set_ssize(struct floppy_struct *floppy, int value)
 {
 	value = (( (value & 7) + 6 ) % 8) << 3;
 
-	floppy->rate = (floppy->rate & ~0x38) | value;	
+	floppy->rate = (floppy->rate & ~0x38) | value;
 }
 
 #define SET_SSIZE set_ssize
@@ -1099,11 +1099,11 @@ int init_geom(int fd, struct device *dev, struct device *orig_dev,
 #endif
 
 #ifdef predefined_devices
-const int nr_const_devices = sizeof(const_devices) / sizeof(*const_devices);
+const unsigned int nr_const_devices = sizeof(const_devices) / sizeof(*const_devices);
 #else
 struct device devices[]={
 	{"/dev/fd0", 'A', 0, O_EXCL, 0,0, 0,0, MDEF_ARG},
 	/* to shut up Ultrix's native compiler, we can't make this empty :( */
 };
-const int nr_const_devices = 0;
+const unsigned int nr_const_devices = 0;
 #endif

@@ -76,6 +76,7 @@ static void usage(int ret)
  * @returns n.a.
  *
  */
+static void do_mclasserase(char drive,int debug) NORETURN;
 static void do_mclasserase(char drive,int debug)
 {
   struct device dev;		/* Device information structure */
@@ -101,8 +102,9 @@ static void do_mclasserase(char drive,int debug)
   int icount=0;
   int iTotalErase = 0;
 
-  const int cycles = 3;		/* How many times we'll overwrite the media */
-  char odat[cycles];		/* Data for each overwrite procedure */
+/* How many times we'll overwrite the media: */
+#define CYCLES 3
+  unsigned char odat[CYCLES];	/* Data for each overwrite procedure */
 
   /* Creating values for overwrite  */
   odat[0]=0xff;
@@ -111,7 +113,7 @@ static void do_mclasserase(char drive,int debug)
   
 
   if (debug == 1)
-     printf("cycles: %i, odats: %i,%i,%i\n",cycles,odat[0],odat[1],odat[2]);
+     printf("cycles: %i, odats: %i,%i,%i\n",CYCLES,odat[0],odat[1],odat[2]);
   
   
 
@@ -159,7 +161,7 @@ static void do_mclasserase(char drive,int debug)
   /*
    * Overwrite device
    */
-  for( i=0; i < cycles; i++){
+  for( i=0; i < CYCLES; i++){
 
      if (debug==1)
      {
@@ -276,6 +278,7 @@ static void do_mclasserase(char drive,int debug)
  *
  *
  */
+void mclasserase(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mclasserase(int argc, char **argv, int type UNUSEDP)
 {
   /* declaration of all variables */
@@ -346,6 +349,4 @@ void mclasserase(int argc, char **argv, int type UNUSEDP)
    * not exist */
   
   do_mclasserase(drive,debug);
-  
-  exit (0);
 }

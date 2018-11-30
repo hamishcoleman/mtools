@@ -33,15 +33,12 @@
 
 #define FULL_CYL
 
-unsigned int num_clus;			/* total number of cluster */
-
-
 /*
  * Read the boot sector.  We glean the disk parameters from this sector.
  */
 static int read_boot(Stream_t *Stream, union bootsector * boot, int size)
 {
-	short boot_sector_size; /* sector size, as stored in boot sector */
+	size_t boot_sector_size; /* sector size, as stored in boot sector */
 
 	/* read the first sector, or part of it */
 	if(!size)
@@ -53,8 +50,7 @@ static int read_boot(Stream_t *Stream, union bootsector * boot, int size)
 		return -1;
 
 	boot_sector_size = WORD(secsiz);		
-	if(boot_sector_size >= 0 && 
-	   boot_sector_size < sizeof(boot->bytes)) {
+	if(boot_sector_size < sizeof(boot->bytes)) {
 		/* zero rest of in-memory boot sector */
 		memset(boot->bytes+boot_sector_size, 0,
 		       sizeof(boot->bytes) - boot_sector_size);

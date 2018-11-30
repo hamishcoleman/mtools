@@ -145,7 +145,7 @@ char *getPwd(direntry_t *entry)
 	char *end;
 
 	size = getPathLen(entry);
-	ret = malloc(size+1);
+	ret = malloc(size*4+1);
 	if(!ret)
 		return 0;
 	end = sprintPwd(entry, ret);

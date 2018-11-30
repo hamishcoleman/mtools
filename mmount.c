@@ -32,6 +32,7 @@
 #include "mainloop.h"
 #include "fs.h"
 
+void mmount(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mmount(int argc, char **argv, int type UNUSEDP)
 {
 	char drive;

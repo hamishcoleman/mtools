@@ -103,6 +103,7 @@ static void usage(int ret)
 }
 
 
+void mlabel(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mlabel(int argc, char **argv, int type UNUSEDP)
 {
 
@@ -157,7 +158,7 @@ void mlabel(int argc, char **argv, int type UNUSEDP)
 				break;
 			case 'n':
 				set_serial = SER_RANDOM;
-				srandom((long)time (0));
+				srandom(time (0));
 				serial=random();
 				break;
 			case 'N':

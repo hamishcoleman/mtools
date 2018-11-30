@@ -212,7 +212,6 @@ int hash_remove(T_HashTable *H,T_HashTableEl *E, int hint)
   if(_hash_lookup(H, E, &E2, &hint, 1)) {
 	  fprintf(stderr, "Removing non-existent entry\n");
 	  exit(1);
-	  return -1;
   }
   H->inuse--;
   H->entries[hint] = &deleted;

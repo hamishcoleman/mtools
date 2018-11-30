@@ -18,8 +18,6 @@
  */
 
 
-#define LOWERCASE
-
 #include "sysincludes.h"
 #include "msdos.h"
 #include "mtools.h"
@@ -76,6 +74,7 @@ static void usage(int ret)
 	exit(ret);
 }
 
+void mdoctorfat(int argc, char **argv, int mtype UNUSEDP) NORETURN;
 void mdoctorfat(int argc, char **argv, int mtype UNUSEDP)
 {
 	Arg_t arg;
@@ -116,7 +115,6 @@ void mdoctorfat(int argc, char **argv, int mtype UNUSEDP)
 				usage(0);
 			case '?':
 				usage(1);
-				break;
 		}
 	}
 

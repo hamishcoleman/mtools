@@ -81,12 +81,15 @@ static int handlerIsSet = 0;
 
 
 #define STDIN ttyfd
+#ifdef future
 #define FAIL (-1)
+#endif
 #define DONE 0
 static Terminal in_orig;
 
 /*--------------- Signal Handler routines -------------*/
 
+static void tty_time_out(int dummy UNUSEDP) NORETURN;
 static void tty_time_out(int dummy UNUSEDP)
 {
 	int exit_code;

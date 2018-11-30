@@ -18,8 +18,6 @@
  * Do filename expansion with the shell.
  */
 
-#define EXPAND_BUF	2048
-
 #include "sysincludes.h"
 #include "mtools.h"
 

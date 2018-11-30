@@ -142,7 +142,7 @@ int consistencyCheck(struct partition *partTable, int doprint, int verbose,
 		     unsigned int *j,
 		     struct device *used_dev, int target_partition)
 {
-	unsigned int i;
+	int i;
 	unsigned int inconsistency;
 
 	*j = 0;
@@ -319,6 +319,7 @@ static void usage(int ret)
 	exit(ret);
 }
 
+void mpartition(int argc, char **argv, int dummy UNUSEDP) NORETURN;
 void mpartition(int argc, char **argv, int dummy UNUSEDP)
 {
 	Stream_t *Stream;

@@ -151,6 +151,7 @@ static int test_mounted ( char *dev )
 }
 
 
+static void usage(int ret) NORETURN;
 static void usage(int ret)
 {
 	fprintf(stderr, 
@@ -221,9 +222,10 @@ static int door_command(int priv, int fd, int cmd1, int cmd2,
 	return short_command(priv, fd, cmd1, 0, cmd2, 0, extra_data);
 }
 
+void mzip(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mzip(int argc, char **argv, int type UNUSEDP)
 {
-	void *extra_data;
+	void *extra_data = NULL;
 	int c;
 	char drive;
 	device_t *dev;

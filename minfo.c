@@ -116,6 +116,7 @@ static void displayBPB(Stream_t *Stream, union bootsector *boot) {
 	}
 }
 
+void minfo(int argc, char **argv, int type UNUSEDP) NORETURN;
 void minfo(int argc, char **argv, int type UNUSEDP)
 {
 	union bootsector boot;

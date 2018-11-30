@@ -171,7 +171,7 @@ int scsi_cmd(int fd, unsigned char *cdb, int cmdlen, scsi_io_mode_t mode,
 	/*
 	** Init the command
 	*/
-	memset(&scsi_cmd,0,sizeof(scsi_cmd));
+	memset(&my_scsi_cmd,0,sizeof(my_scsi_cmd));
 	my_scsi_cmd.interface_id    = 'S';
 	my_scsi_cmd.dxfer_direction = (mode == SCSI_IO_READ)?(SG_DXFER_FROM_DEV):(SG_DXFER_TO_DEV);
 	my_scsi_cmd.cmd_len         = cmdlen;

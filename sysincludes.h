@@ -135,6 +135,14 @@ typedef void *caddr_t;
 
 #include <sys/types.h>
 
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
+
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
@@ -279,6 +287,10 @@ typedef unsigned int uid_t;
 # include <malloc.h>
 #endif
 
+#ifdef HAVE_IO_H
+# include <io.h>
+#endif
+
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
 #else
@@ -400,6 +412,9 @@ typedef unsigned int uid_t;
 extern char *strdup(const char *str);
 #endif /* HAVE_STRDUP */
 
+#ifndef HAVE_STRNDUP
+extern char *strndup(const char *s, size_t n);
+#endif /* HAVE_STRDUP */
 
 #ifndef HAVE_MEMCPY
 extern char *memcpy(char *s1, const char *s2, size_t n);

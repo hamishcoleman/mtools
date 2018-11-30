@@ -37,7 +37,6 @@
 #ifdef USE_FLOPPYD
 
 #define USE_FLOPPYD_BUFFERED_IO  1
-#define FLOPPYD_DEFAULT_PORT     5703
 
 #include "sysincludes.h"
 #include "grp.h"
@@ -120,7 +119,7 @@ typedef struct io_buffer {
 	Byte out_buffer[BUFFERED_IO_SIZE];
 	Byte in_buffer[BUFFERED_IO_SIZE];
 	
-	long in_valid;
+	unsigned long in_valid;
 	long in_start;
 	long out_valid;
 	
@@ -178,7 +177,7 @@ static size_t buf_read (io_buffer buf, Byte* buffer, size_t nbytes) {
 			rval = read(buf->handle, buf->in_buffer, 
 						BUFFERED_IO_SIZE);
 			if (rval >= 0) {
-				if (rval < nbytes) {
+				if (rval < (ssize_t) nbytes) {
 					memcpy(buffer, buf->in_buffer, rval);
 					rval += buf->in_valid;
 					buf->in_valid = buf->in_start = 0;
@@ -726,6 +725,7 @@ static int sockethandle_now = -1;
 /*
  * Catch alarm signals and exit.
  */
+static void alarm_signal(int a UNUSEDP) NORETURN;
 static void alarm_signal(int a UNUSEDP)
 {
 	if (sockethandle_now != -1) {
@@ -740,6 +740,7 @@ static void alarm_signal(int a UNUSEDP)
 /*
  * This is the main loop when running as a server.
  */
+static void server_main_loop(int sock, char **device_name, int n_dev) NORETURN;
 static void server_main_loop(int sock, char **device_name, int n_dev)
 {
 	struct sockaddr_in	addr;
@@ -790,6 +791,7 @@ static void server_main_loop(int sock, char **device_name, int n_dev)
 /*
  * Print some basic help information.
  */
+static void usage(char *prog, const char *opt, int ret) NORETURN;
 static void usage(char *prog, const char *opt, int ret)
 {
 	if (opt)
@@ -864,10 +866,8 @@ int main (int argc, char** argv)
 
 					case 'h':
 						usage(argv[0], NULL, 0);
-						break;
 					case '?':
 						usage(argv[0], NULL, 1);
-						break;
 				}
 		}
 
@@ -980,11 +980,6 @@ int main (int argc, char** argv)
 					 * Handle the server main loop.
 					 */
 					server_main_loop(sock, device_name, n_dev);
-					
-					/*
-					 * Should never exit.
-					 */
-					exit(1);
 				}
 		
 		/*
@@ -1038,6 +1033,7 @@ static void send_reply64(int rval, io_buffer sock, mt_off_t len) {
 	destroyPacket(reply);
 }
 
+static void cleanup(int x UNUSEDP) NORETURN;
 static void cleanup(int x UNUSEDP) {
 	unlink(XauFileName());
 	exit(-1);

@@ -45,7 +45,7 @@ typedef unsigned char Byte;
 typedef unsigned long Dword;
 typedef mt_off_t Qword;
 
-const char* AuthErrors[] = {
+static const char* AuthErrors[] = {
 	"Auth success!",
 	"Auth failed: Packet oversized!",
 	"Auth failed: X-Cookie doesn't match!",

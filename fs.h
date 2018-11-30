@@ -29,7 +29,7 @@ typedef struct FsPublic_t {
 
 	int serialized;
 	unsigned long serial_number;
-	int cluster_size;
+	unsigned int cluster_size;
 	unsigned int sector_size;
 } FsPublic_t;
 

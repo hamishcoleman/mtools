@@ -21,8 +21,6 @@
  */
 
 
-#define LOWERCASE
-
 #include "sysincludes.h"
 #include "msdos.h"
 #include "mtools.h"
@@ -502,6 +500,7 @@ static void usage(int ret)
 	exit(ret);
 }
 
+void mcopy(int argc, char **argv, int mtype) NORETURN;
 void mcopy(int argc, char **argv, int mtype)
 {
 	Arg_t arg;

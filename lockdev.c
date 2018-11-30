@@ -23,7 +23,7 @@
 #include "mtools.h"
 #include "lockdev.h"
 
-#ifdef HAVE_SIGACTION
+#if (defined HAVE_SIGACTION && defined HAVE_ALARM)
 # define ALRM
 #endif
 
@@ -62,11 +62,6 @@
 #endif /* LOCKF */
 #endif /* FLOCK */
 
-
-#undef USE_FLOCK_W
-
-#define USE_SETLK_W
-
 #if  defined(USE_FLOCK_W) || defined(USE_LOCKF_W) || defined (USE_SETLK_W)
 static void alrm(int a UNUSEDP) {
 }
@@ -74,7 +69,7 @@ static void alrm(int a UNUSEDP) {
 
 int lock_dev(int fd, int mode, struct device *dev)
 {
-	int retries = 0;
+	unsigned int retries = 0;
 	if(IS_NOLOCK(dev))
 		return 0;
 

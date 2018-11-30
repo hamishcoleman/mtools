@@ -34,6 +34,7 @@ install: build
 	dh_prep
 	dh_installdirs
 	$(MAKE) install prefix=$$( pwd )/debian/tmp/usr
+	[ -d debian/mtools/etc/ ] || mkdir -p debian/mtools/etc
 	install -m 644 debian/mtools.conf debian/mtools/etc/
 	dh_movefiles
 

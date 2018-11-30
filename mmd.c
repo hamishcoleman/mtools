@@ -20,8 +20,6 @@
  */
 
 
-#define LOWERCASE
-
 #include "sysincludes.h"
 #include "msdos.h"
 #include "mtools.h"
@@ -153,6 +151,7 @@ static int createDirCallback(direntry_t *entry UNUSEDP, MainParam_t *mp)
 	
 }
 
+void mmd(int argc, char **argv, int type UNUSEDP) NORETURN;
 void mmd(int argc, char **argv, int type UNUSEDP)
 {
 	Arg_t arg;
@@ -183,7 +182,6 @@ void mmd(int argc, char **argv, int type UNUSEDP)
 				usage(0);
 			default:
 				usage(1);
-				break;
 		}
 	}
 

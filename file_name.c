@@ -103,7 +103,7 @@ void dos_name(doscp_t *toDos, const char *name, int verbose UNUSEDP,
 {
 	char *s, *ext;
 	register int i;
-	Case_t BaseCase, ExtCase;
+	Case_t BaseCase, ExtCase = UPPER;
 
 	*mangled = 0;
 

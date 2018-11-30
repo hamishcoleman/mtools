@@ -39,7 +39,7 @@ typedef struct sector_map {
 } sector_map_t;
 
 
-struct {
+static struct {
   unsigned char track_size;
   unsigned int track0_size:7;
   unsigned int rootskip:1;
@@ -408,7 +408,7 @@ static void decompose(Xdf_t *This, int where, int len, off_t *begin,
 	
 	*begin = where - track * This->track_size * 1024;
 	*end = where + len - track * This->track_size * 1024;
-	smaximize(*end, This->track_size * 1024);
+	maximize(*end, This->track_size * 1024);
 
 	if(This->current_track == track && !boot)
 		/* already OK, return immediately */
@@ -501,7 +501,7 @@ static int xdf_write(Stream_t *Stream, char *buf, mt_off_t where, size_t len)
 	len2 = load_bounds(This, begin, end);
 	smaximize(end, (off_t)len2);
 	len2 -= begin;
-	smaximize(len, (off_t)len2);
+	sizemaximize(len, (off_t)len2);
 	memcpy(This->buffer + begin, buf, len);
 	mark_dirty(This, begin, end);
 	return end - begin;

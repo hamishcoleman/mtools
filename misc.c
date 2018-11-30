@@ -156,6 +156,11 @@ void print_sector(const char *message, unsigned char *data, int size)
 	}
 }
 
+#if (SIZEOF_TIME_T > SIZEOF_LONG) && defined (HAVE_STRTOLL)
+# define STRTOTIME strtoll
+#else
+# define STRTOTIME strtol
+#endif
 
 time_t getTimeNow(time_t *now)
 {
@@ -166,24 +171,22 @@ time_t getTimeNow(time_t *now)
 		const char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
 		if (source_date_epoch) {
 			char *endptr;
-			unsigned long long epoch =
-				strtoll(source_date_epoch, &endptr, 10);
+			errno = 0;
+			time_t epoch =
+				STRTOTIME(source_date_epoch, &endptr, 10);
 
 			if (endptr == source_date_epoch)
-				fprintf(stderr, "SOURCE_DATE_EPOCH invalid\n");
-			else if ((errno == ERANGE &&
-				  (epoch == ULLONG_MAX || epoch == 0))
-				 || (errno != 0 && epoch == 0))
 				fprintf(stderr,
-					"SOURCE_DATE_EPOCH: strtoll: %s: %llu\n",
-					strerror(errno), epoch);
+					"SOURCE_DATE_EPOCH \"%s\" invalid\n",
+					source_date_epoch);
+			else if (errno != 0)
+				fprintf(stderr,
+					"SOURCE_DATE_EPOCH: strtoll: %s: %s\n",
+					strerror(errno), source_date_epoch);
 			else if (*endptr != '\0')
 				fprintf(stderr,
-					"SOURCE_DATE_EPOCH has trailing garbage\n");
-			else if (epoch > ULONG_MAX)
-				fprintf(stderr,
-					"SOURCE_DATE_EPOCH must be <= %lu but saw: %llu\n",
-					ULONG_MAX, epoch);
+					"SOURCE_DATE_EPOCH has trailing garbage \"%s\"\n",
+					endptr);
 			else {
 				sharedNow = epoch;
 				haveTime = 1;

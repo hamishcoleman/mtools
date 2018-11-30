@@ -63,7 +63,8 @@ static __inline__ int forceWriteSector(Fs_t *This, char *buf, unsigned int off,
 
 static FatMap_t *GetFatMap(Fs_t *Stream)
 {
-	int nr_entries,i;
+	size_t nr_entries;
+	size_t i;
 	FatMap_t *map;
 
 	Stream->fat_error = 0;
@@ -665,7 +666,7 @@ static int check_media_type(Fs_t *This, union bootsector *boot,
 static int fat_32_read(Fs_t *This, union bootsector *boot, 
 		       unsigned int tot_sectors)
 {
-	int size;
+	size_t size;
 
 	This->fat_len = DWORD(ext.fat32.bigFat);
 	This->writeAllFats = !(boot->boot.ext.fat32.extFlags[0] & 0x80);

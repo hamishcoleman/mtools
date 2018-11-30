@@ -109,10 +109,10 @@ typedef enum position_t {
 static position_t isInBuffer(Buffer_t *This, mt_off_t start, size_t *len)
 {
 	if(start >= This->current &&
-	   start < This->current + This->cur_size) {
+	   start < This->current + (mt_off_t) This->cur_size) {
 		maximize(*len, This->cur_size - OFFSET);
 		return INSIDE;
-	} else if(start == This->current + This->cur_size &&
+	} else if(start == This->current + (mt_off_t) This->cur_size &&
 		  This->cur_size < This->size &&
 		  *len >= This->sectorSize) {
 		/* append to the buffer for this, three conditions have to
@@ -137,7 +137,7 @@ static position_t isInBuffer(Buffer_t *This, mt_off_t start, size_t *len)
 static int buf_read(Stream_t *Stream, char *buf, mt_off_t start, size_t len)
 {
 	size_t length;
-	int offset;
+	mt_off_t offset;
 	char *disk_ptr;
 	int ret;
 	DeclareThis(Buffer_t);	
@@ -162,7 +162,7 @@ static int buf_read(Stream_t *Stream, char *buf, mt_off_t start, size_t len)
 			if ( ret < 0 )
 				return ret;
 			This->cur_size += ret;
-			if (This->current+This->cur_size < start) {
+			if (This->current+(mt_off_t)This->cur_size < start) {
 				fprintf(stderr, "Short buffer fill\n");
 				exit(1);
 			}
@@ -185,7 +185,7 @@ static int buf_write(Stream_t *Stream, char *buf, mt_off_t start, size_t len)
 {
 	char *disk_ptr;
 	DeclareThis(Buffer_t);	
-	size_t offset;
+	size_t offset=0;
 
 	if(!len)
 		return 0;
@@ -258,11 +258,11 @@ static int buf_write(Stream_t *Stream, char *buf, mt_off_t start, size_t len)
 			break;
 		case ERROR:
 			return -1;
-		default:
 #ifdef DEBUG
+		default:
 			fprintf(stderr, "Should not happen\n");
-#endif
 			exit(1);
+#endif
 	}
 
 	disk_ptr = This->buf + offset;

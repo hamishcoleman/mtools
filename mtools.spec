@@ -1,7 +1,7 @@
 %define _binary_payload w9.gzdio
 Name:           mtools
 Summary:        mtools, read/write/list/format DOS disks under Unix
-Version:        4.0.20
+Version:        4.0.21
 Release:        1
 License:        GPLv3+
 Group:          Utilities/System
@@ -135,6 +135,13 @@ if [ -f %{_bindir}/install-info ] ; then
 fi
 
 %changelog
+* Sat Nov 24 2018 Alain Knaff <alain@knaff.lu>
+- Fixed compilation for MingW
+- After MingW compilation, make sure executable has .exe extension
+- Addressed compiler warnings
+- Fixed length handling in character set conversion (Unicode file names)
+- Fixed matching of character range, when containing Unicode characters (mdir "c:test[α-ω].exe")
+- Fixed initialization of my_scsi_cmd constructor
 * Sun Nov 11 2018 Alain Knaff <alain@knaff.lu>
 - initialize directory entries to 0
 - bad message "Too few sectors" replaced with "Too many sectors"

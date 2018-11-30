@@ -275,13 +275,15 @@ static int file_data(Stream_t *Stream, time_t *date, mt_size_t *size,
 
 static int file_discard(Stream_t *Stream)
 {
+#ifdef BLKFLSBUF
 	int ret;
 	DeclareThis(SimpleFile_t);
-#ifdef BLKFLSBUF
 	ret= ioctl(This->fd, BLKFLSBUF);
 	if(ret < 0)
 		perror("BLKFLSBUF");
 	return ret;
+#else
+	return 0;
 #endif
 }
 
@@ -301,8 +303,6 @@ static int file_discard(Stream_t *Stream)
    happy if we just have access to the device, so making mtools sgid to a
    group called, say, "ziprw" which has rw permission on /dev/rsd5c, is fine.
  */
-
-#define MAXBLKSPERCMD 255
 
 static void scsi_init(SimpleFile_t *This)
 {
@@ -668,7 +668,7 @@ APIRET rc;
 		} else {
 			*maxSize = max_off_t_seek;
 		}
-		if(This->offset > *maxSize) {
+		if(This->offset > (mt_off_t) *maxSize) {
 			close(This->fd);
 			Free(This);
 			if(errmsg)

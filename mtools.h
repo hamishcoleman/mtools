@@ -26,15 +26,15 @@ typedef struct dos_name_t dos_name_t;
 extern int lockf(int, int, off_t);  /* SCO has no proper include file for lockf */
 #endif 
 
-#define SCSI_FLAG 1
-#define PRIV_FLAG 2
-#define NOLOCK_FLAG 4
-#define USE_XDF_FLAG 8
-#define MFORMAT_ONLY_FLAG 16
-#define VOLD_FLAG 32
-#define FLOPPYD_FLAG 64
-#define FILTER_FLAG 128
-#define SWAP_FLAG 256 
+#define SCSI_FLAG		0x001u
+#define PRIV_FLAG		0x002u
+#define NOLOCK_FLAG		0x004u
+#define USE_XDF_FLAG		0x008u
+#define MFORMAT_ONLY_FLAG	0x010u
+#define VOLD_FLAG		0x020u
+#define FLOPPYD_FLAG		0x040u
+#define FILTER_FLAG		0x080u
+#define SWAP_FLAG		0x100u
 
 #define IS_SCSI(x)  ((x) && ((x)->misc_flags & SCSI_FLAG))
 #define IS_PRIVILEGED(x) ((x) && ((x)->misc_flags & PRIV_FLAG))
@@ -93,8 +93,11 @@ struct OldDos_t {
 
 extern struct OldDos_t *getOldDosBySize(size_t size);
 extern struct OldDos_t *getOldDosByMedia(int media);
-extern struct OldDos_t *getOldDosByParams(int tracks, int heads, int sectors,
-					  int dir_len, int cluster_size);
+extern struct OldDos_t *getOldDosByParams(unsigned int tracks,
+					  unsigned int heads,
+					  unsigned int sectors,
+					  unsigned int dir_len,
+					  unsigned int cluster_size);
 int setDeviceFromOldDos(int media, struct device *dev);
 
 
@@ -126,6 +129,15 @@ extern const char *short_illegals, *long_illegals;
   } \
 } while(0)
 
+#define sizemaximize(target, max) do {		\
+  if(max < 0) { \
+    if(target > 0) \
+      target = 0; \
+  } else if(target > (size_t) max) {		\
+    target = max; \
+  } \
+} while(0)
+
 #define minimize(target, min) do { \
   if(target < min) \
     target = min; \
@@ -149,11 +161,11 @@ int lock_dev(int fd, int mode, struct device *dev);
 char *unix_normalize (doscp_t *cp, char *ans, struct dos_name_t *dn);
 void dos_name(doscp_t *cp, const char *filename, int verbose, int *mangled,
 	      struct dos_name_t *);
-struct directory *mk_entry(const dos_name_t *filename, char attr,
+struct directory *mk_entry(const dos_name_t *filename, unsigned char attr,
 			   unsigned int fat, size_t size, time_t date,
 			   struct directory *ndir);
 
-struct directory *mk_entry_from_base(const char *base, char attr,
+struct directory *mk_entry_from_base(const char *base, unsigned char attr,
 				     unsigned int fat, size_t size, time_t date,
 				     struct directory *ndir);
 
@@ -227,7 +239,7 @@ void read_config(void);
 off_t str_to_offset(char *str);
 extern struct device *devices;
 extern struct device const_devices[];
-extern const int nr_const_devices;
+extern const unsigned int nr_const_devices;
 
 #define New(type) ((type*)(calloc(1,sizeof(type))))
 #define Grow(adr,n,type) ((type*)(realloc((char *)adr,n*sizeof(type))))

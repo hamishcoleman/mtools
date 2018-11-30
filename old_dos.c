@@ -19,7 +19,7 @@ static struct OldDos_t old_dos[]={
 };
 
 struct OldDos_t *getOldDosBySize(size_t size) {
-	int i;
+	size_t i;
 	for(i=0; i < sizeof(old_dos) / sizeof(old_dos[0]); i++){
 		if (old_dos[i].sectors *
 		    old_dos[i].tracks *
@@ -30,7 +30,7 @@ struct OldDos_t *getOldDosBySize(size_t size) {
 }
 
 struct OldDos_t *getOldDosByMedia(int media) {
-	int i;
+	size_t i;
 	for(i=0; i < sizeof(old_dos) / sizeof(old_dos[0]); i++){
 		if (old_dos[i].media == media)
 			return &old_dos[i];
@@ -39,9 +39,12 @@ struct OldDos_t *getOldDosByMedia(int media) {
 	return NULL;
 }
 
-struct OldDos_t *getOldDosByParams(int tracks, int heads, int sectors,
-				   int dir_len, int cluster_size) {
-	int i;
+struct OldDos_t *getOldDosByParams(unsigned int tracks,
+				   unsigned int heads,
+				   unsigned int sectors,
+				   unsigned int dir_len,
+				   unsigned int cluster_size) {
+	size_t i;
 	for(i=0; i < sizeof(old_dos) / sizeof(old_dos[0]); i++){
 		if (sectors == old_dos[i].sectors &&
 		    tracks == old_dos[i].tracks &&

@@ -1,3 +1,11 @@
+v4_0_21
+	- Fixed compilation for MingW
+	- After MingW compilation, make sure executable has .exe extension
+	- Addressed compiler warnings
+	- Fixed length handling in character set conversion (Unicode file names)
+	- Fixed matching of character range, when containing Unicode
+	characters (mdir "c:test[α-ω].exe")
+	- Fixed initialization of my_scsi_cmd constructor
 v4_0_20
 	- initialize directory entries to 0
 	- bad message "Too few sectors" replaced with "Too many sectors"
@@ -1014,7 +1022,7 @@ v19951124
 	<rant>
 	Folks, please don't use quoted-printable. It sometimes changes
 	the CONTENT of your messages. Even the MIME RFC's acknowledge this.
-	Case in point: �400 gets transformed into =A3400, which looks
+	Case in point: £400 gets transformed into =A3400, which looks
 	like 3400 pounds to a person unaware of this MIME "feature".
 	</rant>
 v19951123

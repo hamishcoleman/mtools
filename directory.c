@@ -54,7 +54,7 @@ int dir_grow(Stream_t *Dir, int size)
 	Stream_t *Stream = GetFs(Dir);
 	DeclareThis(FsPublic_t);
 	int ret;
-	int buflen;
+	unsigned int buflen;
 	char *buffer;
 	
 	if (!getfreeMinClusters(Dir, 1))
@@ -70,7 +70,7 @@ int dir_grow(Stream_t *Dir, int size)
 	memset((char *) buffer, '\0', buflen);
 	ret = force_write(Dir, buffer, (mt_off_t) size * MDIR_SIZE, buflen);
 	free(buffer);
-	if(ret < buflen)
+	if(ret < (int) buflen)
 		return -1;
 	return 0;
 }
@@ -95,7 +95,7 @@ void low_level_dir_write_end(Stream_t *Dir, int entry)
  * to a static directory structure.
  */
 
-struct directory *mk_entry(const dos_name_t *dn, char attr,
+struct directory *mk_entry(const dos_name_t *dn, unsigned char attr,
 			   unsigned int fat, size_t size, time_t date,
 			   struct directory *ndir)
 {
@@ -132,7 +132,7 @@ struct directory *mk_entry(const dos_name_t *dn, char attr,
  * from places such as mmd for making special entries (".", "..", "/", ...)
  * Thus it doesn't bother with character set conversions
  */
-struct directory *mk_entry_from_base(const char *base, char attr,
+struct directory *mk_entry_from_base(const char *base, unsigned char attr,
 				     unsigned int fat, size_t size, time_t date,
 				     struct directory *ndir)
 {

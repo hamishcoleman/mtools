@@ -547,10 +547,12 @@ static result_t checkNameForMatch(struct direntry_t *direntry,
 			return RES_END;
 		case DCET_USED:
 			break;
+#ifdef DEBUG
 		default:
 			fprintf(stderr, "Unexpected entry type %d\n",
 				dce->type);
 			return RES_ERROR;
+#endif
 	}
 
 	direntry->dir = dce->dir;
