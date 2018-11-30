@@ -398,7 +398,12 @@ static int list_file(direntry_t *entry, MainParam_t *mp UNUSEDP)
 			ext[i] = towlower(ext[i]);
 	}
 	ext[3] = '\0';
-	dos_to_wchar(cp, entry->dir.name, name, 8);
+	if (entry->dir.name[0] == '\x05') {
+		dos_to_wchar(cp, "\xE5", name, 1);
+		dos_to_wchar(cp, entry->dir.name+1, name+1, 7);
+	} else {
+		dos_to_wchar(cp, entry->dir.name, name, 8);
+	}
 	if(Case & BASECASE){
 		for(i=0; i<8;i++)
 			name[i] = towlower(name[i]);

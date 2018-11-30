@@ -47,6 +47,8 @@ static __inline__ int convert_to_shortname(doscp_t *cp, ClashHandling_t *ch,
 	/* Then do conversion to dn */
 	ch->name_converter(cp, un, 0, &mangled, dn);
 	dn->sentinel = '\0';
+	if (dn->base[0] == '\xE5')
+		dn->base[0] = '\x05';
 	return mangled;
 }
 

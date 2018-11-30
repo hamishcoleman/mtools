@@ -1,3 +1,15 @@
+v4_0_19
+	- Fix for short file names starting with character 0xE5
+	(by remapping it to 0x5)
+	- mpartition: Partition types closer to what Microsoft uses
+	- mformat: figure out LBA geometry as last resort if geometry
+	is neither specified in config and/or commandline, nor can be
+	queried from the device
+	- mformat: use same default cluster size by size as Microsoft
+	for FAT32
+	- additional sanity checks
+	- document how cluster size is picked in mformat.c man page
+	- document how partition types are picked in mpartition.c man page
 v4_0_18	
 	Fix for names of iconv encodings on AIX
 	Fix mt_size_t on NetBSD

@@ -476,7 +476,12 @@ static dirCacheEntry_t *vfat_lookup_loop_common(doscp_t *cp,
 	if (direntry->dir.attr & 0x8){
 		/* Read entry as a label */
 		wchar_t *ptr = newfile;
-		ptr += dos_to_wchar(cp, direntry->dir.name, ptr, 8);
+		if (direntry->dir.name[0] == '\x05') {
+			ptr += dos_to_wchar(cp, "\xE5", ptr, 1);
+			ptr += dos_to_wchar(cp, direntry->dir.name+1, ptr, 7);
+		} else {
+			ptr += dos_to_wchar(cp, direntry->dir.name, ptr, 8);
+		}
 		ptr += dos_to_wchar(cp, direntry->dir.ext, ptr, 3);
 		*ptr = '\0';
 	} else

@@ -214,15 +214,16 @@ extern struct OldDos_t {
 
 /* max FAT12/FAT16 sizes, according to
    
- http://www.microsoft.com/hwdev/download/hardware/fatgen103.pdf
+ https://staff.washington.edu/dittrich/misc/fatgen103.pdf
+ https://download.microsoft.com/download/1/6/1/161ba512-40e2-4cc9-843a-923143f3456c/fatgen103.doc
 
  interestingly enough, another Microsoft document 
  [http://support.microsoft.com/default.aspx?scid=kb%3ben-us%3b67321]
  gives different values, but the first seems to be more sure about
  itself, so we believe that one ;-)
 */
-#define FAT12 4085 /* max. number of clusters described by a 12 bit FAT */
-#define FAT16 65525 /* max number of clusters for a 16 bit FAT */
+#define FAT12 0x0ff5 /* max. number + 1 of clusters described by a 12 bit FAT */
+#define FAT16 0xfff5 /* max number + 1 of clusters for a 16 bit FAT */
 
 #define ATTR_ARCHIVE 0x20
 #define ATTR_DIR 0x10

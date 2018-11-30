@@ -48,7 +48,6 @@ mtools: build install
 	dh_installexamples -pmtools mtools.conf
 	dh_installman
 	dh_installinfo -pmtools mtools.info
-	dh_undocumented -pmtools mcheck.1 mcomp.1 mxtar.1
 	dh_installchangelogs
 	dh_strip
 	dh_link -pmtools /usr/share/man/man5/mtools.5 /usr/share/man/man5/mtools.conf.5

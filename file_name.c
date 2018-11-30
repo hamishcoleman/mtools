@@ -161,6 +161,8 @@ wchar_t *unix_name(doscp_t *dosCp,
 	tname[8] = '\0';
 	if ((s = strchr(tname, ' ')))
 		*s = '\0';
+	if (tname[0] == '\x05')
+		tname[0] = '\xE5';
 
 	if(!(Case & (BASECASE | EXTCASE)) && mtools_ignore_short_case)
 		Case |= BASECASE | EXTCASE;

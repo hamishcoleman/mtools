@@ -1883,7 +1883,9 @@ I can include the correct value in future versions of mtools.
 @item c
 Sets the size of a cluster (in sectors).  If this cluster size would
 generate a FAT that too big for its number of bits, mtools automatically
-increases the cluster size, until the FAT is small enough.
+increases the cluster size, until the FAT is small enough. If no
+cluster size is specified explicitly, mtools uses a default value as
+described in section ``Number of sectors per cluster'' below.
 @item d
 Sets the number of FAT copies. Default is 2. This setting can also be
 specified using the @code{MTOOLS_NFATS} environment variable.
@@ -1922,6 +1924,37 @@ default.
 
 It doesn't record bad block information to the Fat, use
 @code{mbadblocks} for that.
+
+@subsection Number of sectors per cluster
+
+If the user indicates no cluster size, mformat figures out a default
+value for it.
+
+For FAT32 it uses the following table to determine the number of
+sectors per cluster, depending on the total number of sectors on the
+filesystem.
+
+more than 32*1024*1024*2: 64 sectors@*
+between 16*1024*1024*2 and 32*1024*1024*2: 32 sectors@*
+between 8*1024*1024*2 and 16*1024*1024*2: 16 sectors@*
+between 260*1024*2 and 81024*1024*2: 1 sectors@*
+
+This is derived from information on page 20 of Microsoft's
+@code{fatgen103} document, which currently can be found at the
+following address:
+
+@code{https://staff.washington.edu/dittrich/misc/fatgen103.pdf}
+
+For FAT12 and FAT16, mformat uses an iterative approach, where it
+starts with a set value, which it doubles until it is able to fill up
+the disk using that cluster size and a number of cluster less than the
+maximum allowed.
+
+The starting value is 1 for disks with one head or less than 2000
+sectors, and 2 for disks with more than one head, and more than 2000
+sectors.
+
+The number of sectors per cluster cannot go beyond 128.
 
 @node mkmanifest, minfo, mformat, Commands
 @section Mkmanifest
@@ -2219,6 +2252,53 @@ The following option is available for partition table initialization:
 Reads the template master boot record from file @var{bootSector}.
 @end table
 
+@subsection Choice of partition type
+
+Mpartition proceeds as follows to pick a type for the partition:
+
+@itemize - 
+@item
+FAT32 partitions are assigned type 0x0C (``@code{Win95 FAT32, LBA}'')
+
+@item
+For all others, if the partition fits entirely within the 65536 sector of the disk, assign 0x01 (``@code{DOS FAT12, CHS}'') for FAT12 partition and 0x04 (``@code{DOS FAT16, CHS}'') for FAT16 partitions
+
+@item
+If not covered by the above, assign 0x06 (``@code{DOS BIG FAT16 CHS}'') if partition fits entirely within the first 1024 cylinders (CHS mode)
+
+@item
+All remaining cases get 0x0E (``@code{Win95 BIG FAT16, LBA}'')
+
+@end itemize
+
+If number of fat bits is not known (not specified in drive's
+definition), then FAT12 is assumed for all drives with less than 4096
+sectors, and FAT16 for those with more than 4096 sectors.
+
+This corresponds more or less to the definitions outlined at @code{https://en.wikipedia.org/wiki/Partition_type#List_of_partition_IDs}
+and
+@code{https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-2000-server/cc977219(v=technet.10)},
+with two notable differences:
+
+@itemize -
+@item
+If fat bits are unknown, the reference documents consider drives with
+less than 32680 sectors to be FAT12. Mtools uses 4096 sectors as the
+cutoff point, as older versions of DOS only support FAT12 on disks
+with less than 4096 sectors (and these older versions are the ones
+which would be most likely to use FAT12 in the first place).
+
+@item
+The reference documents use a 8GB (wikipedia) or a 4GB (Microsoft)
+cutoff between 0x06 (@code{DOS BIG FAT16 CHS}) and 0x0E. Mtools uses
+1024 cylinders. This is because any partition beyond 1024 cylinders
+must be LBA and cannot be CHS. 8GB works out to be the biggest
+capacity which can be represented as CHS (63 sectors, 255 heads and
+1024 cylinders). 4GB is the capacity limit for windows 2000, so it
+makes sense that a documentation for windows 2000 would specify this
+as the upper limit for any partition type.
+
+@end itemize
 
 @node mrd, mren, mpartition, Commands
 @section Mrd

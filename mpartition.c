@@ -46,7 +46,7 @@
 
 static __inline__ void print_hsc(hsc *h)
 {
-	printf(" h=%d s=%d c=%d\n", 
+	printf(" h=%d s=%d c=%d\n",
 	       head(*h), sector(*h), cyl(*h));
 }
 
@@ -70,8 +70,10 @@ static void set_offset(hsc *h, int offset, int heads, int sectors)
 	h->cyl = cyl & 0xff;
 }
 
-void setBeginEnd(struct partition *partTable, int begin, int end,
-		 int heads, int sectors, int activate, int type)
+void setBeginEnd(struct partition *partTable,
+		 unsigned int begin, unsigned int end,
+		 unsigned int heads, unsigned int sectors,
+		 int activate, int type, int fat_bits)
 {
 	set_offset(&partTable->start, begin, heads, sectors);
 	set_offset(&partTable->end, end-1, heads, sectors);
@@ -82,24 +84,67 @@ void setBeginEnd(struct partition *partTable, int begin, int end,
 	else
 		partTable->boot_ind = 0;
 	if(!type) {
-		if(end-begin < 4096)
-			type = 1; /* DOS 12-bit FAT */
-		else if(end-begin<32*2048)
-			type = 4; /* DOS 16-bit FAT, <32M */
+		if (fat_bits == 0) {
+			/**
+			 * Fat bits unknown / not specified. We look
+			 * at size to get a rough estimate what FAT
+			 * bits are used.  Note: this is only an
+			 * estimate, the precise calculation would
+			 * involve the number of clusters, which is
+			 * not necessarily known here.
+			 */
+			/* cc977219 would have a cutoff number of 32680,
+			 * corresponding to a FAT12 partition with 4K
+			 * clusters, however other information hints that
+			 * only partitions with less than 4096 sectors are
+			 * considered */
+			if(end-begin < 4096)
+				fat_bits = 12;
+			else
+				fat_bits = 16;
+		}
+
+		/* Description of various partition types in
+		 * https://en.wikipedia.org/wiki/Partition_type#List_of_partition_IDs
+		 * and
+		 * https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-2000-server/cc977219(v=technet.10)
+		 */
+		if (fat_bits == 32)
+			/* FAT 32 partition. For now, we disregard the
+			 * possibility of FAT 32 CHS partitions */
+			type = 0x0C; /* Win95 FAT32, LBA */
+		else if (end < 65536) {
+			/* FAT 12 or FAT 16 partitions which fit entirely below
+			   the 32M mark */
+			/* The 32M restriction doesn't apply to logical
+			   partitions within an extended partition, but for the
+			   moment mpartition only makes primary partitions */
+			if(fat_bits == 12)
+				/* FAT 12 partition */
+				type = 0x01; /* DOS FAT12, CHS */
+			else if (fat_bits == 16)
+				/* FAT 16 partition */
+				type = 0x04; /* DOS FAT16, CHS */
+		} else if (end <  sectors * heads * 1024)
+			/* FAT 12 or FAT16 partition above the 32M
+			 * mark but below the 1024 cylinder mark.
+			 * Indeed, there can be no CHS partition
+			 * beyond 1024 cylinders */
+			type = 0x06; /* DOS BIG FAT16 or FAT12, CHS */
 		else
-			type = 6; /* DOS 16-bit FAT >= 32M */
+			type = 0x0E; /* Win95 BIG FAT16, LBA */
 	}
 	partTable->sys_ind = type;
 }
 
 int consistencyCheck(struct partition *partTable, int doprint, int verbose,
 		     int *has_activated, unsigned int *last_end,
-		     unsigned int *j, 
+		     unsigned int *j,
 		     struct device *used_dev, int target_partition)
 {
 	unsigned int i;
 	unsigned int inconsistency;
-	
+
 	*j = 0;
 	*last_end = 1;
 
@@ -111,7 +156,7 @@ int consistencyCheck(struct partition *partTable, int doprint, int verbose,
 			continue;
 		if(partTable[i].boot_ind)
 			(*has_activated)++;
-		if((used_dev && 
+		if((used_dev &&
 		    (used_dev->heads != head(partTable[i].end)+1 ||
 		     used_dev->sectors != sector(partTable[i].end))) ||
 		   sector(partTable[i].start) != 1){
@@ -120,15 +165,15 @@ int consistencyCheck(struct partition *partTable, int doprint, int verbose,
 				i);
 			inconsistency=1;
 		}
-		
-		if(*j && 
+
+		if(*j &&
 		   *last_end > BEGIN(partTable[i])) {
 			fprintf(stderr,
 				"Partitions %d and %d badly ordered or overlapping\n",
 				*j,i);
 			inconsistency=1;
 		}
-			
+
 		*last_end = END(partTable[i]);
 		*j = i;
 
@@ -194,7 +239,7 @@ int consistencyCheck(struct partition *partTable, int doprint, int verbose,
  * Information technology -
  * SCSI-2 Common access method
  * transport and SCSI interface module
- * 
+ *
  * ANNEX A :
  *
  * setsize() converts a read capacity value to int 13h
@@ -204,37 +249,37 @@ int consistencyCheck(struct partition *partTable, int doprint, int verbose,
  * will not fit in 4 bits (or 6 bits). This algorithm also
  * minimizes the number of sectors that will be unused at the end
  * of the disk while allowing for very large disks to be
- * accommodated. This algorithm does not use physical geometry. 
+ * accommodated. This algorithm does not use physical geometry.
  */
 
 static int setsize(unsigned long capacity,unsigned int *cyls,unsigned int *hds,
-    unsigned int *secs) { 
-    unsigned int rv = 0; 
-    unsigned long heads, sectors, cylinders, temp; 
+    unsigned int *secs) {
+    unsigned int rv = 0;
+    unsigned long heads, sectors, cylinders, temp;
 
-    cylinders = 1024L;			/* Set number of cylinders to max */ 
-    sectors = 62L;      		/* Maximize sectors per track */ 
+    cylinders = 1024L;			/* Set number of cylinders to max */
+    sectors = 62L;      		/* Maximize sectors per track */
 
-    temp = cylinders * sectors;		/* Compute divisor for heads */ 
+    temp = cylinders * sectors;		/* Compute divisor for heads */
     heads = capacity / temp;		/* Compute value for number of heads */
-    if (capacity % temp) {		/* If no remainder, done! */ 
-    	heads++;                	/* Else, increment number of heads */ 
-    	temp = cylinders * heads;	/* Compute divisor for sectors */ 
+    if (capacity % temp) {		/* If no remainder, done! */
+    	heads++;                	/* Else, increment number of heads */
+    	temp = cylinders * heads;	/* Compute divisor for sectors */
     	sectors = capacity / temp;	/* Compute value for sectors per
-					       track */ 
-    	if (capacity % temp) {		/* If no remainder, done! */ 
-      	    sectors++;                  /* Else, increment number of sectors */ 
+					       track */
+    	if (capacity % temp) {		/* If no remainder, done! */
+      	    sectors++;                  /* Else, increment number of sectors */
       	    temp = heads * sectors;	/* Compute divisor for cylinders */
-      	    cylinders = capacity / temp;/* Compute number of cylinders */ 
-      	} 
-    } 
-    if (cylinders == 0) rv=(unsigned)-1;/* Give error if 0 cylinders */ 
+      	    cylinders = capacity / temp;/* Compute number of cylinders */
+      	}
+    }
+    if (cylinders == 0) rv=(unsigned)-1;/* Give error if 0 cylinders */
 
-    *cyls = (unsigned int) cylinders;	/* Stuff return values */ 
-    *secs = (unsigned int) sectors; 
-    *hds  = (unsigned int) heads; 
-    return(rv); 
-} 
+    *cyls = (unsigned int) cylinders;	/* Stuff return values */
+    *secs = (unsigned int) sectors;
+    *hds  = (unsigned int) heads;
+    return(rv);
+}
 
 static void setsize0(unsigned long capacity,unsigned int *cyls,
 		     unsigned int *hds, unsigned int *secs)
@@ -264,9 +309,9 @@ static void setsize0(unsigned long capacity,unsigned int *cyls,
 static void usage(int ret) NORETURN;
 static void usage(int ret)
 {
-	fprintf(stderr, 
+	fprintf(stderr,
 		"Mtools version %s, dated %s\n", mversion, mdate);
-	fprintf(stderr, 
+	fprintf(stderr,
 		"Usage: %s [-pradcv] [-I] [-B bootsect-template] [-s sectors] "
 			"[-t cylinders] "
 		"[-h heads] [-T type] [-b begin] [-l length] "
@@ -286,7 +331,7 @@ void mpartition(int argc, char **argv, int dummy)
 	int verbose = 0;
 	int create = 0;
 	int force = 0;
-	int length = 0;
+	unsigned int length = 0;
 	int do_remove = 0;
 	int initialize = 0;
 	unsigned int tot_sectors=0;
@@ -298,12 +343,12 @@ void mpartition(int argc, char **argv, int dummy)
 	int activate = 0;
 	int has_activated = 0;
 	int inconsistency=0;
-	int begin=0;
-	int end=0;
+	unsigned int begin=0;
+	unsigned int end=0;
 	int sizetest=0;
 	int dirty = 0;
 	int open2flags = NO_OFFSET;
-	
+
 	int c;
 	struct device used_dev;
 	int argtracks, argheads, argsectors;
@@ -350,7 +395,7 @@ void mpartition(int argc, char **argv, int dummy)
 				dirty = 1;
 				break;
 			case 'I':
-				/* could be abused to nuke all other 
+				/* could be abused to nuke all other
 				 * partitions */
 				open2flags |= NO_PRIV;
 				initialize = 1;
@@ -399,11 +444,11 @@ void mpartition(int argc, char **argv, int dummy)
 				break;
 			case 'b':
 				begin_set = 1;
-				begin = atoi(optarg);
+				begin = strtoul(optarg, NULL, 10);
 				break;
 			case 'l':
 				size_set = 1;
-				length = atoi(optarg);
+				length = strtoul(optarg, NULL, 10);
 				break;
 
 			default:
@@ -414,10 +459,10 @@ void mpartition(int argc, char **argv, int dummy)
 	if (argc - optind != 1 ||
 	    !argv[optind][0] || argv[optind][1] != ':')
 		usage(1);
-	
+
 	drive = toupper(argv[optind][0]);
 
-	/* check out a drive whose letter and parameters match */	
+	/* check out a drive whose letter and parameters match */
 	sprintf(errmsg, "Drive '%c:' not supported", drive);
 	Stream = 0;
 	for(dev=devices;dev->drive;dev++) {
@@ -428,8 +473,8 @@ void mpartition(int argc, char **argv, int dummy)
 		if (dev->drive != drive)
 			continue;
 		if (dev->partition < 1 || dev->partition > 4) {
-			sprintf(errmsg, 
-				"Drive '%c:' is not a partition", 
+			sprintf(errmsg,
+				"Drive '%c:' is not a partition",
 				drive);
 			continue;
 		}
@@ -438,7 +483,7 @@ void mpartition(int argc, char **argv, int dummy)
 		SET_INT(used_dev.tracks, argtracks);
 		SET_INT(used_dev.heads, argheads);
 		SET_INT(used_dev.sectors, argsectors);
-		
+
 		expand(dev->name, name);
 
 		mode = dirty ? O_RDWR : O_RDONLY;
@@ -448,7 +493,7 @@ void mpartition(int argc, char **argv, int dummy)
 #ifdef USING_NEW_VOLD
 		strcpy(name, getVoldName(dev, name));
 #endif
-		Stream = SimpleFileOpen(&used_dev, dev, name, mode, 
+		Stream = SimpleFileOpen(&used_dev, dev, name, mode,
 					errmsg, open2flags, 1, 0);
 
 		if (!Stream) {
@@ -458,7 +503,7 @@ void mpartition(int argc, char **argv, int dummy)
 			sprintf(errmsg,"init: open: %s", strerror(errno));
 #endif
 			continue;
-		}			
+		}
 
 
 		/* try to find out the size */
@@ -472,7 +517,7 @@ void mpartition(int argc, char **argv, int dummy)
 			memset ((void *) &data[0], 137, 10);
 			scsi_cmd(get_fd(Stream), cmd, 10, SCSI_IO_READ,
 				 data, 10, get_extra_data(Stream));
-			
+
 			tot_sectors = 1 +
 				(data[0] << 24) +
 				(data[1] << 16) +
@@ -506,7 +551,7 @@ void mpartition(int argc, char **argv, int dummy)
 		break;
 	}
 
-	/* print error msg if needed */	
+	/* print error msg if needed */
 	if ( dev->drive == 0 ){
 		FREE(&Stream);
 		fprintf(stderr,"%s: %s\n", argv[0],errmsg);
@@ -544,7 +589,7 @@ void mpartition(int argc, char **argv, int dummy)
 			"Use the -I flag to initialize the partition table, and set the boot signature\n");
 		inconsistency = 1;
 	}
-	
+
 	if(do_remove){
 		if(!partTable[dev->partition].sys_ind)
 			fprintf(stderr,
@@ -575,7 +620,7 @@ void mpartition(int argc, char **argv, int dummy)
 	for(i=1; i<5; i++){
 		if(!partTable[i].sys_ind)
 			continue;
-		
+
 		if(partTable[i].boot_ind)
 			has_activated++;
 
@@ -624,7 +669,7 @@ void mpartition(int argc, char **argv, int dummy)
 			end = tot_sectors - tot_sectors % sec_per_cyl;
 			end_set = 1;
 		}
-		
+
 		/* if the partition starts right at the beginning of
 		 * the disk, keep one track unused to allow place for
 		 * the master boot record */
@@ -655,8 +700,9 @@ void mpartition(int argc, char **argv, int dummy)
 		}
 
 		setBeginEnd(&partTable[dev->partition], begin, end,
-					used_dev.heads, used_dev.sectors, 
-					!has_activated, type);
+			    used_dev.heads, used_dev.sectors,
+			    !has_activated, type,
+			    dev->fat_bits);
 	}
 
 	if(activate) {
@@ -682,11 +728,11 @@ void mpartition(int argc, char **argv, int dummy)
 					  &used_dev, dev->partition);
 
 	if(doprint && !inconsistency && partTable[dev->partition].sys_ind) {
-		printf("The following command will recreate the partition for drive %c:\n", 
+		printf("The following command will recreate the partition for drive %c:\n",
 		       drive);
-		used_dev.tracks = 
+		used_dev.tracks =
 			(_DWORD(partTable[dev->partition].nr_sects) +
-			 (BEGIN(partTable[dev->partition]) % sec_per_cyl)) / 
+			 (BEGIN(partTable[dev->partition]) % sec_per_cyl)) /
 			sec_per_cyl;
 		printf("mpartition -c -t %d -h %d -s %d -b %u %c:\n",
 		       used_dev.tracks, used_dev.heads, used_dev.sectors,
@@ -700,7 +746,7 @@ void mpartition(int argc, char **argv, int dummy)
 		exit(1);
 	}
 
-	
+
 	switch(has_activated) {
 		case 0:
 			fprintf(stderr,
@@ -716,7 +762,7 @@ void mpartition(int argc, char **argv, int dummy)
 				"Usually, a disk should have exactly one active partition\n");
 			break;
 	}
-	
+
 	if(inconsistency && !force) {
 		fprintf(stderr,
 			"inconsistency detected!\n" );

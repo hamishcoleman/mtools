@@ -1,5 +1,5 @@
 '\" t
-.TH mpartition 1 "09Jan13" mtools-4.0.18
+.TH mpartition 1 "29Sep18" mtools-4.0.19
 .SH Name
 mpartition - partition an MSDOS hard disk
 '\" t
@@ -121,6 +121,48 @@ The following option is available for partition table initialization:
 .TP
 \&\fR\&\f(CWB\ \fIbootSector\fR\&\f(CW\fR\ 
 Reads the template master boot record from file \fIbootSector\fR.
+.PP
+.SH Choice\ of\ partition\ type
+.PP
+Mpartition proceeds as follows to pick a type for the partition:
+.TP
+-\ \ 
+FAT32 partitions are assigned type 0x0C (``\fR\&\f(CWWin95 FAT32, LBA\fR'')
+.TP
+-\ \ 
+For all others, if the partition fits entirely within the 65536 sector of the disk, assign 0x01 (``\fR\&\f(CWDOS FAT12, CHS\fR'') for FAT12 partition and 0x04 (``\fR\&\f(CWDOS FAT16, CHS\fR'') for FAT16 partitions
+.TP
+-\ \ 
+If not covered by the above, assign 0x06 (``\fR\&\f(CWDOS BIG FAT16 CHS\fR'') if partition fits entirely within the first 1024 cylinders (CHS mode)
+.TP
+-\ \ 
+All remaining cases get 0x0E (``\fR\&\f(CWWin95 BIG FAT16, LBA\fR'')
+.PP
+If number of fat bits is not known (not specified in drive's
+definition), then FAT12 is assumed for all drives with less than 4096
+sectors, and FAT16 for those with more than 4096 sectors.
+.PP
+This corresponds more or less to the definitions outlined at \fR\&\f(CWhttps://en.wikipedia.org/wiki/Partition_type#List_of_partition_IDs\fR
+and
+\&\fR\&\f(CWhttps://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-2000-server/cc977219(v=technet.10)\fR,
+with two notable differences:
+.TP
+-\ \ 
+If fat bits are unknown, the reference documents consider drives with
+less than 32680 sectors to be FAT12. Mtools uses 4096 sectors as the
+cutoff point, as older versions of DOS only support FAT12 on disks
+with less than 4096 sectors (and these older versions are the ones
+which would be most likely to use FAT12 in the first place).
+.TP
+-\ \ 
+The reference documents use a 8GB (wikipedia) or a 4GB (Microsoft)
+cutoff between 0x06 (\fR\&\f(CWDOS BIG FAT16 CHS\fR) and 0x0E. Mtools uses
+1024 cylinders. This is because any partition beyond 1024 cylinders
+must be LBA and cannot be CHS. 8GB works out to be the biggest
+capacity which can be represented as CHS (63 sectors, 255 heads and
+1024 cylinders). 4GB is the capacity limit for windows 2000, so it
+makes sense that a documentation for windows 2000 would specify this
+as the upper limit for any partition type.
 .PP
 .SH See\ Also
 Mtools' texinfo doc

@@ -207,16 +207,16 @@ static int comp_fat_bits(Fs_t *Fs, int estimate,
  * According to Microsoft "Hardware White Paper", "Microsoft
  * Extensible Formware Initiative", "FAT32 File System Specification",
  * Version 1.03, December 6, 2000:
- * If (CountofClusters < 4085) {
+ * If (CountofClusters < 4085) { // 0x0ff5
  *  // Volume is FAT12
- * } else if (CountofClusters < 65525) {
+ * } else if (CountofClusters < 65525) { // 0xfff5
  *  // Volume is FAT16
  * } else {
  *  //Volume is FAT32
  * }
  *
- * This document can be found at the following URL
- * http://www.microsoft.com/hwdev/download/hardware/fatgen103.pdf
+ * This document can be found at the following URL:
+ * https://staff.washington.edu/dittrich/misc/fatgen103.pdf
  * The relevant passus is on page 15.
  *
  * Actually, experimentations with Windows NT 4 show that the
@@ -541,11 +541,23 @@ static void calc_cluster_size(struct Fs_t *Fs, unsigned long tot_sectors,
 				FAT_SIZE(16, Fs->sector_size, max_clusters);
 			break;
 		case 32:
-			Fs->cluster_size = 8;
-			/* According to
-			 * http://support.microsoft.com/support/kb/articles/q154/9/97.asp
-			 * Micro$oft does not support FAT32 with less than 4K
+			/*
+			   FAT32 cluster sizes for disks with 512 block size
+			   according to Microsoft specification fatgen103.doc:
+			
+			   32.5 MB - 260 MB   cluster_size =  1
+			    260 MB -   8 GB   cluster_size =  8
+			      8 GB -  16 GB   cluster_size = 16
+			     16 GB -  32 GB   cluster_size = 32
+			     32 GB -   2 TB   cluster_size = 64
+			
+			   Below calculation is generalized and does not depend
+			   on 512 block size.
 			 */
+			Fs->cluster_size = tot_sectors > 32*1024*1024*2 ? 64 :
+			                   tot_sectors > 16*1024*1024*2 ? 32 :
+			                   tot_sectors >  8*1024*1024*2 ? 16 :
+			                   tot_sectors >     260*1024*2 ? 8 : 1;
 			return;
 		default:
 			fprintf(stderr,"Bad fat size\n");
@@ -680,15 +692,16 @@ static void calc_fs_parameters_32(unsigned long tot_sectors,
 		boot->boot.descr = 0xf8;
 	else
 		boot->boot.descr = 0xf0;
-	if(!Fs->cluster_size)
-		/* According to
-		 * http://www.microsoft.com/kb/articles/q154/9/97.htm,
-		 * Micro$oft does not support FAT32 with less than 4K
-		 */
-		Fs->cluster_size = 8;
 
+	if(!Fs->cluster_size)
+		calc_cluster_size(Fs, tot_sectors, 32);
 	Fs->dir_len = 0;
 	Fs->num_clus = tot_sectors / Fs->cluster_size;
+	/* Maximal number of clusters on FAT32 is 0xffffff6 */
+	if (Fs->num_clus > 0xffffff6) {
+		fprintf(stderr, "Too many clusters\n");
+		exit(1);
+	}
 	set_fat32(Fs);
 	calc_fat_size(Fs, tot_sectors);
 	set_word(boot->boot.fatlen, 0);
@@ -719,8 +732,23 @@ static void usage(int ret)
 }
 
 #ifdef OS_linux
+static int get_sector_size(int fd, char *errmsg) {
+	int sec_size;
+	if (ioctl(fd, BLKSSZGET, &sec_size) != 0 || sec_size <= 0) {
+		sprintf(errmsg, "Could not get sector size of device (%s)",
+			strerror(errno));
+		return -1;
+	}
+
+	/* Cap sector size at 4096 */
+	if(sec_size > 4096)
+		sec_size = 4096;
+	return sec_size;
+}
+
 static int get_block_geom(int fd, struct device *dev, char *errmsg) {
 	struct hd_geometry geom;
+	int sec_size;
 	long size;
 	int heads=dev->heads;
 	int sectors=dev->sectors;
@@ -737,6 +765,14 @@ static int get_block_geom(int fd, struct device *dev, char *errmsg) {
 			strerror(errno));
 		return -1;
 	}
+
+	sec_size = get_sector_size(fd, errmsg);
+	if(sec_size < 0)
+		return -1;
+	
+	dev->ssize = 0;
+	while (dev->ssize < 0x7F && (128 << dev->ssize) < sec_size)
+		dev->ssize++;
 
 	if(!heads)
 		heads = geom.heads;
@@ -762,6 +798,92 @@ static int get_block_geom(int fd, struct device *dev, char *errmsg) {
 	return 0;
 }
 #endif
+
+static int get_lba_geom(Stream_t *Direct, unsigned long tot_sectors, struct device *dev, char *errmsg) {
+	int sect_per_track;
+	unsigned long tracks;
+
+	/* if one value is already specified we do not want to overwrite it */
+	if (dev->heads || dev->sectors || dev->tracks) {
+		sprintf(errmsg, "Number of heads or sectors or tracks was already specified");
+		return -1;
+	}
+
+	if (!tot_sectors) {
+#ifdef OS_linux
+		int fd;
+		int sec_size;
+		long size;
+		struct MT_STAT stbuf;
+
+		fd = get_fd(Direct);
+		if (MT_FSTAT(fd, &stbuf) < 0) {
+			sprintf(errmsg, "Could not stat file (%s)", strerror(errno));
+			return -1;
+		}
+
+		if (S_ISBLK(stbuf.st_mode)) {
+			if (ioctl(fd, BLKGETSIZE, &size) != 0) {
+				sprintf(errmsg, "Could not get size of device (%s)",
+					strerror(errno));
+				return -1;
+			}
+			sec_size = get_sector_size(fd, errmsg);
+			if(sec_size < 0)
+				return -1;
+
+			if (!(dev->ssize & 0x80)) {
+				dev->ssize = 0;
+				while (dev->ssize < 0x7F && (128 << dev->ssize) < sec_size)
+				dev->ssize++;
+			}
+			if ((dev->ssize & 0x7f) > 2)
+				tot_sectors = size >> ((dev->ssize & 0x7f) - 2);
+			else
+				tot_sectors = size << (2 - (dev->ssize & 0x7f));
+		} else if (S_ISREG(stbuf.st_mode)) {
+			tot_sectors = stbuf.st_size >> ((dev->ssize & 0x7f) + 7);
+		} else {
+			sprintf(errmsg, "Could not get size of device (%s)",
+				"No method available");
+			return -1;
+		}
+#else
+		mt_size_t size;
+		GET_DATA(Direct, 0, &size, 0, 0);
+		if (size == 0) {
+			sprintf(errmsg, "Could not get size of device (%s)",
+				"No method available");
+			return -1;
+		}
+		tot_sectors = size >> ((dev->ssize & 0x7f) + 7);
+#endif
+	}
+
+	dev->sectors = 63;
+
+	if (tot_sectors < 16*63*1024)
+		dev->heads = 16;
+	else if (tot_sectors < 32*63*1024)
+		dev->heads = 32;
+	else if (tot_sectors < 64*63*1024)
+		dev->heads = 64;
+	else if (tot_sectors < 128*63*1024)
+		dev->heads = 128;
+	else
+		dev->heads = 255;
+
+	sect_per_track = dev->heads * dev->sectors;
+	tracks = (tot_sectors + dev->hidden % sect_per_track) / sect_per_track;
+	if (tracks > 0xFFFFFFFF) {
+		sprintf(errmsg, "Device is too big, it has too many tracks");
+		return -1;
+	}
+
+	dev->tracks = tracks;
+
+	return 0;
+}
 
 void mformat(int argc, char **argv, int dummy)
 {
@@ -1115,21 +1237,29 @@ void mformat(int argc, char **argv, int dummy)
 				continue;
 			}
 
-			if (S_ISBLK(stbuf.st_mode) &&
-			    get_block_geom(fd, &used_dev, errmsg) < 0)
-				continue;
+			if (S_ISBLK(stbuf.st_mode))
+			    /* If the following get_block_geom fails, do not 
+			     * continue to next drive description, but allow
+			     * get_lba_geom to kick in
+			     */
+			    get_block_geom(fd, &used_dev, errmsg);
 		}
 #endif
 
-		/* no way to find out geometry */
 		if ((!used_dev.tracks && !tot_sectors) ||
 		     !used_dev.heads || !used_dev.sectors){
-			sprintf(errmsg,
-				"Unknown geometry "
-				"(You must tell the complete geometry "
-				"of the disk, \neither in /etc/mtools.conf or "
-				"on the command line) ");
-			continue;
+			if (get_lba_geom(Fs.Direct, tot_sectors, &used_dev,
+					 errmsg) < 0) {
+				sprintf(errmsg, "%s: "
+					"Complete geometry of the disk "
+					"was not specified, \n"
+					"neither in /etc/mtools.conf nor "
+					"on the command line. \n"
+					"LBA Assist Translation for "
+					"calculating CHS geometry "
+					"of the disk failed.\n", argv[0]);
+				continue;
+			}
 		}
 
 #if 0
@@ -1189,6 +1319,11 @@ void mformat(int argc, char **argv, int dummy)
 	if(tot_sectors == 0) {
 		unsigned long sect_per_track = used_dev.heads*used_dev.sectors;
 		tot_sectors = used_dev.tracks*sect_per_track - used_dev.hidden%sect_per_track;
+		/* Number of sectors must fit into 32bit value */
+		if (tot_sectors > 0xFFFFFFFF) {
+			fprintf(stderr, "Too few sectors\n");
+			exit(1);
+		}
 	}
 
 	/* create the image file if needed */
@@ -1214,17 +1349,8 @@ void mformat(int argc, char **argv, int dummy)
 		keepBoot = 1;
 		close(fd);
 	}
-	if(!keepBoot && !(used_dev.use_2m & 0x7f)) {
+	if(!keepBoot && !(used_dev.use_2m & 0x7f))
 		memset(boot.characters, '\0', Fs.sector_size);
-		if(Fs.sector_size == 512 && !used_dev.partition) {
-			/* install fake partition table pointing to itself */
-			struct partition *partTable=(struct partition *)
-				(&boot.bytes[0x1ae]);
-			setBeginEnd(&partTable[1], 0,
-						used_dev.heads * used_dev.sectors * used_dev.tracks,
-						used_dev.heads, used_dev.sectors, 1, 0);
-		}
-	}
 	set_dword(boot.boot.nhs, used_dev.hidden);
 
 	Fs.Next = buf_init(Fs.Direct,
@@ -1242,6 +1368,19 @@ void mformat(int argc, char **argv, int dummy)
 	set_word(boot.boot.nheads, used_dev.heads);
 
 	used_dev.fat_bits = comp_fat_bits(&Fs,used_dev.fat_bits, tot_sectors, fat32);
+
+	if(!keepBoot && !(used_dev.use_2m & 0x7f)) {
+		if(!used_dev.partition) {
+			/* install fake partition table pointing to itself */
+			struct partition *partTable=(struct partition *)
+				(&boot.bytes[0x1ae]);
+			setBeginEnd(&partTable[1], 0,
+				    used_dev.heads * used_dev.sectors *
+				    used_dev.tracks,
+				    used_dev.heads, used_dev.sectors, 1, 0,
+				    used_dev.fat_bits);
+		}
+	}
 
 	if(used_dev.fat_bits == 32) {
 		Fs.primaryFat = 0;

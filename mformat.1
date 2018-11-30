@@ -1,5 +1,5 @@
 '\" t
-.TH mformat 1 "09Jan13" mtools-4.0.18
+.TH mformat 1 "29Sep18" mtools-4.0.19
 .SH Name
 mformat - add an MSDOS filesystem to a low-level formatted floppy disk
 '\" t
@@ -184,7 +184,9 @@ I can include the correct value in future versions of mtools.
 \&\fR\&\f(CWc\fR\ 
 Sets the size of a cluster (in sectors).  If this cluster size would
 generate a FAT that too big for its number of bits, mtools automatically
-increases the cluster size, until the FAT is small enough.
+increases the cluster size, until the FAT is small enough. If no
+cluster size is specified explicitly, mtools uses a default value as
+described in section ``Number of sectors per cluster'' below.
 .TP
 \&\fR\&\f(CWd\fR\ 
 Sets the number of FAT copies. Default is 2. This setting can also be
@@ -227,6 +229,41 @@ default.
 .PP
 It doesn't record bad block information to the Fat, use
 \&\fR\&\f(CWmbadblocks\fR for that.
+.PP
+.SH Number\ of\ sectors\ per\ cluster
+.PP
+If the user indicates no cluster size, mformat figures out a default
+value for it.
+.PP
+For FAT32 it uses the following table to determine the number of
+sectors per cluster, depending on the total number of sectors on the
+filesystem.
+.PP
+more than 32*1024*1024*2: 64 sectors
+.br
+between 16*1024*1024*2 and 32*1024*1024*2: 32 sectors
+.br
+between 8*1024*1024*2 and 16*1024*1024*2: 16 sectors
+.br
+between 260*1024*2 and 81024*1024*2: 1 sectors
+.br
+.PP
+This is derived from information on page 20 of Microsoft's
+\&\fR\&\f(CWfatgen103\fR document, which currently can be found at the
+following address:
+.PP
+\&\fR\&\f(CWhttps://staff.washington.edu/dittrich/misc/fatgen103.pdf\fR
+.PP
+For FAT12 and FAT16, mformat uses an iterative approach, where it
+starts with a set value, which it doubles until it is able to fill up
+the disk using that cluster size and a number of cluster less than the
+maximum allowed.
+.PP
+The starting value is 1 for disks with one head or less than 2000
+sectors, and 2 for disks with more than one head, and more than 2000
+sectors.
+.PP
+The number of sectors per cluster cannot go beyond 128.
 .PP
 .SH See\ Also
 Mtools' texinfo doc
