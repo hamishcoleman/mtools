@@ -368,7 +368,7 @@ int wchar_to_native(const wchar_t *wchar, char *native, size_t len)
 	int r;
 	initialize_to_native();
 	len = wcsnlen(wchar,len);
-	r=safe_iconv(to_native, wchar, native, len*4, &mangled);
+	r=safe_iconv(to_native, wchar, native, len, &mangled);
 	native[r]='\0';
 	return r;
 #else
