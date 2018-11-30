@@ -824,9 +824,7 @@ int main (int argc, char** argv)
 	gid_t			run_gid = 65535;
 	char*			username = strdup("nobody");
 	int			sock;
-	int			port_is_supplied = 0;
 
-	char *server_hostname=NULL;
 	char **device_name = NULL; 
 	const char *floppy0 = "/dev/fd0";
 	int n_dev;
@@ -846,7 +844,6 @@ int main (int argc, char** argv)
 						break;
 					case 's':
 						run_as_server = 1;
-						port_is_supplied = 1;
 						bind_port = getportnum(optarg);
 						break;
 
@@ -859,7 +856,6 @@ int main (int argc, char** argv)
 					case 'b':
 						run_as_server = 1;
 						bind_ip = getipaddress(optarg);
-						server_hostname=optarg;
 						break;
 					case 'x':
 						dispName = strdup(optarg);
@@ -903,9 +899,7 @@ int main (int argc, char** argv)
 		/* try to find out port that we are connected to */
 		if(getsockname(0, (struct sockaddr*) &addr, &len) >= 0 && 
 		   len == sizeof(addr)) {
-			port_is_supplied = 1;
 			bind_port = ntohs(addr.sin_port);
-			server_hostname = strdup(inet_ntoa(addr.sin_addr));
 		}
 	}
 

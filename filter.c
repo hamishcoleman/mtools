@@ -153,7 +153,7 @@ static Class_t FilterClass = {
 	0
 };
 
-Stream_t *open_filter(Stream_t *Next, int convertCharset)
+Stream_t *open_filter(Stream_t *Next, int convertCharset UNUSEDP)
 {
 	Filter_t *This;
 

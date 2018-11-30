@@ -44,7 +44,7 @@ static int attrib_file(direntry_t *entry, MainParam_t *mp)
 	return GOT_ONE;
 }
 
-static int replay_attrib(direntry_t *entry, MainParam_t *mp)
+static int replay_attrib(direntry_t *entry, MainParam_t *mp UNUSEDP)
 {
 	if ( (IS_ARCHIVE(entry) && IS_DIR(entry)) ||
 		 (!IS_ARCHIVE(entry) && !IS_DIR(entry)) ||
@@ -76,7 +76,7 @@ static int replay_attrib(direntry_t *entry, MainParam_t *mp)
 
 
 
-static int view_attrib(direntry_t *entry, MainParam_t *mp)
+static int view_attrib(direntry_t *entry, MainParam_t *mp UNUSEDP)
 {
 	printf("  ");
 	if(IS_ARCHIVE(entry))
@@ -160,7 +160,7 @@ static int letterToCode(int letter)
 }
 
 
-void mattrib(int argc, char **argv, int type)
+void mattrib(int argc, char **argv, int type UNUSEDP)
 {
 	Arg_t arg;
 	int view;
@@ -190,7 +190,7 @@ void mattrib(int argc, char **argv, int type)
 				arg.remove &= ~letterToCode(c);
 				break;
 			case 'i':
-				set_cmd_line_image(optarg, 0);
+				set_cmd_line_image(optarg);
 				break;
 			case 'p':
 				replay = 1;

@@ -398,8 +398,8 @@ static int floppyd_free(Stream_t *Stream)
 }
 
 static int floppyd_geom(Stream_t *Stream, struct device *dev, 
-		     struct device *orig_dev,
-		     int media, union bootsector *boot)
+			struct device *orig_dev UNUSEDP,
+			int media, union bootsector *boot)
 {
 	size_t tot_sectors;
 	int sect_per_track;
@@ -579,9 +579,9 @@ static int connect_to_server(IPaddr_t ip, short port)
 static int ConnectToFloppyd(RemoteFile_t *floppyd, const char* name, 
 			    char *errmsg);
 
-Stream_t *FloppydOpen(struct device *dev, struct device *dev2,
+Stream_t *FloppydOpen(struct device *dev, 
 		      char *name, int mode, char *errmsg,
-		      int mode2, int locked, mt_size_t *maxSize)
+		      mt_size_t *maxSize)
 {
 	RemoteFile_t *This;
 

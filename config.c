@@ -389,12 +389,10 @@ static void append(void)
 
 static void finish_drive_clause(void)
 {
-    char drive;
     if(cur_dev == -1) {
 	trusted = 0;
 	return;
     }
-    drive = devices[cur_dev].drive;
     if(!devices[cur_dev].name)
 	syntax("missing filename", 0);
     if(devices[cur_dev].tracks ||
@@ -507,30 +505,27 @@ static int set_def_format(struct device *dev)
 
 static int parse_one(int privilege);
 
-/* check for offset embedded in file name, in the form file@@offset[SKMG] */
-static off_t get_offset(char *name) {
+void set_cmd_line_image(char *img) {
   char *ofsp;
-  off_t ofs;
 
-  ofsp = strstr(devices[cur_dev].name, "@@");
-  if (ofsp == NULL)
-    return 0; /* no separator */
-  ofs = str_to_offset(ofsp+2);
-  *ofsp = '\0';                              /* truncate file name */
-  return ofs;
-}
-
-void set_cmd_line_image(char *img, int flags) {
-  char *name;
   prepend();
   devices[cur_dev].drive = ':';
   default_drive = ':';
-  devices[cur_dev].name = name = strdup(img);
+
+  ofsp = strstr(img, "@@");
+  if (ofsp == NULL) {
+    /* no separator => no offset */
+    devices[cur_dev].name = strdup(img);
+    devices[cur_dev].offset = 0;
+  } else {
+    devices[cur_dev].name = strndup(img, ofsp - img);
+    devices[cur_dev].offset = str_to_offset(ofsp+2);
+  }
+
   devices[cur_dev].fat_bits = 0;
   devices[cur_dev].tracks = 0;
   devices[cur_dev].heads = 0;
   devices[cur_dev].sectors = 0;
-  devices[cur_dev].offset = get_offset(name);
   if (strchr(devices[cur_dev].name, '|')) {
     char *pipechar = strchr(devices[cur_dev].name, '|');
     *pipechar = 0;
@@ -733,7 +728,7 @@ void read_config(void)
 	mtools_fat_compatibility=1;
 }
 
-void mtoolstest(int argc, char **argv, int type)
+void mtoolstest(int argc, char **argv, int type  UNUSEDP)
 {
     /* testing purposes only */
     struct device *dev;

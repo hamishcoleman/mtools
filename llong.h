@@ -24,8 +24,13 @@
 #ifdef HAVE_OFF_T_64
 /* if off_t is already 64 bits, be happy, and don't worry about the
  * loff_t and llseek stuff */
-#define MT_OFF_T off_t
-#define MT_SIZE_T size_t
+# define MT_OFF_T off_t
+# if SIZEOF_SIZE_T == 4
+/* Some systems (NetBSD) apparently have 64 bit off_t, but 32 bit size_t ... */
+#  define MT_SIZE_T off_t
+# else
+#  define MT_SIZE_T size_t
+# endif
 #endif
 
 #ifndef MT_OFF_T

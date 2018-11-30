@@ -1,6 +1,7 @@
+%define _binary_payload w9.gzdio
 Name:           mtools
 Summary:        mtools, read/write/list/format DOS disks under Unix
-Version:        4.0.17
+Version:        4.0.18
 Release:        1
 License:        GPLv3+
 Group:          Utilities/System
@@ -134,6 +135,17 @@ if [ -f %{_bindir}/install-info ] ; then
 fi
 
 %changelog
+* Wed Jan 09 2013 Alain Knaff <alain@knaff.lu>
+- Fix for names of iconv encodings on AIX
+- Fix mt_size_t on NetBSD
+- Fixed compilation on Mingw
+- Fixed doc (especially mformat)
+- Fix mformating of FAT12 filesystems with huge cluster sizes
+- Minfo prints image file name in mformat command line if an image
+- file name was given
+- Always generate gzip-compressed RPMs, in order to remain
+- compatible with older distributions
+- Fixed buffer overflow with drive letter in mclasserase
 * Wed Jun 29 2011 Alain Knaff <alain@knaff.lu>
 - mbadblocks now takes a list of bad blocks (either as sectors
   or as clusters)

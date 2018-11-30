@@ -91,7 +91,7 @@ void fatDeallocate(Fs_t *This, unsigned int pos);
 void fatAllocate(Fs_t *This, unsigned int pos, unsigned int value);
 void fatEncode(Fs_t *This, unsigned int pos, unsigned int value);
 
-int fat_read(Fs_t *This, union bootsector *boot, int fat_bits,
+int fat_read(Fs_t *This, union bootsector *boot,
 			 size_t tot_sectors, int nodups);
 void fat_write(Fs_t *This);
 int zero_fat(Fs_t *Fs, int media_descriptor);

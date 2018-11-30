@@ -86,7 +86,7 @@ ac_cv_func_setpgrp_void=yes ../mtools/configure --build=i386-linux-gnu --host=i3
 #endif
 #endif
 
-#ifdef OS_mingw32msvc
+#ifndef HAVE_CADDR_T
 typedef void *caddr_t;
 #endif
 
@@ -104,12 +104,15 @@ typedef void *caddr_t;
 # if __GNUC__ == 2 && __GNUC_MINOR__ > 6 || __GNUC__ >= 3
 /* gcc 2.6.3 doesn't have "unused" */		/* mool */
 #  define UNUSED(x) x __attribute__ ((unused));x
+#  define UNUSEDP __attribute__ ((unused))
 # else
 #  define UNUSED(x) x
+#  define UNUSEDP /* */
 # endif
 # define NORETURN __attribute__ ((noreturn))
 #else
 # define UNUSED(x) x
+#  define UNUSEDP /* */
 # define PACKED /* */
 # define NORETURN /* */
 #endif

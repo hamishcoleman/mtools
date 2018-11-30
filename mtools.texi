@@ -14,7 +14,7 @@ which is a collection of tools to allow Unix systems to manipulate
 MS-DOS files.
 
 Copyright @copyright{} 2007, 2009 Free Software Foundation, Inc.
-Copyright @copyright{} 1996-2005,2007-2011 Alain Knaff.
+Copyright @copyright{} 1996-2005,2007-2011,2013 Alain Knaff.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -1748,9 +1748,7 @@ low-level formatted diskette. Its syntax is:
 @code{mformat} [@code{-t} @var{cylinders}|@code{-T} @var{tot_sectors}] [@code{-h} @var{heads}] [@code{-s} @var{sectors}]
   [@code{-f} @var{size}] [@code{-1}] [@code{-4}] [@code{-8}]
   [@code{-v} @var{volume_label}]
-  [@code{-F}] [@code{-S} @var{sizecode}] [@code{-X}]
-  [@code{-2} @var{sectors_on_track_0}] [@code{-3}]
-  [@code{-0} @var{rate_on_track_0}] [@code{-A} @var{rate_on_other_tracks}]
+  [@code{-F}] [@code{-S} @var{sizecode}]
   [@code{-M} @var{software_sector_size}]
   [@code{-N} @var{serial_number}] [@code{-a}]
   [@code{-C}] [@code{-H} @var{hidden_sectors}] [@code{-I} @var{fsVersion}]
@@ -1758,6 +1756,10 @@ low-level formatted diskette. Its syntax is:
   [@code{-B} @var{boot_sector}] [@code{-k}]
   [@code{-m} @var{media_descriptor}]
   [@code{-K} @var{backup_boot}]
+  [@code{-c} @var{clusters_per_sector}]
+  [@code{-d} @var{fat_copies}]
+  [@code{-X}] [@code{-2} @var{sectors_on_track_0}] [@code{-3}]
+  [@code{-0} @var{rate_on_track_0}] [@code{-A} @var{rate_on_other_tracks}]
   @var{drive:}
 @end display
 
@@ -2010,7 +2012,7 @@ with MS-DOS 1.0 file systems
 @code{minfo} @var{drive}:
 @end display
 
-Mlabel supports the following option:
+Minfo supports the following option:
 @table @code
 @item v
 Prints a hexdump of the boot sector, in addition to the other information

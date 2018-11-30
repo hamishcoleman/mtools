@@ -103,7 +103,7 @@ static int init_geometry_boot(union bootsector *boot, struct device *dev,
 			boot->bytes[i++] = j;
 
 		set_word(boot->boot.ext.old.InfpX, i);
-		
+
 		boot->bytes[i++] = 64;
 		boot->bytes[i++] = 3;
 		nb_renum = i++;
@@ -130,12 +130,12 @@ static int init_geometry_boot(union bootsector *boot, struct device *dev,
 			boot->bytes[i++] = size2;
 			sector2 -= 1 << (size2 - 2 );
 		}
-		
+
 		set_word(boot->boot.ext.old.BootP,i);
 		bootOffset = i;
 
-		/* checksum */		
-		for (sum=0, j=64; j<i; j++) 
+		/* checksum */
+		for (sum=0, j=64; j<i; j++)
 			sum += boot->bytes[j];/* checksum */
 		boot->boot.ext.old.CheckSum=-sum;
 		return bootOffset;
@@ -155,7 +155,7 @@ static int init_geometry_boot(union bootsector *boot, struct device *dev,
 }
 
 
-static int comp_fat_bits(Fs_t *Fs, int estimate, 
+static int comp_fat_bits(Fs_t *Fs, int estimate,
 			 unsigned long tot_sectors, int fat32)
 {
 	int needed_fat_bits;
@@ -194,11 +194,12 @@ static int comp_fat_bits(Fs_t *Fs, int estimate,
 					   Fs->num_fat, 1);
 		if(tot_sectors < min_fat16_size)
 			return 12;
-		else if(tot_sectors >= 2* min_fat16_size)
-			return 16; /* heuristics */
-	}
+ 		else if(Fs->cluster_size == 0 &&
+			tot_sectors >= 2* min_fat16_size)
+ 			return 16; /* heuristics */
+ 	}
 
-	return estimate;
+ 	return estimate;
 }
 
 
@@ -206,11 +207,11 @@ static int comp_fat_bits(Fs_t *Fs, int estimate,
  * According to Microsoft "Hardware White Paper", "Microsoft
  * Extensible Formware Initiative", "FAT32 File System Specification",
  * Version 1.03, December 6, 2000:
- * If (CountofClusters < 4085) { 
- *  // Volume is FAT12  
- * } else if (CountofClusters < 65525) { 
+ * If (CountofClusters < 4085) {
+ *  // Volume is FAT12
+ * } else if (CountofClusters < 65525) {
  *  // Volume is FAT16
- * } else { 
+ * } else {
  *  //Volume is FAT32
  * }
  *
@@ -223,7 +224,7 @@ static int comp_fat_bits(Fs_t *Fs, int estimate,
  * Not sure what the other Microsoft OS'es do though...
  */
 static void calc_fat_bits2(Fs_t *Fs, unsigned long tot_sectors, int fat_bits,
-			   int may_change_cluster_size, 
+			   int may_change_cluster_size,
 			   int may_change_root_size)
 {
 	unsigned long rem_sect;
@@ -241,8 +242,8 @@ static void calc_fat_bits2(Fs_t *Fs, unsigned long tot_sectors, int fat_bits,
 				   Fs->num_fat, Fs->cluster_size)
 
 			if(rem_sect >= MY_DISK_SIZE(16, FAT12+2))
-				/* big enough for FAT16 
-				 * We take a margin of 2, because NT4 
+				/* big enough for FAT16
+				 * We take a margin of 2, because NT4
 				 * misbehaves, and starts considering a disk
 				 * as FAT16 only if it is larger than 4086
 				 * sectors, rather than 4084 as it should
@@ -255,8 +256,8 @@ static void calc_fat_bits2(Fs_t *Fs, unsigned long tot_sectors, int fat_bits,
 				/* "between two chairs",
 				 * augment cluster size, and
 				 * settle it */
-				if(may_change_cluster_size && 
-				   Fs->cluster_size * Fs->sector_size * 2 
+				if(may_change_cluster_size &&
+				   Fs->cluster_size * Fs->sector_size * 2
 				   <= MAX_BYTES_PER_CLUSTER)
 					Fs->cluster_size <<= 1;
 				else if(may_change_root_size) {
@@ -289,7 +290,7 @@ static __inline__ void format_root(Fs_t *Fs, char *label, union bootsector *boot
 	int dirlen;
 
 	init_clash_handling(&ch);
-	ch.name_converter = label_name;
+	ch.name_converter = label_name_uc;
 	ch.ignore_entry = -2;
 
 	buf = safe_malloc(Fs->sector_size);
@@ -325,6 +326,7 @@ static __inline__ void format_root(Fs_t *Fs, char *label, union bootsector *boot
 }
 
 
+#ifdef USE_XDF
 static void xdf_calc_fat_size(Fs_t *Fs, unsigned long tot_sectors,
 			      int fat_bits)
 {
@@ -351,7 +353,7 @@ static void xdf_calc_fat_size(Fs_t *Fs, unsigned long tot_sectors,
 	fprintf(stderr,"Internal error while calculating Xdf fat size\n");
 	exit(1);
 }
-
+#endif
 
 static void calc_fat_size(Fs_t *Fs, unsigned long tot_sectors)
 {
@@ -362,7 +364,7 @@ static void calc_fat_size(Fs_t *Fs, unsigned long tot_sectors)
 	int fat_nybbles;
 	unsigned int slack;
 	int printGrowMsg=1; /* Should we print "growing FAT" messages ?*/
-	
+
 #ifdef DEBUG
 	fprintf(stderr, "Fat start=%d\n", Fs->fat_start);
 	fprintf(stderr, "tot_sectors=%lu\n", tot_sectors);
@@ -384,7 +386,7 @@ static void calc_fat_size(Fs_t *Fs, unsigned long tot_sectors)
 
 	if(Fs->fat_bits == 0) {
 		fprintf(stderr, "Weird, fat bits = 0\n");
-		exit(1);		
+		exit(1);
 	}
 
 
@@ -419,7 +421,7 @@ static void calc_fat_size(Fs_t *Fs, unsigned long tot_sectors)
 		Fs->num_clus = FAT16-1;
 	if(Fs->fat_bits == 12 && Fs->num_clus >= FAT12)
 		Fs->num_clus = FAT12-1;
-	
+
 	/* A safety, if above math is correct, this should not be happen...*/
 	if(Fs->num_clus > (Fs->fat_len * Fs->sector_size * 2 /
 			   fat_nybbles - 2)) {
@@ -517,7 +519,7 @@ static __inline__ void inst_boot_prg(union bootsector *boot, int offset)
 
 static void calc_cluster_size(struct Fs_t *Fs, unsigned long tot_sectors,
 			      int fat_bits)
-			
+
 {
 	unsigned int max_clusters; /* maximal possible number of sectors for
 				   * this FAT entry length (12/16/32) */
@@ -527,7 +529,7 @@ static void calc_cluster_size(struct Fs_t *Fs, unsigned long tot_sectors,
 				* the root directory and boot sector(s) */
 
 	switch(abs(fat_bits)) {
-		case 12:			
+		case 12:
 			max_clusters = FAT12-1;
 			max_fat_size = Fs->num_fat *
 				FAT_SIZE(12, Fs->sector_size, max_clusters);
@@ -538,7 +540,7 @@ static void calc_cluster_size(struct Fs_t *Fs, unsigned long tot_sectors,
 			max_fat_size = Fs->num_fat *
 				FAT_SIZE(16, Fs->sector_size, max_clusters);
 			break;
-		case 32:		
+		case 32:
 			Fs->cluster_size = 8;
 			/* According to
 			 * http://support.microsoft.com/support/kb/articles/q154/9/97.asp
@@ -644,18 +646,21 @@ static void calc_fs_parameters(struct device *dev, unsigned long tot_sectors,
 					Fs->cluster_size = 1;
 			}
 		}
-		
+
 		if(!Fs->dir_len) {
 			if (dev->heads == 1)
 				Fs->dir_len = 4;
 			else
 				Fs->dir_len = (tot_sectors > 2000) ? 32 : 7;
-		}			
+		}
 
 		calc_cluster_size(Fs, tot_sectors, dev->fat_bits);
+#ifdef USE_XDF
 		if(Fs->fat_len)
 			xdf_calc_fat_size(Fs, tot_sectors, dev->fat_bits);
-		else {
+		else
+#endif
+		{
 			calc_fat_bits2(Fs, tot_sectors, dev->fat_bits,
 				       may_change_cluster_size,
 				       may_change_root_size);
@@ -681,7 +686,7 @@ static void calc_fs_parameters_32(unsigned long tot_sectors,
 		 * Micro$oft does not support FAT32 with less than 4K
 		 */
 		Fs->cluster_size = 8;
-	
+
 	Fs->dir_len = 0;
 	Fs->num_clus = tot_sectors / Fs->cluster_size;
 	set_fat32(Fs);
@@ -714,8 +719,7 @@ static void usage(int ret)
 }
 
 #ifdef OS_linux
-static int get_block_geom(int fd, struct MT_STAT *buf, struct device *dev,
-			  char *errmsg) {
+static int get_block_geom(int fd, struct device *dev, char *errmsg) {
 	struct hd_geometry geom;
 	long size;
 	int heads=dev->heads;
@@ -727,7 +731,7 @@ static int get_block_geom(int fd, struct MT_STAT *buf, struct device *dev,
 			strerror(errno));
 		return -1;
 	}
-	
+
 	if (ioctl(fd, BLKGETSIZE, &size) < 0) {
 		sprintf(errmsg, "Could not get size of device (%s)",
 			strerror(errno));
@@ -808,6 +812,8 @@ void mformat(int argc, char **argv, int dummy)
 
 	int backupBoot = 6;
 
+	char *endptr;
+
 	hs = hs_set = 0;
 	argtracks = 0;
 	argheads = 0;
@@ -818,7 +824,7 @@ void mformat(int argc, char **argv, int dummy)
 	serial_set = 0;
 	serial = 0;
 	fsVersion = 0;
-	
+
 	Fs.cluster_size = 0;
 	Fs.refs = 1;
 	Fs.dir_len = 0;
@@ -834,7 +840,7 @@ void mformat(int argc, char **argv, int dummy)
 	  if(Fs.num_fat <= 0)
 	    Fs.num_fat=2;
 	}
-	Fs.Class = &FsClass;	
+	Fs.Class = &FsClass;
 	rate_0 = mtools_rate_0;
 	rate_any = mtools_rate_any;
 
@@ -844,9 +850,10 @@ void mformat(int argc, char **argv, int dummy)
 	while ((c = getopt(argc,argv,
 			   "i:148f:t:n:v:qub"
 			   "kK:B:r:L:I:FCc:Xh:s:T:l:N:H:M:S:2:30:Aad:m:"))!= EOF) {
+		endptr = NULL;
 		switch (c) {
 			case 'i':
-				set_cmd_line_image(optarg, 0);
+				set_cmd_line_image(optarg);
 				break;
 
 			/* standard DOS flags */
@@ -898,7 +905,7 @@ void mformat(int argc, char **argv, int dummy)
 				fprintf(stderr,
 					"Flag %c not supported by mtools\n",c);
 				exit(1);
-				
+
 
 
 			/* flags added by mtools */
@@ -909,7 +916,7 @@ void mformat(int argc, char **argv, int dummy)
 
 			case 'S':
 				argssize = atoi(optarg) | 0x80;
-				if(argssize < 0x81)
+				if(argssize < 0x80)
 					usage(1);
 				if(argssize >= 0x87) {
 					fprintf(stderr, "argssize must be less than 6\n");
@@ -950,7 +957,7 @@ void mformat(int argc, char **argv, int dummy)
 				break;
 
 			case 'N':
- 				serial = strtoul(optarg,0,16);
+ 				serial = strtoul(optarg,&endptr,16);
  				serial_set = 1;
  				break;
 			case 'a': /* Atari style serial number */
@@ -967,7 +974,7 @@ void mformat(int argc, char **argv, int dummy)
 				break;
 
 			case 'I':
-				fsVersion = strtoul(optarg,0,0);
+				fsVersion = strtoul(optarg,&endptr,0);
 				break;
 
 			case 'c':
@@ -975,10 +982,10 @@ void mformat(int argc, char **argv, int dummy)
 				break;
 
 			case 'r':
-				Fs.dir_len = strtoul(optarg,0,0);
+				Fs.dir_len = strtoul(optarg,&endptr,0);
 				break;
 			case 'L':
-				Fs.fat_len = strtoul(optarg,0,0);
+				Fs.fat_len = strtoul(optarg,&endptr,0);
 				break;
 
 
@@ -1002,16 +1009,34 @@ void mformat(int argc, char **argv, int dummy)
 				Fs.num_fat = atoi(optarg);
 				break;
 			case 'm':
-				mediaDesc = strtoul(optarg,0,0);
+				mediaDesc = strtoul(optarg,&endptr,0);
+				if(*endptr)
+					mediaDesc = strtoul(optarg,&endptr,16);
 				break;
 			default:
 				usage(1);
 		}
+		if(endptr && *endptr) {
+			fprintf(stderr, "Bad number %s\n", optarg);
+			exit(1);
+		}
 	}
 
-	if (argc - optind != 1 ||
-	    !argv[optind][0] || argv[optind][1] != ':')
+	if (argc - optind > 1)
 		usage(1);
+	if(argc - optind == 1) {
+	    if(!argv[optind][0] || argv[optind][1] != ':')
+		usage(1);
+	    drive = toupper(argv[argc -1][0]);
+	} else {
+	    drive = get_default_drive();
+	    if(drive != ':') {
+	      /* Use default drive only if it is ":" (image file), as else
+		 it would be too dangerous... */
+	      fprintf(stderr, "Drive letter missing\n");
+	      exit(1);
+	    }
+	}
 
 	if(argtracks && tot_sectors) {
 		fprintf(stderr, "Only one of -t or -T may be specified\n");
@@ -1024,11 +1049,9 @@ void mformat(int argc, char **argv, int dummy)
 		exit(1);
 	}
 #endif
-	
-	drive = toupper(argv[argc -1][0]);
 
-	/* check out a drive whose letter and parameters match */	
-	sprintf(errmsg, "Drive '%c:' not supported", drive);	
+	/* check out a drive whose letter and parameters match */
+	sprintf(errmsg, "Drive '%c:' not supported", drive);
 	Fs.Direct = NULL;
 	blocksize = 0;
 	for(dev=devices;dev->drive;dev++) {
@@ -1045,7 +1068,7 @@ void mformat(int argc, char **argv, int dummy)
 		SET_INT(used_dev.ssize, argssize);
 		if(hs_set)
 			used_dev.hidden = hs;
-		
+
 		expand(dev->name, name);
 #ifdef USING_NEW_VOLD
 		strcpy(name, getVoldName(dev, name));
@@ -1056,11 +1079,11 @@ void mformat(int argc, char **argv, int dummy)
 #endif
 			Fs.Direct = 0;
 #ifdef USE_FLOPPYD
-			Fs.Direct = FloppydOpen(&used_dev, dev, name,
+			Fs.Direct = FloppydOpen(&used_dev, name,
 						O_RDWR | create,
-						errmsg, 0, 1, &maxSize);
+						errmsg, &maxSize);
 #endif
-			if(!Fs.Direct) {			
+			if(!Fs.Direct) {
 				Fs.Direct = SimpleFileOpen(&used_dev, dev, name,
 							   O_RDWR | create,
 							   errmsg, 0, 1,
@@ -1089,11 +1112,11 @@ void mformat(int argc, char **argv, int dummy)
 
 			if (MT_FSTAT(fd, &stbuf) < 0) {
 				sprintf(errmsg, "Could not stat file (%s)", strerror(errno));
-				continue;						
+				continue;
 			}
 
 			if (S_ISBLK(stbuf.st_mode) &&
-			    get_block_geom(fd, &stbuf, &used_dev, errmsg) < 0)
+			    get_block_geom(fd, &used_dev, errmsg) < 0)
 				continue;
 		}
 #endif
@@ -1138,7 +1161,7 @@ void mformat(int argc, char **argv, int dummy)
 			blocksize = Fs.sector_size;
 		else
 			blocksize = used_dev.blocksize;
-		
+
 		if(blocksize > MAX_SECTOR)
 			blocksize = MAX_SECTOR;
 
@@ -1155,7 +1178,7 @@ void mformat(int argc, char **argv, int dummy)
 	}
 
 
-	/* print error msg if needed */	
+	/* print error msg if needed */
 	if ( dev->drive == 0 ){
 		FREE(&Fs.Direct);
 		fprintf(stderr,"%s: %s\n", argv[0],errmsg);
@@ -1164,7 +1187,7 @@ void mformat(int argc, char **argv, int dummy)
 
 	/* calculate the total number of sectors */
 	if(tot_sectors == 0) {
-		unsigned long sect_per_track = used_dev.heads*used_dev.sectors; 
+		unsigned long sect_per_track = used_dev.heads*used_dev.sectors;
 		tot_sectors = used_dev.tracks*sect_per_track - used_dev.hidden%sect_per_track;
 	}
 
@@ -1213,7 +1236,7 @@ void mformat(int argc, char **argv, int dummy)
 	boot.boot.nfat = Fs.num_fat;
 	if(!keepBoot)
 		set_word(&boot.bytes[510], 0xaa55);
-	
+
 	/* Initialize the remaining parameters */
 	set_word(boot.boot.nsect, used_dev.sectors);
 	set_word(boot.boot.nheads, used_dev.heads);
@@ -1243,7 +1266,7 @@ void mformat(int argc, char **argv, int dummy)
 
 		/* no backup boot sector */
 		set_word(boot.boot.ext.fat32.backupBoot, backupBoot);
-		
+
 		labelBlock = & boot.boot.ext.fat32.labelBlock;
 	} else {
 		Fs.infoSectorLoc = 0;
@@ -1271,9 +1294,10 @@ void mformat(int argc, char **argv, int dummy)
 		srandom((long)time (0));
 	if (!serial_set)
 		serial=random();
-	set_dword(labelBlock->serial, serial);	
-	label_name(GET_DOSCONVERT((Stream_t *)&Fs),
-		   label[0] ? label : "NO NAME    ", 0, &mangled, &shortlabel);
+	set_dword(labelBlock->serial, serial);
+	label_name_pc(GET_DOSCONVERT((Stream_t *)&Fs),
+		      label[0] ? label : "NO NAME    ", 0,
+		      &mangled, &shortlabel);
 	strncpy(labelBlock->label, shortlabel.base, 11);
 	sprintf(labelBlock->fat_type, "FAT%2.2d  ", Fs.fat_bits);
 	labelBlock->fat_type[7] = ' ';
@@ -1294,7 +1318,7 @@ void mformat(int argc, char **argv, int dummy)
 		boot.boot.banner[5] = random();
 		boot.boot.banner[6] = random();
 		boot.boot.banner[7] = random();
-	}		
+	}
 
 	if(!keepBoot)
 		inst_boot_prg(&boot, bootOffset);
@@ -1352,7 +1376,7 @@ void mformat(int argc, char **argv, int dummy)
 			"Bourne shell syntax (sh, ash, bash, ksh, zsh etc):\n"
 			" export MTOOLS_USE_XDF=1\n\n"
 			"C shell syntax (csh and tcsh):\n"
-			" setenv MTOOLS_USE_XDF 1\n" );	
+			" setenv MTOOLS_USE_XDF 1\n" );
 #endif
 	exit(0);
 }

@@ -132,7 +132,7 @@ int unix_dir_loop(Stream_t *Stream, MainParam_t *mp)
 	return ret;
 }
 
-Stream_t *OpenDir(Stream_t *Stream, const char *filename)
+Stream_t *OpenDir(const char *filename)
 {
 	Dir_t *This;
 

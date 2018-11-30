@@ -353,8 +353,8 @@ static int normal_map(File_t *This, off_t where, size_t *len, int mode,
 }
 
 
-static int root_map(File_t *This, off_t where, size_t *len, int mode,
-					mt_off_t *res)
+static int root_map(File_t *This, off_t where, size_t *len, int mode UNUSEDP,
+		    mt_off_t *res)
 {
 	Fs_t *Fs = This->Fs;
 

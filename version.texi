@@ -1,3 +1,3 @@
-@set EDITION 4.0.17
-@set VERSION 4.0.17
-@set UPDATED June 2011
+@set EDITION 4.0.18
+@set VERSION 4.0.18
+@set UPDATED January 2013

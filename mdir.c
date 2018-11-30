@@ -354,7 +354,7 @@ static int enterDirectory(Stream_t *Dir)
 	return 0;
 }
 
-static int list_file(direntry_t *entry, MainParam_t *mp)
+static int list_file(direntry_t *entry, MainParam_t *mp UNUSEDP)
 {
 	unsigned long size;
 	int i;
@@ -480,7 +480,8 @@ static int list_non_recurs_directory(direntry_t *entry, MainParam_t *mp)
 }
 
 
-static int list_recurs_directory(direntry_t *entry, MainParam_t *mp)
+static int list_recurs_directory(direntry_t *entry UNUSEDP,
+				 MainParam_t *mp UNUSEDP)
 {
 	MainParam_t subMp;
 	int ret;
@@ -530,11 +531,10 @@ static void usage(int ret)
 }
 
 
-void mdir(int argc, char **argv, int type)
+void mdir(int argc, char **argv, int type UNUSEDP)
 {
 	int ret;
 	MainParam_t mp;
-	int faked;
 	int c;
 	const char *fakedArgv[] = { "." };
 
@@ -547,7 +547,7 @@ void mdir(int argc, char **argv, int type)
 	while ((c = getopt(argc, argv, "i:waXbfds/h")) != EOF) {
 		switch(c) {
 			case 'i':
-				set_cmd_line_image(optarg, 0);
+				set_cmd_line_image(optarg);
 				break;
 			case 'w':
 				wide = 1;
@@ -583,7 +583,6 @@ void mdir(int argc, char **argv, int type)
 	}
 
 	/* fake an argument */
-	faked = 0;
 	if (optind == argc) {
 		argv = (char **)fakedArgv;
 		argc = 1;

@@ -98,8 +98,8 @@ static void TranslateToDos(doscp_t *toDos, const char *in, char *out, int count,
  * Will truncate file and extension names, will substitute
  * the character '~' for any illegal character(s) in the name.
  */
-void dos_name(doscp_t *toDos, const char *name, int verbose, int *mangled,
-	      dos_name_t *dn)
+void dos_name(doscp_t *toDos, const char *name, int verbose UNUSEDP,
+	      int *mangled, dos_name_t *dn)
 {
 	char *s, *ext;
 	register int i;

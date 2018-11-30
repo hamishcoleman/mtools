@@ -34,9 +34,9 @@ struct doscp_t {
 	iconv_t to;
 };
 
-static char *wcharCp=NULL;
+static const char *wcharCp=NULL;
 
-static char* wcharTries[] = {
+static const char* wcharTries[] = {
 	"WCHAR_T",
 	"UTF-32BE", "UTF-32LE",
 	"UTF-16BE", "UTF-16LE",
@@ -46,17 +46,27 @@ static char* wcharTries[] = {
 	"UCS-4", "UCS-2"
 };
 
-static wchar_t *testString = L"ab";
+static const char *asciiTries[] = {
+	"ASCII", "ASCII-GR", "ISO8859-1"
+};
 
-static int try(char *testCp) {
+static const wchar_t *testString = L"ab";
+
+static int try(const char *testCp) {
 	size_t res;
 	char *inbuf = (char *)testString;
 	size_t inbufLen = 2*sizeof(wchar_t);
 	char outbuf[3];
 	char *outbufP = outbuf;
 	size_t outbufLen = 2*sizeof(char);
-	iconv_t test = iconv_open("ASCII", testCp);
-
+	iconv_t test;
+	int i;
+	
+	for(i=0; i < sizeof(asciiTries) / sizeof(asciiTries[0]); i++) {
+		test = iconv_open(asciiTries[i], testCp);
+		if(test != (iconv_t) -1)
+			break;
+	}
 	if(test == (iconv_t) -1)
 		goto fail0;
 	res = iconv(test,
@@ -75,8 +85,8 @@ static int try(char *testCp) {
 	return 0;
 }
 
-static const char *getWcharCp() {
-	int i;
+static const char *getWcharCp(void) {
+	unsigned int i;
 	if(wcharCp != NULL)
 		return wcharCp;	
 	for(i=0; i< sizeof(wcharTries) / sizeof(wcharTries[0]); i++) {
@@ -164,7 +174,7 @@ static int safe_iconv(iconv_t conv, const wchar_t *wchar, char *dest,
 		      size_t len, int *mangled)
 {
 	int r;
-	int i;
+	unsigned int i;
 	size_t in_len=len*sizeof(wchar_t);
 	size_t out_len=len*4;
 	char *dptr = dest;
@@ -388,7 +398,7 @@ int native_to_wchar(const char *native, wchar_t *wchar, size_t len,
 		    const char *end, int *mangled)
 {
 	mbstate_t ps;
-	int i;
+	unsigned int i;
 	memset(&ps, 0, sizeof(ps));
 
 	for(i=0; i<len && (native < end || !end); i++) {

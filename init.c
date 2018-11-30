@@ -142,8 +142,8 @@ Stream_t *find_device(char drive, int mode, struct device *out_dev,
 		if(out_dev->misc_flags & FLOPPYD_FLAG) {
 		    Stream = 0;
 #ifdef USE_FLOPPYD
-		    Stream = FloppydOpen(out_dev, dev, name, mode,
-					 errmsg, 0, 1, maxSize);
+		    Stream = FloppydOpen(out_dev, name, mode,
+					 errmsg, maxSize);
 #endif
 		} else {
 
@@ -234,7 +234,6 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 {
 	int blocksize;
 	int media,i;
-	int nhs;
 	int disk_size = 0;	/* In case we don't happen to set this below */
 	size_t tot_sectors;
 	char name[EXPAND_BUF];
@@ -298,7 +297,6 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 		This->sectorShift = 9;
 		This->sectorMask = 511;
 		This->fat_bits = 12;
-		nhs = 0;
 	} else {
 		struct label_blk_t *labelBlock;
 		/*
@@ -306,12 +304,8 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 		 * (which is in clusters)
 		 */
 		tot_sectors = WORD_S(psect);
-		if(!tot_sectors) {
+		if(!tot_sectors)
 			tot_sectors = DWORD_S(bigsect);	
-			nhs = DWORD_S(nhs);
-		} else
-			nhs = WORD_S(nhs);
-
 
 		This->cluster_size = boot.boot.clsiz;
 		This->fat_start = WORD_S(nrsvsect);
@@ -393,7 +387,7 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 	}
 
 	/* read the FAT sectors */
-	if(fat_read(This, &boot, dev.fat_bits, tot_sectors, dev.use_2m&0x7f)){
+	if(fat_read(This, &boot, tot_sectors, dev.use_2m&0x7f)){
 		This->num_fat = 1;
 		FREE(&This->Next);
 		Free(This->Next);

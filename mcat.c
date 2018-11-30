@@ -52,7 +52,7 @@ static size_t bufLen(size_t blocksize, mt_size_t totalSize, mt_off_t address)
 	return blocksize;
 }
 
-void mcat(int argc, char **argv, int type)
+void mcat(int argc, char **argv, int type UNUSEDP)
 {
 	struct device *dev;
 	struct device out_dev;
@@ -115,8 +115,8 @@ void mcat(int argc, char **argv, int type)
 
 #ifdef USE_FLOPPYD
                 if(!Stream)
-                        Stream = FloppydOpen(&out_dev, dev, name, 
-					     mode, errmsg, 0, 1, NULL);
+                        Stream = FloppydOpen(&out_dev, name, 
+					     mode, errmsg, NULL);
 #endif
 
 

@@ -251,7 +251,7 @@ void mzip(int argc, char **argv, int type)
 	while ((c = getopt(argc, argv, "i:efpqrwxuh")) != EOF) {
 		switch (c) {
 			case 'i':
-				set_cmd_line_image(optarg, SCSI_FLAG);
+				set_cmd_line_image(optarg);
 				break;
 			case 'f':
 				if (get_real_uid()) {

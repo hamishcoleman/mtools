@@ -84,7 +84,7 @@ void mshowfat(int argc, char **argv, int mtype)
 				arg.offset = str_to_offset(optarg);
 				break;
 			case 'i':
-				set_cmd_line_image(optarg, 0);
+				set_cmd_line_image(optarg);
 				break;
 			case 'h':
 				usage(0);

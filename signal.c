@@ -58,3 +58,77 @@ void setup_signal(void)
 	signal(SIGQUIT, signal_handler);
 #endif
 }
+
+#ifdef HAVE_SIGACTION
+static void _allow_interrupt(saved_sig_state *ss, int sig, int slot)
+{
+  struct sigaction new;
+
+  bzero(&new, sizeof(new));
+  new.sa_handler = signal_handler;
+  new.sa_flags &= ~SA_RESTART;
+
+  if(sigaction(sig, &new, &ss->sa[slot]) < 0) {
+    perror("sigaction");
+    exit(1);
+  }
+}
+#endif
+
+/* Allow syscalls to be interrupted by signal */
+void allow_interrupts(saved_sig_state *ss)
+{
+#ifdef HAVE_SIGACTION
+
+# ifdef SIGHUP
+  _allow_interrupt(ss, SIGINT, 0);
+# endif
+
+# ifdef SIGINT
+  _allow_interrupt(ss, SIGINT, 1);
+# endif
+
+# ifdef SIGTERM
+  _allow_interrupt(ss, SIGINT, 2);
+# endif
+
+# ifdef SIGQUIT
+  _allow_interrupt(ss, SIGINT, 3);
+# endif
+
+#endif
+}
+
+#ifdef HAVE_SIGACTION
+static void _restore_interrupt(saved_sig_state *ss, int sig, int slot)
+{
+  if(sigaction(sig, &ss->sa[slot], NULL) < 0) {
+    perror("restore sigaction");
+    exit(1);
+  }
+}
+#endif
+
+/* Restore syscalls to be interrupted by signal */
+void restore_interrupts(saved_sig_state *ss)
+{
+#ifdef HAVE_SIGACTION
+
+# ifdef SIGHUP
+  _restore_interrupt(ss, SIGINT, 0);
+# endif
+
+# ifdef SIGINT
+  _restore_interrupt(ss, SIGINT, 1);
+# endif
+
+# ifdef SIGTERM
+  _restore_interrupt(ss, SIGINT, 2);
+# endif
+
+# ifdef SIGQUIT
+  _restore_interrupt(ss, SIGINT, 3);
+# endif
+
+#endif
+}

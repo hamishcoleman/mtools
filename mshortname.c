@@ -52,7 +52,7 @@ void mshortname(int argc, char **argv, int type)
 	while ((c = getopt(argc, argv, "i:h")) != EOF) {
 		switch (c) {
 			case 'i':
-				set_cmd_line_image(optarg, 0);
+				set_cmd_line_image(optarg);
 				break;
 			case 'h':
 				usage(0);

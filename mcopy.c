@@ -78,16 +78,15 @@ typedef struct Arg_t {
 	int noClobber;
 } Arg_t;
 
-static int _unix_write(direntry_t *entry, MainParam_t *mp, int needfilter,
-		       const char *unixFile);
+static int _unix_write(MainParam_t *mp, int needfilter, const char *unixFile);
 
 /* Write the Unix file */
-static int unix_write(direntry_t *entry, MainParam_t *mp, int needfilter)
+static int unix_write(MainParam_t *mp, int needfilter)
 {
 	Arg_t *arg=(Arg_t *) mp->arg;
 
 	if(arg->type)
-		return _unix_write(entry, mp, needfilter, "-");
+		return _unix_write(mp, needfilter, "-");
 	else {
 		char *unixFile = mpBuildUnixFilename(mp);
 		int ret;
@@ -95,7 +94,7 @@ static int unix_write(direntry_t *entry, MainParam_t *mp, int needfilter)
 			printOom();
 			return ERROR_ONE;
 		}
-		ret = _unix_write(entry, mp, needfilter, unixFile);
+		ret = _unix_write(mp, needfilter, unixFile);
 		free(unixFile);
 		return ret;
 	}
@@ -103,8 +102,7 @@ static int unix_write(direntry_t *entry, MainParam_t *mp, int needfilter)
 
 
 /* Write the Unix file */
-static int _unix_write(direntry_t *entry, MainParam_t *mp, int needfilter,
-		       const char *unixFile)
+static int _unix_write(MainParam_t *mp, int needfilter, const char *unixFile)
 {
 	Arg_t *arg=(Arg_t *) mp->arg;
 	time_t mtime;
@@ -265,15 +263,15 @@ static int unix_copydir(direntry_t *entry, MainParam_t *mp)
 	}
 }
 
-static  int dos_to_unix(direntry_t *entry, MainParam_t *mp)
+static  int dos_to_unix(direntry_t *entry UNUSEDP, MainParam_t *mp)
 {
-	return unix_write(entry, mp, 1);
+	return unix_write(mp, 1);
 }
 
 
 static  int unix_to_unix(MainParam_t *mp)
 {
-	return unix_write(0, mp, 0);
+	return unix_write(mp, 0);
 }
 
 
@@ -507,8 +505,7 @@ static void usage(int ret)
 void mcopy(int argc, char **argv, int mtype)
 {
 	Arg_t arg;
-	int c, ret, fastquit;
-	int todir;
+	int c, fastquit;
 	
 
 	/* get command line options */
@@ -516,7 +513,6 @@ void mcopy(int argc, char **argv, int mtype)
 	init_clash_handling(& arg.ch);
 
 	/* get command line options */
-	todir = 0;
 	arg.recursive = 0;
 	arg.preserveTime = 0;
 	arg.preserveAttributes = 0;
@@ -531,7 +527,7 @@ void mcopy(int argc, char **argv, int mtype)
 	while ((c = getopt(argc, argv, "i:abB/sptTnmvQD:oh")) != EOF) {
 		switch (c) {
 			case 'i':
-				set_cmd_line_image(optarg, 0);
+				set_cmd_line_image(optarg);
 				break;
 			case 's':
 			case '/':
@@ -613,7 +609,7 @@ void mcopy(int argc, char **argv, int mtype)
 			target = argv[argc];
 		}
 
-		ret = target_lookup(&arg.mp, target);
+		target_lookup(&arg.mp, target);
 		if(!arg.mp.targetDir && !arg.mp.unixTarget) {
 			fprintf(stderr,"Bad target %s\n", target);
 			exit(1);

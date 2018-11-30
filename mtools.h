@@ -155,7 +155,14 @@ extern int got_signal;
 #define got_signal do_gotsignal(__FILE__, __LINE__) */
 
 void setup_signal(void);
+#ifdef HAVE_SIGACTION
+typedef struct { struct sigaction sa[4]; } saved_sig_state;
+#else
+typedef int saved_sig_state;
+#endif
 
+void allow_interrupts(saved_sig_state *ss);
+void restore_interrupts(saved_sig_state *ss);
 
 #define SET_INT(target, source) \
 if(source)target=source
@@ -168,8 +175,11 @@ UNUSED(static __inline__ int compare (long ref, long testee))
 
 Stream_t *GetFs(Stream_t *Fs);
 
-void label_name(doscp_t *cp, const char *filename, int verbose, 
-		int *mangled, dos_name_t *ans);
+void label_name_uc(doscp_t *cp, const char *filename, int verbose, 
+		   int *mangled, dos_name_t *ans);
+
+void label_name_pc(doscp_t *cp, const char *filename, int verbose, 
+		   int *mangled, dos_name_t *ans);
 
 /* environmental variables */
 extern unsigned int mtools_skip_check;
@@ -187,7 +197,7 @@ extern int mtools_raw_tty;
 extern int batchmode;
 
 char get_default_drive(void);
-void set_cmd_line_image(char *img, int flags);
+void set_cmd_line_image(char *img);
 void read_config(void);
 off_t str_to_offset(char *str);
 extern struct device *devices;
@@ -241,7 +251,7 @@ char *getVoldName(struct device *dev, char *name);
 #endif
 
 
-Stream_t *OpenDir(Stream_t *Parent, const char *filename);
+Stream_t *OpenDir(const char *filename);
 /* int unix_dir_loop(Stream_t *Stream, MainParam_t *mp); 
 int unix_loop(MainParam_t *mp, char *arg); */
 

@@ -72,7 +72,7 @@ static void progress(unsigned int i, unsigned int total) {
 
 static int scan(Fs_t *Fs, Stream_t *dev,
 		long cluster, unsigned int badClus,
-		char *buffer, int write) {
+		char *buffer, int doWrite) {
 	off_t start;
 	off_t ret;
 	off_t pos;
@@ -83,7 +83,7 @@ static int scan(Fs_t *Fs, Stream_t *dev,
 		return 0;
 	start = (cluster - 2) * Fs->cluster_size + Fs->clus_start;
 	pos = sectorsToBytes((Stream_t*)Fs, start);
-	if(write) {
+	if(doWrite) {
 		ret = force_write(dev, buffer, pos, in_len);
 		if(ret < in_len )
 			bad = 1;
@@ -109,7 +109,7 @@ static int scan(Fs_t *Fs, Stream_t *dev,
 	return 0;
 }
 
-void mbadblocks(int argc, char **argv, int type)
+void mbadblocks(int argc, char **argv, int type UNUSEDP)
 {
 	unsigned int i;
 	unsigned int startSector=2;
@@ -127,7 +127,7 @@ void mbadblocks(int argc, char **argv, int type)
 	while ((c = getopt(argc, argv, "i:s:cwS:E:")) != EOF) {
 		switch(c) {
 		case 'i':
-			set_cmd_line_image(optarg, 0);
+			set_cmd_line_image(optarg);
 			break;
 		case 'c':
 			checkListTwice(filename);
@@ -176,7 +176,6 @@ void mbadblocks(int argc, char **argv, int type)
 		goto exit_0;
 	}
 	if(writeMode) {
-		int i;
 		pat_buf=malloc(in_len * N_PATTERN);
 		if(!pat_buf) {
 			printOom();

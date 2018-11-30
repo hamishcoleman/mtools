@@ -24,7 +24,7 @@
 #include "mtools.h"
 
 
-static int mcd_callback(direntry_t *entry, MainParam_t *mp)
+static int mcd_callback(direntry_t *entry, MainParam_t *mp UNUSEDP)
 {
 	FILE *fp;
 
@@ -40,7 +40,7 @@ static int mcd_callback(direntry_t *entry, MainParam_t *mp)
 }
 
 
-void mcd(int argc, char **argv, int type)
+void mcd(int argc, char **argv, int type UNUSEDP)
 {
 	struct MainParam_t mp;
 

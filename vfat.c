@@ -606,7 +606,6 @@ int vfat_lookup(direntry_t *direntry, const char *filename, int length,
 	dirCache_t *cache;
 	int io_error;
 	wchar_t wfilename[MAX_VNAMELEN+1];
-	wchar_t *wfilenamep = wfilename;
 	doscp_t *cp = GET_DOSCONVERT(direntry->Dir);
 
 	if(length == -1 && filename)
@@ -615,10 +614,8 @@ int vfat_lookup(direntry_t *direntry, const char *filename, int length,
 	if(filename != NULL)
 		length = native_to_wchar(filename, wfilename, MAX_VNAMELEN,
 					 filename+length, 0);
-	else {
-		wfilenamep = NULL;
+	else
 		length = 0;
-	}
 
 	if (direntry->entry == -2)
 		return -1;

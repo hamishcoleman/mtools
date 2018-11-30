@@ -27,8 +27,8 @@
 #include "nameclash.h"
 #include "file_name.h"
 
-void label_name(doscp_t *cp, const char *filename, int verbose,
-		int *mangled, dos_name_t *ans)
+static void _label_name(doscp_t *cp, const char *filename, int verbose,
+			int *mangled, dos_name_t *ans, int preserve_case)
 {
 	int len;
 	int i;
@@ -50,7 +50,8 @@ void label_name(doscp_t *cp, const char *filename, int verbose,
 			have_lower = 1;
 		if(isupper(wbuffer[i]))
 			have_upper = 1;
-		wbuffer[i] = towupper(wbuffer[i]);
+		if(!preserve_case)
+			wbuffer[i] = towupper(wbuffer[i]);
 		if(
 #ifdef HAVE_WCHAR_H
 		   wcschr(L"^+=/[]:,?*\\<>|\".", wbuffer[i])
@@ -65,6 +66,18 @@ void label_name(doscp_t *cp, const char *filename, int verbose,
 	if (have_lower && have_upper)
 		*mangled = 1;
 	wchar_to_dos(cp, wbuffer, ans->base, len, mangled);
+}
+
+void label_name_uc(doscp_t *cp, const char *filename, int verbose,
+		   int *mangled, dos_name_t *ans)
+{
+	_label_name(cp, filename, verbose, mangled, ans, 0);
+}
+
+void label_name_pc(doscp_t *cp, const char *filename, int verbose,
+		   int *mangled, dos_name_t *ans)
+{
+	_label_name(cp, filename, verbose, mangled, ans, 1);
 }
 
 int labelit(struct dos_name_t *dosname,
@@ -93,7 +106,7 @@ static void usage(int ret)
 void mlabel(int argc, char **argv, int type)
 {
 
-	char *newLabel;
+	const char *newLabel="";
 	int verbose, clear, interactive, show;
 	direntry_t entry;
 	int result=0;
@@ -115,9 +128,10 @@ void mlabel(int argc, char **argv, int type)
 	struct label_blk_t *labelBlock;
 	int isRo=0;
 	int *isRop=NULL;
+	char drive;
 
 	init_clash_handling(&ch);
-	ch.name_converter = label_name;
+	ch.name_converter = label_name_uc;
 	ch.ignore_entry = -2;
 
 	verbose = 0;
@@ -129,7 +143,7 @@ void mlabel(int argc, char **argv, int type)
 	while ((c = getopt(argc, argv, "i:vcsnN:h")) != EOF) {
 		switch (c) {
 			case 'i':
-				set_cmd_line_image(optarg, 0);
+				set_cmd_line_image(optarg);
 				break;
 			case 'v':
 				verbose = 1;
@@ -162,11 +176,18 @@ void mlabel(int argc, char **argv, int type)
 			}
 	}
 
-	if (argc - optind != 1 || !argv[optind][0] || argv[optind][1] != ':')
+	if (argc - optind > 1)
 		usage(1);
+	if(argc - optind == 1) {
+	    if(!argv[optind][0] || argv[optind][1] != ':')
+		usage(1);
+	    drive = toupper(argv[argc -1][0]);
+	    newLabel = argv[optind]+2;
+	} else {
+	    drive = get_default_drive();
+	}
 
 	init_mp(&mp);
-	newLabel = argv[optind]+2;
 	if(strlen(newLabel) > VBUFSIZE) {
 		fprintf(stderr, "Label too long\n");
 		FREE(&RootDir);
@@ -184,7 +205,7 @@ void mlabel(int argc, char **argv, int type)
 		FREE(&RootDir);
 		exit(1);
 	}		
-	RootDir = open_root_dir(argv[optind][0], isRop ? 0 : O_RDWR, isRop);
+	RootDir = open_root_dir(drive, isRop ? 0 : O_RDWR, isRop);
 	if(isRo) {
 		show = 1;
 		interactive = 0;
@@ -215,14 +236,20 @@ void mlabel(int argc, char **argv, int type)
 
 	/* ask for new label */
 	if(interactive){
+		saved_sig_state ss; 
 		newLabel = longname;
+		allow_interrupts(&ss);
 		fprintf(stderr,"Enter the new volume label : ");
-		if(fgets(newLabel, VBUFSIZE, stdin) == NULL) {
-			newLabel[0] = '\0';
+		if(fgets(longname, VBUFSIZE, stdin) == NULL) {
 			fprintf(stderr, "\n");
+			if(errno == EINTR) {
+				FREE(&RootDir);
+				exit(1);
+			}
+			longname[0] = '\0';
 		}
-		if(newLabel[0])
-			newLabel[strlen(newLabel)-1] = '\0';
+		if(longname[0])
+			longname[strlen(newLabel)-1] = '\0';
 	}
 
 	if(strlen(newLabel) > 11) {
@@ -270,7 +297,7 @@ void mlabel(int argc, char **argv, int type)
 		else
 			shrtLabel = newLabel;
 		cp = GET_DOSCONVERT(Fs);
-		label_name(cp, shrtLabel, verbose, &mangled, &dosname);
+		label_name_pc(cp, shrtLabel, verbose, &mangled, &dosname);
 
 		if(have_boot && boot.boot.descr >= 0xf0 &&
 		   labelBlock->dos4 == 0x29) {

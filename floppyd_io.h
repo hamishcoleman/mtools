@@ -24,10 +24,9 @@
 #include "stream.h"
 
 /*extern int ConnectToFloppyd(const char* name, Class_t** ioclass);*/
-Stream_t *FloppydOpen(struct device *dev, struct device *dev2,
-					  char *name, int mode, char *errmsg,
-					  int mode2, int locked,
-					  mt_size_t *maxSize);
+Stream_t *FloppydOpen(struct device *dev, 
+		      char *name, int mode, char *errmsg,
+		      mt_size_t *maxSize);
 
 #define FLOPPYD_DEFAULT_PORT 5703
 

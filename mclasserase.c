@@ -90,7 +90,7 @@ static void do_mclasserase(char drive,int debug)
   
   char cCardType[12];
   
-  char drivel[2];		/* Stores the drive letter */
+  char drivel[3];		/* Stores the drive letter */
 
 
   int i = 0;
@@ -276,7 +276,7 @@ static void do_mclasserase(char drive,int debug)
  *
  *
  */
-void mclasserase(int argc, char **argv, int type)
+void mclasserase(int argc, char **argv, int type UNUSEDP)
 {
   /* declaration of all variables */
   int c;

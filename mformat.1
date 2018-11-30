@@ -1,5 +1,5 @@
 '\" t
-.TH mformat 1 "29Jun11" mtools-4.0.17
+.TH mformat 1 "09Jan13" mtools-4.0.18
 .SH Name
 mformat - add an MSDOS filesystem to a low-level formatted floppy disk
 '\" t
@@ -28,9 +28,7 @@ low-level formatted diskette. Its syntax is:
 \&\fR\&\f(CWmformat\fR [\fR\&\f(CW-t\fR \fIcylinders\fR|\fR\&\f(CW-T\fR \fItot_sectors\fR] [\fR\&\f(CW-h\fR \fIheads\fR] [\fR\&\f(CW-s\fR \fIsectors\fR]
   [\fR\&\f(CW-f\fR \fIsize\fR] [\fR\&\f(CW-1\fR] [\fR\&\f(CW-4\fR] [\fR\&\f(CW-8\fR]
   [\fR\&\f(CW-v\fR \fIvolume_label\fR]
-  [\fR\&\f(CW-F\fR] [\fR\&\f(CW-S\fR \fIsizecode\fR] [\fR\&\f(CW-X\fR]
-  [\fR\&\f(CW-2\fR \fIsectors_on_track_0\fR] [\fR\&\f(CW-3\fR]
-  [\fR\&\f(CW-0\fR \fIrate_on_track_0\fR] [\fR\&\f(CW-A\fR \fIrate_on_other_tracks\fR]
+  [\fR\&\f(CW-F\fR] [\fR\&\f(CW-S\fR \fIsizecode\fR]
   [\fR\&\f(CW-M\fR \fIsoftware_sector_size\fR]
   [\fR\&\f(CW-N\fR \fIserial_number\fR] [\fR\&\f(CW-a\fR]
   [\fR\&\f(CW-C\fR] [\fR\&\f(CW-H\fR \fIhidden_sectors\fR] [\fR\&\f(CW-I\fR \fIfsVersion\fR]
@@ -38,6 +36,10 @@ low-level formatted diskette. Its syntax is:
   [\fR\&\f(CW-B\fR \fIboot_sector\fR] [\fR\&\f(CW-k\fR]
   [\fR\&\f(CW-m\fR \fImedia_descriptor\fR]
   [\fR\&\f(CW-K\fR \fIbackup_boot\fR]
+  [\fR\&\f(CW-c\fR \fIclusters_per_sector\fR]
+  [\fR\&\f(CW-d\fR \fIfat_copies\fR]
+  [\fR\&\f(CW-X\fR] [\fR\&\f(CW-2\fR \fIsectors_on_track_0\fR] [\fR\&\f(CW-3\fR]
+  [\fR\&\f(CW-0\fR \fIrate_on_track_0\fR] [\fR\&\f(CW-A\fR \fIrate_on_other_tracks\fR]
   \fIdrive:\fR
 .fi
 .ft R
