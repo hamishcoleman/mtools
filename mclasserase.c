@@ -79,12 +79,8 @@ static void usage(int ret)
 static void do_mclasserase(char drive,int debug)
 {
   struct device dev;		/* Device information structure */
-  unsigned char boot0[MAX_BOOT];
-/* Bootsector information structure
-   has to be here. some compilers don't do preprocessor statements if
-   they're not in first row.
-*/
-  struct bootsector *boot = (struct bootsector *) boot0;
+  union bootsector boot;
+
   int media;			/* Just used to enter some in find_device */
   char name[EXPAND_BUF];
   Stream_t *Stream;
@@ -120,7 +116,7 @@ static void do_mclasserase(char drive,int debug)
   
 
   /* Reading parameters from card. Exit with -1 if failed. */
-  if(! (Stream = find_device(drive, O_RDONLY, &dev, boot,
+  if(! (Stream = find_device(drive, O_RDONLY, &dev, &boot,
 					   name, &media, 0, NULL)))
 	exit(1);
 
@@ -136,7 +132,7 @@ static void do_mclasserase(char drive,int debug)
 #endif
 
   /* we use only FAT12/16 ...*/
-  labelBlock = &boot->ext.old.labelBlock;
+  labelBlock = &boot.boot.ext.old.labelBlock;
    
   /* store card type */
   sprintf(cCardType, "%11.11s", labelBlock->label);
@@ -218,7 +214,8 @@ static void do_mclasserase(char drive,int debug)
         printf("\nPress <ENTER> to continue\n");
         printf("Press <x> and <ENTER> to abort\n");
 	
-	scanf("%c",dummy);
+	if(scanf("%c",dummy) < 1)
+	  printf("Input error\n");
 	fflush( stdin );
 	
 	if (strcmp(dummy,"x") == 0)

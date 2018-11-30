@@ -95,7 +95,11 @@ int unix_dir_loop(Stream_t *Stream, MainParam_t *mp)
 	int fd;
 
 	fd = open(".", O_RDONLY);
-	chdir(This->pathname);
+	if(chdir(This->pathname) < 0) {
+		fprintf(stderr, "Could not chdir into %s (%s)\n",
+			This->pathname, strerror(errno));
+		return -1;
+	}
 #endif
 	while((entry=readdir(This->dir)) != NULL) {
 		if(got_signal)
@@ -121,7 +125,8 @@ int unix_dir_loop(Stream_t *Stream, MainParam_t *mp)
 #endif
 	}
 #ifdef FCHDIR_MODE
-	fchdir(fd);
+	if(fchdir(fd) < 0)
+		perror("Could not chdir back to ..");
 	close(fd);
 #endif
 	return ret;

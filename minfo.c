@@ -36,7 +36,7 @@ static void usage(int ret)
 }
 
 
-static void displayInfosector(Stream_t *Stream, struct bootsector *boot)
+static void displayInfosector(Stream_t *Stream, union bootsector *boot)
 {
 	InfoSector_t *infosec;
 
@@ -58,8 +58,7 @@ static void displayInfosector(Stream_t *Stream, struct bootsector *boot)
 
 void minfo(int argc, char **argv, int type)
 {
-	unsigned char boot0[MAX_BOOT];  
-	struct bootsector *boot = (struct bootsector *) boot0;
+	union bootsector boot;
 
 	char name[EXPAND_BUF];
 	int media;
@@ -99,13 +98,13 @@ void minfo(int argc, char **argv, int type)
 			usage(1);
 		drive = toupper(argv[optind][0]);
 
-		if(! (Stream = find_device(drive, O_RDONLY, &dev, boot, 
+		if(! (Stream = find_device(drive, O_RDONLY, &dev, &boot, 
 					   name, &media, 0, NULL)))
 			exit(1);
 
-		tot_sectors = DWORD(bigsect);
-		SET_INT(tot_sectors, WORD(psect));
-		sector_size = WORD(secsiz);
+		tot_sectors = DWORD_S(bigsect);
+		SET_INT(tot_sectors, WORD_S(psect));
+		sector_size = WORD_S(secsiz);
 		size_code=2;
 		for(i=0; i<7; i++) {
 			if(sector_size == 128 << i) {
@@ -121,8 +120,8 @@ void minfo(int argc, char **argv, int type)
 		printf("cylinders: %d\n\n", dev.tracks);
 		printf("mformat command line: mformat -t %d -h %d -s %d ",
 		       dev.tracks, dev.heads, dev.sectors);
-		if(DWORD(nhs))
-			printf("-H %d ", DWORD(nhs));
+		if(DWORD_S(nhs))
+			printf("-H %d ", DWORD_S(nhs));
 		if(size_code != 2)
 			printf("-S %d ",size_code);
 		printf("%c:\n", tolower(drive));
@@ -130,25 +129,25 @@ void minfo(int argc, char **argv, int type)
 		
 		printf("bootsector information\n");
 		printf("======================\n");
-		printf("banner:\"%8s\"\n", boot->banner);
-		printf("sector size: %d bytes\n", WORD(secsiz));
-		printf("cluster size: %d sectors\n", boot->clsiz);
-		printf("reserved (boot) sectors: %d\n", WORD(nrsvsect));
-		printf("fats: %d\n", boot->nfat);
+		printf("banner:\"%8s\"\n", boot.boot.banner);
+		printf("sector size: %d bytes\n", WORD_S(secsiz));
+		printf("cluster size: %d sectors\n", boot.boot.clsiz);
+		printf("reserved (boot) sectors: %d\n", WORD_S(nrsvsect));
+		printf("fats: %d\n", boot.boot.nfat);
 		printf("max available root directory slots: %d\n", 
-		       WORD(dirents));
-		printf("small size: %d sectors\n", WORD(psect));
-		printf("media descriptor byte: 0x%x\n", boot->descr);
-		printf("sectors per fat: %d\n", WORD(fatlen));
-		printf("sectors per track: %d\n", WORD(nsect));
-		printf("heads: %d\n", WORD(nheads));
-		printf("hidden sectors: %d\n", DWORD(nhs));
-		printf("big size: %d sectors\n", DWORD(bigsect));
+		       WORD_S(dirents));
+		printf("small size: %d sectors\n", WORD_S(psect));
+		printf("media descriptor byte: 0x%x\n", boot.boot.descr);
+		printf("sectors per fat: %d\n", WORD_S(fatlen));
+		printf("sectors per track: %d\n", WORD_S(nsect));
+		printf("heads: %d\n", WORD_S(nheads));
+		printf("hidden sectors: %d\n", DWORD_S(nhs));
+		printf("big size: %d sectors\n", DWORD_S(bigsect));
 
-		if(WORD(fatlen)) {
-		    labelBlock = &boot->ext.old.labelBlock;
+		if(WORD_S(fatlen)) {
+		    labelBlock = &boot.boot.ext.old.labelBlock;
 		} else {
-		    labelBlock = &boot->ext.fat32.labelBlock;
+		    labelBlock = &boot.boot.ext.fat32.labelBlock;
 		}
 
 		printf("physical drive id: 0x%x\n", 
@@ -164,22 +163,22 @@ void minfo(int argc, char **argv, int type)
 		printf("disk type=\"%8.8s\"\n", 
 		       labelBlock->fat_type);
 
-		if(!WORD(fatlen)){
+		if(!WORD_S(fatlen)){
 			printf("Big fatlen=%u\n",
-			       DWORD(ext.fat32.bigFat));
+			       DWORD_S(ext.fat32.bigFat));
 			printf("Extended flags=0x%04x\n",
-			       WORD(ext.fat32.extFlags));
+			       WORD_S(ext.fat32.extFlags));
 			printf("FS version=0x%04x\n",
-			       WORD(ext.fat32.fsVersion));
+			       WORD_S(ext.fat32.fsVersion));
 			printf("rootCluster=%u\n",
-			       DWORD(ext.fat32.rootCluster));
-			if(WORD(ext.fat32.infoSector) != MAX16)
+			       DWORD_S(ext.fat32.rootCluster));
+			if(WORD_S(ext.fat32.infoSector) != MAX16)
 				printf("infoSector location=%d\n",
-				       WORD(ext.fat32.infoSector));
-			if(WORD(ext.fat32.backupBoot) != MAX16)
+				       WORD_S(ext.fat32.infoSector));
+			if(WORD_S(ext.fat32.backupBoot) != MAX16)
 				printf("backup boot sector=%d\n",
-				       WORD(ext.fat32.backupBoot));
-			displayInfosector(Stream,boot);
+				       WORD_S(ext.fat32.backupBoot));
+			displayInfosector(Stream,&boot);
 		}
 
 		if(verbose) {
@@ -187,7 +186,7 @@ void minfo(int argc, char **argv, int type)
 			unsigned char *buf;
 
 			printf("\n");
-			size = WORD(secsiz);
+			size = WORD_S(secsiz);
 			
 			buf = (unsigned char *) malloc(size);
 			if(!buf) {

@@ -170,7 +170,7 @@ static __inline__ unsigned char sum_shortname(const dos_name_t *dn)
 
 	for (sum=0; name<end; ++name)
 		sum = ((sum & 1) ? 0x80 : 0) + (sum >> 1)
-		  + (*name ? *name : ' ');
+		  + *name;
 	return(sum);
 }
 
@@ -191,8 +191,8 @@ static __inline__ void check_vfat(struct vfat_state *v, struct directory *dir)
 		return;
 	}
 
-	strncpy(dn.base, (char *)dir->name, 8);
-	strncpy(dn.ext, (char *)dir->ext, 3);
+	memcpy(dn.base, (char *)dir->name, 8);
+	memcpy(dn.ext, (char *)dir->ext, 3);
 
 	if (v->sum != sum_shortname(&dn))
 		return;

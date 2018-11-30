@@ -35,7 +35,8 @@ void label_name(doscp_t *cp, const char *filename, int verbose,
 	int have_lower, have_upper;
 	wchar_t wbuffer[12];
 
-	strcpy(ans->base,"           ");
+	memset(ans, ' ', sizeof(ans)-1);
+	ans->sentinel = '\0';
 	len = native_to_wchar(filename, wbuffer, 11, 0, 0);
 	if(len > 11){
 		*mangled = 1;
@@ -108,7 +109,7 @@ void mlabel(int argc, char **argv, int type)
 	int need_write_boot = 0;
 	int have_boot = 0;
 	char *eptr;
-	struct bootsector boot;
+	union bootsector boot;
 	Stream_t *Fs=0;
 	int r;
 	struct label_blk_t *labelBlock;
@@ -210,7 +211,10 @@ void mlabel(int argc, char **argv, int type)
 	if(interactive){
 		newLabel = longname;
 		fprintf(stderr,"Enter the new volume label : ");
-		fgets(newLabel, VBUFSIZE, stdin);
+		if(fgets(newLabel, VBUFSIZE, stdin) == NULL) {
+			newLabel[0] = '\0';
+			fprintf(stderr, "\n");
+		}
 		if(newLabel[0])
 			newLabel[strlen(newLabel)-1] = '\0';
 	}
@@ -235,14 +239,14 @@ void mlabel(int argc, char **argv, int type)
 	have_boot = 0;
 	if( (!show || newLabel[0]) || set_serial != SER_NONE) {
 		Fs = GetFs(RootDir);
-		have_boot = (force_read(Fs,(char *)&boot,0,sizeof(boot)) ==
+		have_boot = (force_read(Fs,boot.characters,0,sizeof(boot)) ==
 			     sizeof(boot));
 	}
 
-	if(_WORD(boot.fatlen)) {
-	    labelBlock = &boot.ext.old.labelBlock;
+	if(WORD_S(fatlen)) {
+	    labelBlock = &boot.boot.ext.old.labelBlock;
 	} else {
-	    labelBlock = &boot.ext.fat32.labelBlock;
+	    labelBlock = &boot.boot.ext.fat32.labelBlock;
 	}
 
 	if(!show || newLabel[0]){
@@ -256,7 +260,7 @@ void mlabel(int argc, char **argv, int type)
 		cp = GET_DOSCONVERT(Fs);
 		label_name(cp, shrtLabel, verbose, &mangled, &dosname);
 
-		if(have_boot && boot.descr >= 0xf0 &&
+		if(have_boot && boot.boot.descr >= 0xf0 &&
 		   labelBlock->dos4 == 0x29) {
 			strncpy(labelBlock->label, dosname.base, 11);
 			need_write_boot = 1;
@@ -265,7 +269,7 @@ void mlabel(int argc, char **argv, int type)
 	}
 
 	if((set_serial != SER_NONE) & have_boot) {
-		if(have_boot && boot.descr >= 0xf0 &&
+		if(have_boot && boot.boot.descr >= 0xf0 &&
 		   labelBlock->dos4 == 0x29) {
 			set_dword(labelBlock->serial, serial);	
 			need_write_boot = 1;

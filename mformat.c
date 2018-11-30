@@ -54,7 +54,7 @@
 #endif
 
 
-static int init_geometry_boot(struct bootsector *boot, struct device *dev,
+static int init_geometry_boot(union bootsector *boot, struct device *dev,
 			       int sectors0, int rate_0, int rate_any,
 			       unsigned long *tot_sectors, int keepBoot)
 {
@@ -65,45 +65,45 @@ static int init_geometry_boot(struct bootsector *boot, struct device *dev,
 	int j;
 	int sum;
 
-	set_word(boot->nsect, dev->sectors);
-	set_word(boot->nheads, dev->heads);
+	set_word(boot->boot.nsect, dev->sectors);
+	set_word(boot->boot.nheads, dev->heads);
 
 	*tot_sectors = dev->heads * dev->sectors * dev->tracks - DWORD(nhs);
 
 	if (*tot_sectors < 0x10000){
-		set_word(boot->psect, *tot_sectors);
-		set_dword(boot->bigsect, 0);
+		set_word(boot->boot.psect, *tot_sectors);
+		set_dword(boot->boot.bigsect, 0);
 	} else {
-		set_word(boot->psect, 0);
-		set_dword(boot->bigsect, *tot_sectors);
+		set_word(boot->boot.psect, 0);
+		set_dword(boot->boot.bigsect, *tot_sectors);
 	}
 
 	if (dev->use_2m & 0x7f){
 		int bootOffset;
-		strncpy(boot->banner, "2M-STV04", 8);
-		boot->ext.old.res_2m = 0;
-		boot->ext.old.fmt_2mf = 6;
+		strncpy(boot->boot.banner, "2M-STV04", 8);
+		boot->boot.ext.old.res_2m = 0;
+		boot->boot.ext.old.fmt_2mf = 6;
 		if ( dev->sectors % ( ((1 << dev->ssize) + 3) >> 2 ))
-			boot->ext.old.wt = 1;
+			boot->boot.ext.old.wt = 1;
 		else
-			boot->ext.old.wt = 0;
-		boot->ext.old.rate_0= rate_0;
-		boot->ext.old.rate_any= rate_any;
-		if (boot->ext.old.rate_any== 2 )
-			boot->ext.old.rate_any= 1;
+			boot->boot.ext.old.wt = 0;
+		boot->boot.ext.old.rate_0= rate_0;
+		boot->boot.ext.old.rate_any= rate_any;
+		if (boot->boot.ext.old.rate_any== 2 )
+			boot->boot.ext.old.rate_any= 1;
 		i=76;
 
 		/* Infp0 */
-		set_word(boot->ext.old.Infp0, i);
-		uchr(boot)[i++] = sectors0;
-		uchr(boot)[i++] = 108;
+		set_word(boot->boot.ext.old.Infp0, i);
+		boot->bytes[i++] = sectors0;
+		boot->bytes[i++] = 108;
 		for(j=1; j<= sectors0; j++)
-			uchr(boot)[i++] = j;
+			boot->bytes[i++] = j;
 
-		set_word(boot->ext.old.InfpX, i);
+		set_word(boot->boot.ext.old.InfpX, i);
 		
-		uchr(boot)[i++] = 64;
-		uchr(boot)[i++] = 3;
+		boot->bytes[i++] = 64;
+		boot->bytes[i++] = 3;
 		nb_renum = i++;
 		sector2 = dev->sectors;
 		size2 = dev->ssize;
@@ -111,38 +111,38 @@ static int init_geometry_boot(struct bootsector *boot, struct device *dev,
 		while( sector2 ){
 			while ( sector2 < (1 << size2) >> 2 )
 				size2--;
-			uchr(boot)[i++] = 128 + j;
-			uchr(boot)[i++] = j++;
-			uchr(boot)[i++] = size2;
+			boot->bytes[i++] = 128 + j;
+			boot->bytes[i++] = j++;
+			boot->bytes[i++] = size2;
 			sector2 -= (1 << size2) >> 2;
 		}
-		uchr(boot)[nb_renum] = ( i - nb_renum - 1 ) / 3;
+		boot->bytes[nb_renum] = ( i - nb_renum - 1 ) / 3;
 
-		set_word(boot->ext.old.InfTm, i);
+		set_word(boot->boot.ext.old.InfTm, i);
 
 		sector2 = dev->sectors;
 		size2= dev->ssize;
 		while(sector2){
 			while ( sector2 < 1 << ( size2 - 2) )
 				size2--;
-			uchr(boot)[i++] = size2;
+			boot->bytes[i++] = size2;
 			sector2 -= 1 << (size2 - 2 );
 		}
 		
-		set_word(boot->ext.old.BootP,i);
+		set_word(boot->boot.ext.old.BootP,i);
 		bootOffset = i;
 
 		/* checksum */		
 		for (sum=0, j=64; j<i; j++) 
-			sum += uchr(boot)[j];/* checksum */
-		boot->ext.old.CheckSum=-sum;
+			sum += boot->bytes[j];/* checksum */
+		boot->boot.ext.old.CheckSum=-sum;
 		return bootOffset;
 	} else {
 		if(!keepBoot) {
-			boot->jump[0] = 0xeb;
-			boot->jump[1] = 0;
-			boot->jump[2] = 0x90;
-			strncpy(boot->banner, mformat_banner, 8);
+			boot->boot.jump[0] = 0xeb;
+			boot->boot.jump[1] = 0;
+			boot->boot.jump[2] = 0x90;
+			strncpy(boot->boot.banner, mformat_banner, 8);
 			/* It looks like some versions of DOS are
 			 * rather picky about this, and assume default
 			 * parameters without this, ignoring any
@@ -278,7 +278,7 @@ static void calc_fat_bits2(Fs_t *Fs, unsigned long tot_sectors, int fat_bits,
 	}
 }
 
-static __inline__ void format_root(Fs_t *Fs, char *label, struct bootsector *boot)
+static __inline__ void format_root(Fs_t *Fs, char *label, union bootsector *boot)
 {
 	Stream_t *RootDir;
 	char *buf;
@@ -316,9 +316,9 @@ static __inline__ void format_root(Fs_t *Fs, char *label, struct bootsector *boo
 
 	FREE(&RootDir);
 	if(Fs->fat_bits == 32)
-		set_word(boot->dirents, 0);
+		set_word(boot->boot.dirents, 0);
 	else
-		set_word(boot->dirents, Fs->dir_len * (Fs->sector_size / 32));
+		set_word(boot->boot.dirents, Fs->dir_len * (Fs->sector_size / 32));
 	free(buf);
 }
 
@@ -495,22 +495,22 @@ static unsigned char bootprog[]=
  0xb9, 0x01, 0x00, 0xcd, 0x13, 0x72, 0x05, 0xea, 0x00, 0x7c, 0x00,
  0x00, 0xcd, 0x19};
 
-static __inline__ void inst_boot_prg(struct bootsector *boot, int offset)
+static __inline__ void inst_boot_prg(union bootsector *boot, int offset)
 {
-	memcpy((char *) boot->jump + offset,
+	memcpy((char *) boot->boot.jump + offset,
 	       (char *) bootprog, sizeof(bootprog) /sizeof(bootprog[0]));
 	if(offset - 2 < 0x80) {
 	  /* short jump */
-	  boot->jump[0] = 0xeb;
-	  boot->jump[1] = offset -2;
-	  boot->jump[2] = 0x90;
+	  boot->boot.jump[0] = 0xeb;
+	  boot->boot.jump[1] = offset -2;
+	  boot->boot.jump[2] = 0x90;
 	} else {
 	  /* long jump, if offset is too large */
-	  boot->jump[0] = 0xe9;
-	  boot->jump[1] = offset -3;
-	  boot->jump[2] = 0x00;
+	  boot->boot.jump[0] = 0xe9;
+	  boot->boot.jump[1] = offset -3;
+	  boot->boot.jump[2] = 0x00;
 	}
-	set_word(boot->jump + offset + 20, offset + 24);
+	set_word(boot->boot.jump + offset + 20, offset + 24);
 }
 
 static void calc_cluster_size(struct Fs_t *Fs, unsigned long tot_sectors,
@@ -595,7 +595,7 @@ static int old_dos_size_to_geom(size_t size, int *cyls, int *heads, int *sects)
 
 
 static void calc_fs_parameters(struct device *dev, unsigned long tot_sectors,
-			       struct Fs_t *Fs, struct bootsector *boot)
+			       struct Fs_t *Fs, union bootsector *boot)
 {
 	unsigned int i;
 
@@ -607,7 +607,7 @@ static void calc_fs_parameters(struct device *dev, unsigned long tot_sectors,
 		    (Fs->dir_len == 0 || Fs->dir_len == old_dos[i].dir_len) &&
 		    (Fs->cluster_size == 0 ||
 		     Fs->cluster_size == old_dos[i].cluster_size)) {
-			boot->descr = old_dos[i].media;
+			boot->boot.descr = old_dos[i].media;
 			Fs->cluster_size = old_dos[i].cluster_size;
 			Fs->dir_len = old_dos[i].dir_len;
 			Fs->fat_len = old_dos[i].fat_len;
@@ -621,9 +621,9 @@ static void calc_fs_parameters(struct device *dev, unsigned long tot_sectors,
 
 		/* a non-standard format */
 		if(DWORD(nhs))
-			boot->descr = 0xf8;
+			boot->boot.descr = 0xf8;
 		  else
-			boot->descr = 0xf0;
+			boot->boot.descr = 0xf0;
 
 
 		if(!Fs->cluster_size) {
@@ -654,18 +654,18 @@ static void calc_fs_parameters(struct device *dev, unsigned long tot_sectors,
 		}
 	}
 
-	set_word(boot->fatlen, Fs->fat_len);
+	set_word(boot->boot.fatlen, Fs->fat_len);
 }
 
 
 
 static void calc_fs_parameters_32(unsigned long tot_sectors,
-				  struct Fs_t *Fs, struct bootsector *boot)
+				  struct Fs_t *Fs, union bootsector *boot)
 {
 	if(DWORD(nhs))
-		boot->descr = 0xf8;
+		boot->boot.descr = 0xf8;
 	else
-		boot->descr = 0xf0;
+		boot->boot.descr = 0xf0;
 	if(!Fs->cluster_size)
 		/* According to
 		 * http://www.microsoft.com/kb/articles/q154/9/97.htm,
@@ -677,8 +677,8 @@ static void calc_fs_parameters_32(unsigned long tot_sectors,
 	Fs->num_clus = tot_sectors / Fs->cluster_size;
 	set_fat32(Fs);
 	calc_fat_size(Fs, tot_sectors);
-	set_word(boot->fatlen, 0);
-	set_dword(boot->ext.fat32.bigFat, Fs->fat_len);
+	set_word(boot->boot.fatlen, 0);
+	set_dword(boot->boot.ext.fat32.bigFat, Fs->fat_len);
 }
 
 
@@ -772,7 +772,7 @@ void mformat(int argc, char **argv, int dummy)
 	int format_xdf = 0;
 	struct xdf_info info;
 #endif
-	struct bootsector *boot;
+	union bootsector boot;
 	char *bootSector=0;
 	int c;
 	int keepBoot = 0;
@@ -783,7 +783,8 @@ void mformat(int argc, char **argv, int dummy)
 
 	char drive, name[EXPAND_BUF];
 
-	char label[VBUFSIZE], buf[MAX_SECTOR];
+	char label[VBUFSIZE];
+
 	dos_name_t shortlabel;
 	struct device *dev;
 	char errmsg[200];
@@ -832,7 +833,7 @@ void mformat(int argc, char **argv, int dummy)
 		usage(0);
 	while ((c = getopt(argc,argv,
 			   "i:148f:t:n:v:qub"
-			   "kB:r:L:IFCc:Xh:s:l:N:H:M:S:2:30:Aad:m:"))!= EOF) {
+			   "kB:r:L:I:FCc:Xh:s:l:N:H:M:S:2:30:Aad:m:"))!= EOF) {
 		switch (c) {
 			case 'i':
 				set_cmd_line_image(optarg, 0);
@@ -1119,7 +1120,7 @@ void mformat(int argc, char **argv, int dummy)
 
 		/* do a "test" read */
 		if (!create &&
-		    READS(Fs.Direct, (char *) buf, 0, Fs.sector_size) !=
+		    READS(Fs.Direct, &boot.characters, 0, Fs.sector_size) !=
 		    (signed int) Fs.sector_size) {
 			sprintf(errmsg,
 				"Error reading from '%s', wrong parameters?",
@@ -1142,13 +1143,12 @@ void mformat(int argc, char **argv, int dummy)
 
 	/* create the image file if needed */
 	if (create) {
-		WRITES(Fs.Direct, (char *) buf,
+		WRITES(Fs.Direct, &boot.characters,
 		       sectorsToBytes((Stream_t*)&Fs, tot_sectors-1),
 		       Fs.sector_size);
 	}
 
 	/* the boot sector */
-	boot = (struct bootsector *) buf;
 	if(bootSector) {
 		int fd;
 
@@ -1157,21 +1157,24 @@ void mformat(int argc, char **argv, int dummy)
 			perror("open boot sector");
 			exit(1);
 		}
-		read(fd, buf, blocksize);
+		if(read(fd, &boot.bytes, blocksize) < blocksize) {
+			perror("short read on boot sector");
+			exit(1);
+		}
 		keepBoot = 1;
 	}
 	if(!keepBoot && !(used_dev.use_2m & 0x7f)) {
-		memset((char *)boot, '\0', Fs.sector_size);
+		memset(boot.characters, '\0', Fs.sector_size);
 		if(Fs.sector_size == 512 && !used_dev.partition) {
 			/* install fake partition table pointing to itself */
 			struct partition *partTable=(struct partition *)
-				(((char*) boot) + 0x1ae);
+				(&boot.bytes[0x1ae]);
 			setBeginEnd(&partTable[1], 0,
 						used_dev.heads * used_dev.sectors * used_dev.tracks,
 						used_dev.heads, used_dev.sectors, 1, 0);
 		}
 	}
-	set_dword(boot->nhs, used_dev.hidden);
+	set_dword(boot.boot.nhs, used_dev.hidden);
 
 	Fs.Next = buf_init(Fs.Direct,
 			   blocksize * used_dev.heads * used_dev.sectors,
@@ -1179,13 +1182,13 @@ void mformat(int argc, char **argv, int dummy)
 			   blocksize);
 	Fs.Buffer = 0;
 
-	boot->nfat = Fs.num_fat;
+	boot.boot.nfat = Fs.num_fat;
 	if(!keepBoot)
-		set_word(boot->jump + 510, 0xaa55);
+		set_word(&boot.bytes[510], 0xaa55);
 	
 	/* Initialize the remaining parameters */
-	set_word(boot->nsect, used_dev.sectors);
-	set_word(boot->nheads, used_dev.heads);
+	set_word(boot.boot.nsect, used_dev.sectors);
+	set_word(boot.boot.nheads, used_dev.heads);
 
 	used_dev.fat_bits = comp_fat_bits(&Fs,used_dev.fat_bits, tot_sectors, fat32);
 
@@ -1193,34 +1196,34 @@ void mformat(int argc, char **argv, int dummy)
 		Fs.primaryFat = 0;
 		Fs.writeAllFats = 1;
 		Fs.fat_start = 32;
-		calc_fs_parameters_32(tot_sectors, &Fs, boot);
+		calc_fs_parameters_32(tot_sectors, &Fs, &boot);
 
 		Fs.clus_start = Fs.num_fat * Fs.fat_len + Fs.fat_start;
 
 		/* extension flags: mirror fats, and use #0 as primary */
-		set_word(boot->ext.fat32.extFlags,0);
+		set_word(boot.boot.ext.fat32.extFlags,0);
 
 		/* fs version.  What should go here? */
-		set_word(boot->ext.fat32.fsVersion,fsVersion);
+		set_word(boot.boot.ext.fat32.fsVersion,fsVersion);
 
 		/* root directory */
-		set_dword(boot->ext.fat32.rootCluster, Fs.rootCluster = 2);
+		set_dword(boot.boot.ext.fat32.rootCluster, Fs.rootCluster = 2);
 
 		/* info sector */
-		set_word(boot->ext.fat32.infoSector, Fs.infoSectorLoc = 1);
+		set_word(boot.boot.ext.fat32.infoSector, Fs.infoSectorLoc = 1);
 		Fs.infoSectorLoc = 1;
 
 		/* no backup boot sector */
-		set_word(boot->ext.fat32.backupBoot, 6);
+		set_word(boot.boot.ext.fat32.backupBoot, 6);
 		
-		labelBlock = & boot->ext.fat32.labelBlock;
+		labelBlock = & boot.boot.ext.fat32.labelBlock;
 	} else {
 		Fs.infoSectorLoc = 0;
 		Fs.fat_start = 1;
-		calc_fs_parameters(&used_dev, tot_sectors, &Fs, boot);
+		calc_fs_parameters(&used_dev, tot_sectors, &Fs, &boot);
 		Fs.dir_start = Fs.num_fat * Fs.fat_len + Fs.fat_start;
 		Fs.clus_start = Fs.dir_start + Fs.dir_len;
-		labelBlock = & boot->ext.old.labelBlock;
+		labelBlock = & boot.boot.ext.old.labelBlock;
 
 	}
 
@@ -1247,41 +1250,41 @@ void mformat(int argc, char **argv, int dummy)
 	sprintf(labelBlock->fat_type, "FAT%2.2d  ", Fs.fat_bits);
 	labelBlock->fat_type[7] = ' ';
 
-	set_word(boot->secsiz, Fs.sector_size);
-	boot->clsiz = (unsigned char) Fs.cluster_size;
-	set_word(boot->nrsvsect, Fs.fat_start);
+	set_word(boot.boot.secsiz, Fs.sector_size);
+	boot.boot.clsiz = (unsigned char) Fs.cluster_size;
+	set_word(boot.boot.nrsvsect, Fs.fat_start);
 
-	bootOffset = init_geometry_boot(boot, &used_dev, sectors0,
+	bootOffset = init_geometry_boot(&boot, &used_dev, sectors0,
 					rate_0, rate_any,
 					&tot_sectors, keepBoot);
 	if(!bootOffset) {
-		bootOffset = ((char *) labelBlock) - ((char *) boot) +
+		bootOffset = ((unsigned char *) labelBlock) - boot.bytes +
 			sizeof(struct label_blk_t);
 	}
 	if(Atari) {
-		boot->banner[4] = 0;
-		boot->banner[5] = random();
-		boot->banner[6] = random();
-		boot->banner[7] = random();
+		boot.boot.banner[4] = 0;
+		boot.boot.banner[5] = random();
+		boot.boot.banner[6] = random();
+		boot.boot.banner[7] = random();
 	}		
 
 	if(!keepBoot)
-		inst_boot_prg(boot, bootOffset);
+		inst_boot_prg(&boot, bootOffset);
 	/* Mimic 3.8 behavior, else 2m disk do not work (???)
 	 * luferbu@fluidsignal.com (Luis Bustamante), Fri, 14 Jun 2002
 	 */
 	if(used_dev.use_2m & 0x7f) {
-	  boot->jump[0] = 0xeb;
-	  boot->jump[1] = 0x80;
-	  boot->jump[2] = 0x90;
+	  boot.boot.jump[0] = 0xeb;
+	  boot.boot.jump[1] = 0x80;
+	  boot.boot.jump[2] = 0x90;
 	}
 	if(used_dev.use_2m & 0x7f)
 		Fs.num_fat = 1;
 	if(mediaDesc != -1)
-		boot->descr=mediaDesc;
+		boot.boot.descr=mediaDesc;
 	Fs.lastFatSectorNr = 0;
 	Fs.lastFatSectorData = 0;
-	zero_fat(&Fs, boot->descr);
+	zero_fat(&Fs, boot.boot.descr);
 	Fs.freeSpace = Fs.num_clus;
 	Fs.last = 2;
 
@@ -1293,11 +1296,13 @@ void mformat(int argc, char **argv, int dummy)
 			fatEncode(&Fs, i+2, 0xfff7);
 #endif
 
-	format_root(&Fs, label, boot);
-	WRITES((Stream_t *)&Fs, (char *) boot, (mt_off_t) 0, Fs.sector_size);
-	if(Fs.fat_bits == 32 && WORD(ext.fat32.backupBoot) != MAX16) {
-		WRITES((Stream_t *)&Fs, (char *) boot,
-		       sectorsToBytes((Stream_t*)&Fs, WORD(ext.fat32.backupBoot)),
+	format_root(&Fs, label, &boot);
+	WRITES((Stream_t *)&Fs, boot.characters,
+	       (mt_off_t) 0, Fs.sector_size);
+	if(Fs.fat_bits == 32 && WORD_S(ext.fat32.backupBoot) != MAX16) {
+		WRITES((Stream_t *)&Fs, boot.characters,
+		       sectorsToBytes((Stream_t*)&Fs,
+				      WORD_S(ext.fat32.backupBoot)),
 		       Fs.sector_size);
 	}
 	FLUSH((Stream_t *)&Fs); /* flushes Fs.

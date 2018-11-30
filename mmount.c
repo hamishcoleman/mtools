@@ -40,8 +40,7 @@ void mmount(int argc, char **argv, int type)
 	struct device dev;
 	char name[EXPAND_BUF];
 	int media;
-	unsigned char boot0[MAX_BOOT];  
-	struct bootsector *boot = (struct bootsector *) boot0;
+	union bootsector boot;
 	Stream_t *Stream;
 	
 	if (argc<2 || !argv[1][0]  || argv[1][1] != ':' || argv[1][2]){
@@ -49,7 +48,7 @@ void mmount(int argc, char **argv, int type)
 		exit(1);
 	}
 	drive = toupper(argv[1][0]);
-	Stream= find_device(drive, O_RDONLY, &dev, boot, name, &media, 0, NULL);
+	Stream= find_device(drive, O_RDONLY, &dev, &boot, name, &media, 0, NULL);
 	if(!Stream)
 		exit(1);
 	FREE(&Stream);

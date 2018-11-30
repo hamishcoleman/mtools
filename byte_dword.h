@@ -23,10 +23,6 @@ static Dword byte2dword(Byte* val)
 	Dword l;
 	l = (val[0] << 24) + (val[1] << 16) + (val[2] << 8) + val[3];
 	
-#ifdef DEBUG
-	fprintf(stderr, "byte2dword(): %ld, 0x%x\n", l, (unsigned int) l);
-#endif		
-	
 	return l;
 }	
 

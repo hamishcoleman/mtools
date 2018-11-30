@@ -168,7 +168,7 @@ static int file_free(Stream_t *Stream)
 
 static int file_geom(Stream_t *Stream, struct device *dev, 
 		     struct device *orig_dev,
-		     int media, struct bootsector *boot)
+		     int media, union bootsector *boot)
 {
 	int ret;
 	DeclareThis(SimpleFile_t);
@@ -213,20 +213,20 @@ static int file_geom(Stream_t *Stream, struct device *dev,
 		InfTm = WORD(ext.old.InfTm);
 		
 		if(WORD(fatlen)) {
-			labelBlock = &boot->ext.old.labelBlock;
+			labelBlock = &boot->boot.ext.old.labelBlock;
 		} else {
-			labelBlock = &boot->ext.fat32.labelBlock;
+			labelBlock = &boot->boot.ext.fat32.labelBlock;
 		}
 
-		if (boot->descr >= 0xf0 &&
+		if (boot->boot.descr >= 0xf0 &&
 		    labelBlock->dos4 == 0x29 &&
-		    strncmp( boot->banner,"2M", 2 ) == 0 &&
+		    strncmp( boot->boot.banner,"2M", 2 ) == 0 &&
 		    BootP < 512 && Infp0 < 512 && InfpX < 512 && InfTm < 512 &&
 		    BootP >= InfTm + 2 && InfTm >= InfpX && InfpX >= Infp0 && 
 		    Infp0 >= 76 ){
 			for (sum=0, j=63; j < BootP; j++) 
-				sum += uchr(boot)[j];/* checksum */
-			dev->ssize = boot->jump[InfTm];
+				sum += boot->bytes[j];/* checksum */
+			dev->ssize = boot->bytes[InfTm];
 			if (!sum && dev->ssize <= 7){
 				dev->use_2m = 0xff;
 				dev->ssize |= 0x80; /* is set */

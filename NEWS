@@ -1,4 +1,9 @@
-v4_0_9
+v4_0_11
+	Fixed compiler warnings in mlabel.c and elsewhere
+	Fixed h flag in mattrib.c
+	Added missing error checking in floppyd and elsewhere
+	
+v4_0_10
 	More copyright stuff...
 	Fixed issues with max filesize (was 2GB instead of 4GB, and
 	warned only after copying the beginning)

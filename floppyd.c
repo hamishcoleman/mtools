@@ -110,7 +110,7 @@ typedef unsigned long Dword;
 #define BUFFERED_IO_SIZE         16348
 
 
-void serve_client(int sock, char **device_name, int n_dev);
+void serve_client(int sock, char **device_name, int n_dev, int close_stderr);
 
 
 #ifdef USE_FLOPPYD_BUFFERED_IO
@@ -139,7 +139,9 @@ static io_buffer new_io_buffer (int _handle) {
 
 static void flush(io_buffer buffer) {
 	if (buffer->out_valid) {
-		write(buffer->handle, buffer->out_buffer, buffer->out_valid);
+		if(write(buffer->handle, buffer->out_buffer, buffer->out_valid) < 0) {
+			perror("floppyd flush");
+		}
 		buffer->out_valid = 0;
 	}
 }
@@ -481,7 +483,10 @@ static char do_auth(io_buffer sock, int *version)
 	*ptr++ = '0'; /* Display number */
 	*ptr++ = '\0';
 
-	write(fd, template, len+8);
+	if(write(fd, template, len+8) < len + 8) {
+		close(fd);
+		return 0;
+	}
 	ptr = (char *)mit_cookie->data;
 	len = mit_cookie->len;
 
@@ -496,7 +501,10 @@ static char do_auth(io_buffer sock, int *version)
 	    return 0;
 	}
 
-	write(fd, ptr, len);
+	if(write(fd, ptr, len) < len) {
+		close(fd);
+		return 0;
+	}
 	close(fd);
 
 	destroyPacket(mit_cookie);
@@ -664,8 +672,11 @@ static int bind_to_port(IPaddr_t bind_ip, short bind_port)
 	 */
 	{
 	 	int	on = 1;
-		setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, 
-				   (char *)&on, sizeof(on));
+		if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, 
+			      (char *)&on, sizeof(on)) < 0) {
+			perror("setsockopt");
+			exit(1);
+		}
 	}
 
 	/*
@@ -749,7 +760,7 @@ static void server_main_loop(int sock, char **device_name, int n_dev)
 				 * Start the proxy work in the new socket.
 				 */
 #endif
-				serve_client(new_sock,device_name, n_dev);
+				serve_client(new_sock,device_name, n_dev, 0);
 				exit(0);
 #if DEBUG == 0
 		}
@@ -985,13 +996,9 @@ int main (int argc, char** argv)
 	signal(SIGPIPE, alarm_signal);
 	/*signal(SIGALRM, alarm_signal);*/
 
-#if DEBUG == 0
-	close(2);
-	open("/dev/null", O_WRONLY);
-#endif
 	/* Starting from inetd */
 
-	serve_client(sockfd, device_name, n_dev);
+	serve_client(sockfd, device_name, n_dev, 1);
 	return 0;
 }
 
@@ -1016,7 +1023,8 @@ static void cleanup(int x) {
 
 #include "lockdev.h"
 
-void serve_client(int sockhandle, char **device_name, int n_dev) {
+void serve_client(int sockhandle, char **device_name, int n_dev,
+		  int close_stderr) {
 	Packet opcode;
 	Packet parm;
 
@@ -1033,9 +1041,21 @@ void serve_client(int sockhandle, char **device_name, int n_dev) {
 	 */
 	{
 		int		on = 1;
-		setsockopt(sockhandle, SOL_SOCKET, 
-				   SO_KEEPALIVE, (char *)&on, sizeof(on));
+		if(setsockopt(sockhandle, SOL_SOCKET, 
+			      SO_KEEPALIVE, (char *)&on, sizeof(on)) < 0) {
+			perror("setsockopt");
+			exit(1);
+		}
+			
 	}
+
+
+#if DEBUG == 0
+	if(close_stderr) {
+		close(2);
+		open("/dev/null", O_WRONLY);
+	}
+#endif
 
 	sock = new_io_buffer(sockhandle);
 	

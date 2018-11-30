@@ -168,6 +168,7 @@ void mattrib(int argc, char **argv, int type)
 	int concise;
 	int replay;
 	char *ptr;
+	int wantUsage;
 
 	arg.add = 0;
 	arg.remove = 0xff;
@@ -176,11 +177,15 @@ void mattrib(int argc, char **argv, int type)
 	view = 0;
 	concise = 0;
 	replay = 0;
-	
+	wantUsage = 0;
+
 	if(helpFlag(argc, argv))
 		usage(0);
-	while ((c = getopt(argc, argv, "i:/ahrsAHRSXph")) != EOF) {
+	while ((c = getopt(argc, argv, "i:/ahrsAHRSXp")) != EOF) {
 		switch (c) {
+			case 'h':
+				wantUsage = 1;
+				/* FALL THROUGH */
 			default:
 				arg.remove &= ~letterToCode(c);
 				break;
@@ -196,11 +201,13 @@ void mattrib(int argc, char **argv, int type)
 			case 'X':
 				concise = 1;
 				break;
-			case 'h':
-				usage(0);
 			case '?':
 				usage(1);
 		}
+	}
+
+	if(optind == argc && wantUsage) {
+		usage(0);
 	}
 
 	for(;optind < argc;optind++) {

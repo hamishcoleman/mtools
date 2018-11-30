@@ -39,7 +39,7 @@ unsigned int num_clus;			/* total number of cluster */
 /*
  * Read the boot sector.  We glean the disk parameters from this sector.
  */
-static int read_boot(Stream_t *Stream, struct bootsector * boot, int size)
+static int read_boot(Stream_t *Stream, union bootsector * boot, int size)
 {	
 	/* read the first sector, or part of it */
 	if(!size)
@@ -47,7 +47,7 @@ static int read_boot(Stream_t *Stream, struct bootsector * boot, int size)
 	if(size > MAX_BOOT)
 		size = MAX_BOOT;
 
-	if (force_read(Stream, (char *) boot, 0, size) != size)
+	if (force_read(Stream, boot->characters, 0, size) != size)
 		return -1;
 	return 0;
 }
@@ -77,11 +77,11 @@ Class_t FsClass = {
 	get_dosConvert, /* dosconvert */
 };
 
-static int get_media_type(Stream_t *St, struct bootsector *boot)
+static int get_media_type(Stream_t *St, union bootsector *boot)
 {
 	int media;
 
-	media = boot->descr;
+	media = boot->boot.descr;
 	if(media < 0xf0){
 		char temp[512];
 		/* old DOS disk. Media descriptor in the first FAT byte */
@@ -104,7 +104,7 @@ Stream_t *GetFs(Stream_t *Fs)
 }
 
 Stream_t *find_device(char drive, int mode, struct device *out_dev,
-		      struct bootsector *boot,
+		      union bootsector *boot,
 		      char *name, int *media, mt_size_t *maxSize,
 		      int *isRop)
 {
@@ -178,7 +178,7 @@ Stream_t *find_device(char drive, int mode, struct device *out_dev,
 		}
 
 		if((*media= get_media_type(Stream, boot)) <= 0xf0 ){
-			if (boot->jump[2]=='L')
+			if (boot->boot.jump[2]=='L')
 				sprintf(errmsg,
 					"diskette %c: is Linux LILO, not DOS",
 					drive);
@@ -233,8 +233,7 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 	struct device dev;
 	mt_size_t maxSize;
 
-	unsigned char boot0[MAX_BOOT];
-	struct bootsector *boot = (struct bootsector *) boot0;
+	union bootsector boot;
 
 	Fs_t *This;
 
@@ -254,12 +253,12 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 	This->drive = drive;
 	This->last = 0;
 
-	This->Direct = find_device(drive, mode, &dev, boot, name, &media,
+	This->Direct = find_device(drive, mode, &dev, &boot, name, &media,
 				   &maxSize, isRop);
 	if(!This->Direct)
 		return NULL;
 	
-	This->sector_size = WORD(secsiz);
+	This->sector_size = WORD_S(secsiz);
 	if(This->sector_size > MAX_SECTOR){
 		fprintf(stderr,"init %c: sector size too big\n", drive);
 		return NULL;
@@ -298,24 +297,24 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 		 * all numbers are in sectors, except num_clus
 		 * (which is in clusters)
 		 */
-		tot_sectors = WORD(psect);
+		tot_sectors = WORD_S(psect);
 		if(!tot_sectors) {
-			tot_sectors = DWORD(bigsect);			
-			nhs = DWORD(nhs);
+			tot_sectors = DWORD_S(bigsect);			
+			nhs = DWORD_S(nhs);
 		} else
-			nhs = WORD(nhs);
+			nhs = WORD_S(nhs);
 
 
-		This->cluster_size = boot->clsiz; 		
-		This->fat_start = WORD(nrsvsect);
-		This->fat_len = WORD(fatlen);
-		This->dir_len = WORD(dirents) * MDIR_SIZE / This->sector_size;
-		This->num_fat = boot->nfat;
+		This->cluster_size = boot.boot.clsiz; 		
+		This->fat_start = WORD_S(nrsvsect);
+		This->fat_len = WORD_S(fatlen);
+		This->dir_len = WORD_S(dirents) * MDIR_SIZE / This->sector_size;
+		This->num_fat = boot.boot.nfat;
 
 		if (This->fat_len) {
-			labelBlock = &boot->ext.old.labelBlock;
+			labelBlock = &boot.boot.ext.old.labelBlock;
 		} else {
-			labelBlock = &boot->ext.fat32.labelBlock;
+			labelBlock = &boot.boot.ext.fat32.labelBlock;
 		}
 
 		if(labelBlock->dos4 == 0x29) {
@@ -386,7 +385,7 @@ Stream_t *fs_init(char drive, int mode, int *isRop)
 	}
 
 	/* read the FAT sectors */
-	if(fat_read(This, boot, dev.fat_bits, tot_sectors, dev.use_2m&0x7f)){
+	if(fat_read(This, &boot, dev.fat_bits, tot_sectors, dev.use_2m&0x7f)){
 		This->num_fat = 1;
 		FREE(&This->Next);
 		Free(This->Next);

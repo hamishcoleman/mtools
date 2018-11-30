@@ -625,7 +625,7 @@ static int check_fat(Fs_t *This)
  * Read the first sector of FAT table into memory.  Crude error detection on
  * wrong FAT encoding scheme.
  */
-static int check_media_type(Fs_t *This, struct bootsector *boot, 
+static int check_media_type(Fs_t *This, union bootsector *boot, 
 			    unsigned int tot_sectors)
 {
 	unsigned char *address;
@@ -653,13 +653,13 @@ static int check_media_type(Fs_t *This, struct bootsector *boot,
 		 * and 0xff.  Do not consider this as an error */
 		return 0;
 	
-	if((address[0] != boot->descr && boot->descr >= 0xf0 &&
+	if((address[0] != boot->boot.descr && boot->boot.descr >= 0xf0 &&
 	    ((address[0] != 0xf9 && address[0] != 0xf7) 
-	     || boot->descr != 0xf0)) || address[0] < 0xf0) {
+	     || boot->boot.descr != 0xf0)) || address[0] < 0xf0) {
 		fprintf(stderr,
 			"Bad media types %02x/%02x, probably non-MSDOS disk\n", 
 				address[0],
-				boot->descr);
+				boot->boot.descr);
 		return -1;
 	}
 
@@ -671,14 +671,14 @@ static int check_media_type(Fs_t *This, struct bootsector *boot,
 	return 0;
 }
 
-static int fat_32_read(Fs_t *This, struct bootsector *boot, 
+static int fat_32_read(Fs_t *This, union bootsector *boot, 
 		       unsigned int tot_sectors)
 {
 	int size;
 
 	This->fat_len = DWORD(ext.fat32.bigFat);
-	This->writeAllFats = !(boot->ext.fat32.extFlags[0] & 0x80);
-	This->primaryFat = boot->ext.fat32.extFlags[0] & 0xf;
+	This->writeAllFats = !(boot->boot.ext.fat32.extFlags[0] & 0x80);
+	This->primaryFat = boot->boot.ext.fat32.extFlags[0] & 0xf;
 	This->rootCluster = DWORD(ext.fat32.rootCluster);
 	This->clus_start = This->fat_start + This->num_fat * This->fat_len;
 
@@ -701,12 +701,12 @@ static int fat_32_read(Fs_t *This, struct bootsector *boot,
 	}
 	
 	set_fat32(This);
-	return(check_media_type(This,boot, tot_sectors) ||
+	return(check_media_type(This, boot, tot_sectors) ||
 	       check_fat(This));
 }
 
 
-static int old_fat_read(Fs_t *This, struct bootsector *boot, 
+static int old_fat_read(Fs_t *This, union bootsector *boot, 
 						int config_fat_bits,
 						size_t tot_sectors, int nodups)
 {
@@ -737,7 +737,7 @@ static int old_fat_read(Fs_t *This, struct bootsector *boot,
  * Read the first sector of the  FAT table into memory and initialize 
  * structures.
  */
-int fat_read(Fs_t *This, struct bootsector *boot, int fat_bits,
+int fat_read(Fs_t *This, union bootsector *boot, int fat_bits,
 	   size_t tot_sectors, int nodups)
 {
 	This->fat_error = 0;

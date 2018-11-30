@@ -525,13 +525,16 @@ void mpartition(int argc, char **argv, int dummy)
 			int fd;
 			fd = open(bootSector, O_RDONLY | O_BINARY | O_LARGEFILE);
 			if (fd < 0) {
-				perror("open boot sector");
+				perror("open MBR");
 				exit(1);
 			}
-			read(fd, (char *) buf, 512);
+			if(read(fd, (char *) buf, 512) < 512) {
+				perror("read MBR");
+				exit(1);
+			}
 		}
 		memset((char *)(partTable+1), 0, 4*sizeof(*partTable));
-		set_dword(((unsigned char*)buf)+510, 0xaa55);
+		set_word(((unsigned char*)buf)+510, 0xaa55);
 	}
 
 	/* check for boot signature, and place it if needed */

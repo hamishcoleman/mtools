@@ -22,7 +22,8 @@ static Dword read_dword(int handle)
 {
 	Byte val[4];
 	
-	read(handle, (char *)val, 4);
+	if(read(handle, (char *)val, 4) < 4)
+		return -1;
 
 	return byte2dword(val);
 }

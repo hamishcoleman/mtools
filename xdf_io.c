@@ -527,7 +527,7 @@ static int xdf_free(Stream_t *Stream)
 }
 
 
-static int check_geom(struct device *dev, int media, struct bootsector *boot)
+static int check_geom(struct device *dev, int media, union bootsector *boot)
 {
 	int sect;
 
@@ -559,7 +559,7 @@ static int check_geom(struct device *dev, int media, struct bootsector *boot)
 	return 0;
 }
 
-static void set_geom(struct bootsector *boot, struct device *dev)
+static void set_geom(union bootsector *boot, struct device *dev)
 {
 	/* fill in config info to be returned to user */
 	dev->heads = 2;
@@ -573,7 +573,7 @@ static void set_geom(struct bootsector *boot, struct device *dev)
 
 static int config_geom(Stream_t *Stream, struct device *dev, 
 		       struct device *orig_dev, int media,
-		       struct bootsector *boot)
+		       union bootsector *boot)
 {
 	if(check_geom(dev, media, boot))
 		return 1;
@@ -596,7 +596,7 @@ Stream_t *XdfOpen(struct device *dev, char *name,
 {
 	Xdf_t *This;
 	off_t begin, end;
-	struct bootsector *boot;
+	union bootsector *boot;
 	unsigned int type;
 
 	if(dev && (!SHOULD_USE_XDF(dev) || check_geom(dev, 0, 0)))
@@ -663,7 +663,7 @@ Stream_t *XdfOpen(struct device *dev, char *name,
 			goto exit_3;
 	}
 
-	boot = (struct bootsector *) This->buffer;
+	boot = (union bootsector *) This->buffer;
 	This->FatSize = WORD(fatlen);
 	This->RootDirSize = WORD(dirents)/16;
 	This->track_size = WORD(nsect);

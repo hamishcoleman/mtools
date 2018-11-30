@@ -187,7 +187,8 @@ static __inline__ clash_action ask_namematch(doscp_t *cp,
 			else
 				ans[0] = rep;
 		} else {
-			fgets(ans, 9, opentty(0));
+			if(fgets(ans, 9, opentty(0)) == NULL)
+				ans[0] = 'q';
 		}
 		perm = isupper((unsigned char)ans[0]);
 		switch(tolower((unsigned char)ans[0])) {

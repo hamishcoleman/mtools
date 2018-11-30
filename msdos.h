@@ -159,7 +159,7 @@ typedef struct oldboot_t {
 	unsigned char junk[1024 - 80];	/* 80 remaining data */
 } oldboot_t;
 
-struct bootsector {
+struct bootsector_s {
 	unsigned char jump[3];		/* 0  Jump to boot code */
 	char banner[8];	       		/* 3  OEM name & version */
 	unsigned char secsiz[2];	/* 11 Bytes per sector hopefully 512 */
@@ -181,14 +181,21 @@ struct bootsector {
 	} ext;
 };
 
-#define uchr(boot) ((unsigned char*)boot)
-
 #define MAX_BOOT 4096
 
+union bootsector {
+	unsigned char bytes[MAX_BOOT];
+	char characters[MAX_BOOT];
+	struct bootsector_s boot;
+};
 
 #define CHAR(x) (boot->x[0])
-#define WORD(x) (_WORD(boot->x))
-#define DWORD(x) (_DWORD(boot->x))
+#define WORD(x) (_WORD(boot->boot.x))
+#define DWORD(x) (_DWORD(boot->boot.x))
+
+#define WORD_S(x) (_WORD(boot.boot.x))
+#define DWORD_S(x) (_DWORD(boot.boot.x))
+
 #define OFFSET(x) (((char *) (boot->x)) - ((char *)(boot->jump)))
 
 

@@ -55,13 +55,15 @@ const char* AuthErrors[] = {
 #include "byte_dword.h"
 #include "read_dword.h"
 
-static void write_dword(int handle, Dword parm) 
+static int write_dword(int handle, Dword parm)
 {
 	Byte val[4];
 
 	dword2byte(parm, val);
 
-	write(handle, val, 4);
+	if(write(handle, val, 4) < 4)
+		return -1;
+	return 0;
 }
 
 
@@ -90,7 +92,8 @@ static int authenticate_to_floppyd(char fullauth, int sock, char *display,
 	}
 	dword2byte(4,buf);
 	dword2byte(protoversion,buf+4);
-	write(sock, buf, 8);
+	if(write(sock, buf, 8) < 8)
+		return AUTH_IO_ERROR;
 
 	bytesRead = read_dword(sock);
 
@@ -115,7 +118,8 @@ static int authenticate_to_floppyd(char fullauth, int sock, char *display,
 
 	if (fullauth) {
 		dword2byte(filelen, (Byte *) xcookie);
-		write(sock, xcookie, filelen+4);
+		if(write(sock, xcookie, filelen+4) < filelen+4)
+			return AUTH_IO_ERROR;
 
 		if (read_dword(sock) != 4) {
 			return AUTH_PACKETOVERSIZE;
@@ -300,8 +304,17 @@ int main (int argc, char** argv)
 	free(hostname);
 	free(display);
 
-	write_dword(sock, 1);
-	write(sock, &opcode, 1);
+	if(write_dword(sock, 1) < 0) {
+		fprintf(stderr,
+			"Short write to floppyd:\n"
+			"%s\n", strerror(errno));
+	}
+
+	if(write(sock, &opcode, 1) < 0) {
+		fprintf(stderr,
+			"Short write to floppyd:\n"
+			"%s\n", strerror(errno));
+	}
 
 	close(sock);
 

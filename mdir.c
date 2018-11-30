@@ -416,11 +416,13 @@ static int list_file(direntry_t *entry, MainParam_t *mp)
 		wchar_to_native(name,tmpBasename,8);
 		wchar_to_native(ext,tmpExt,3);
 
-		/* is a subdirectory */
-		if(mtools_dotted_dir)
+		if (name[0] == ' ') 
+			printf("             ");
+		else if(mtools_dotted_dir)
 			printf("%s", global_shortname);
 		else
 			printf("%s %s ", tmpBasename, tmpExt);
+		/* is a subdirectory */
 		if(IS_DIR(entry))
 			printf("<DIR>    ");
 		else

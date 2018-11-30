@@ -42,11 +42,13 @@ typedef unsigned char Byte;
 typedef unsigned long Dword;
 
 const char* AuthErrors[] = {
-	"Auth success!",
-	"Auth failed: Packet oversized!",
-	"Auth failed: X-Cookie doesn't match!",
-	"Auth failed: Wrong transmission protocol version!",
-	"Auth failed: Device locked!"
+	"Auth success",
+	"Auth failed: Packet oversized",
+	"Auth failed: X-Cookie doesn't match",
+	"Auth failed: Wrong transmission protocol version",
+	"Auth failed: Device locked"
+	"Auth failed: Bad packet",
+	"Auth failed: I/O Error"
 };
 
 
@@ -93,7 +95,8 @@ static int authenticate_to_floppyd(RemoteFile_t *floppyd, int sock, char *displa
 	/* Version negotiation */
 	dword2byte(4,buf);
 	dword2byte(floppyd->version,buf+4);
-	write(sock, buf, 8);
+	if(write(sock, buf, 8) < 8)
+		return AUTH_IO_ERROR;
 
 	if ( (l = read_dword(sock)) < 4) {
 		return AUTH_WRONGVERSION;
@@ -111,7 +114,8 @@ static int authenticate_to_floppyd(RemoteFile_t *floppyd, int sock, char *displa
 		floppyd->capabilities = read_dword(sock);
 
 	dword2byte(filelen, (Byte *)xcookie);
-	write(sock, xcookie, filelen+4);
+	if(write(sock, xcookie, filelen+4) < filelen + 4)
+		return AUTH_IO_ERROR;
 
 	if (read_dword(sock) != 4) {
 		return AUTH_PACKETOVERSIZE;
@@ -135,7 +139,8 @@ static int floppyd_reader(int fd, char* buffer, int len)
 	buf[4] = OP_READ;
 	dword2byte(4, buf+5);
 	dword2byte(len, buf+9);
-	write(fd, buf, 13);
+	if(write(fd, buf, 13) < 13)
+		return AUTH_IO_ERROR;
 
 	if (read_dword(fd) != 8) {
 		errno = EIO;
@@ -173,8 +178,10 @@ static int floppyd_writer(int fd, char* buffer, int len)
 	buf[4] = OP_WRITE;
 	dword2byte(len, buf+5);
 
-	write(fd, buf, 9);
-        write(fd, buffer, len);
+	if(write(fd, buf, 9) < 9)
+		return AUTH_IO_ERROR;
+	if(write(fd, buffer, len) < len)
+		return AUTH_IO_ERROR;
 	
 	if (read_dword(fd) != 8) {
 		errno = EIO;
@@ -207,7 +214,8 @@ static int floppyd_lseek(int fd, mt_off_t offset, int whence)
 	dword2byte(truncBytes32(offset), buf+9);
 	dword2byte(whence, buf+13);
 	
-	write(fd, buf, 17);
+	if(write(fd, buf, 17) < 17)
+		return AUTH_IO_ERROR;
        
 	if (read_dword(fd) != 8) {
 		errno = EIO;
@@ -241,7 +249,8 @@ static int floppyd_open(RemoteFile_t *This, int mode)
 	dword2byte(4, buf+5);
 	dword2byte(This->drive, buf+9);
 
-	write(This->fd, buf, 13);
+	if(write(This->fd, buf, 13) < 13)
+		return AUTH_IO_ERROR;
        
 	if (read_dword(This->fd) != 8) {
 		errno = EIO;
@@ -307,7 +316,8 @@ static int floppyd_flush(Stream_t *Stream)
 	dword2byte(1, buf+5);
 	buf[9] = '\0';
 
-	write(This->fd, buf, 10);
+	if(write(This->fd, buf, 10) < 10)
+		return AUTH_IO_ERROR;
 
 	if (read_dword(This->fd) != 8) {
 		errno = EIO;
@@ -329,7 +339,8 @@ static int floppyd_free(Stream_t *Stream)
 	if (This->fd > 2) {
 		dword2byte(1, buf);
 		buf[4] = OP_CLOSE;
-		write(This->fd, buf, 5);
+		if(write(This->fd, buf, 5) < 5)
+			return AUTH_IO_ERROR;
 		shutdown(This->fd, 1);
 		if (read_dword(This->fd) != 8) {
 		    errno = EIO;
@@ -350,7 +361,7 @@ static int floppyd_free(Stream_t *Stream)
 
 static int floppyd_geom(Stream_t *Stream, struct device *dev, 
 		     struct device *orig_dev,
-		     int media, struct bootsector *boot)
+		     int media, union bootsector *boot)
 {
 	size_t tot_sectors;
 	int sect_per_track;

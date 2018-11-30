@@ -38,7 +38,7 @@ typedef struct Class_t {
 	int (*flush)(Stream_t *);
 	int (*freeFunc)(Stream_t *);
 	int (*set_geom)(Stream_t *, device_t *, device_t *, int media,
-					struct bootsector *);
+					union bootsector *);
 	int (*get_data)(Stream_t *, time_t *, mt_size_t *, int *, int *);
 	int (*pre_allocate)(Stream_t *, mt_size_t);
 

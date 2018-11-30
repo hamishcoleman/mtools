@@ -54,7 +54,8 @@ enum AuthErrorsEnum {
 	AUTH_AUTHFAILED,
 	AUTH_WRONGVERSION,
 	AUTH_DEVLOCKED,
-	AUTH_BADPACKET
+	AUTH_BADPACKET,
+	AUTH_IO_ERROR
 };
 
 typedef unsigned long IPaddr_t;

@@ -210,7 +210,9 @@ int ask_confirmation(const char *format, ...)
 			ans[0] = fgetc(opentty(1));
 			fputs("\n", stderr);
 		} else {
-			fgets(ans,9, opentty(0));
+			if(fgets(ans,9, opentty(0)) == NULL)
+				/* Treat end-of-file as no */
+				ans[0] = 'n';
 		}
 		if (ans[0] == 'y' || ans[0] == 'Y')
 			return 0;

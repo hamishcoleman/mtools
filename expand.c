@@ -42,7 +42,10 @@ int safePopenOut(const char **command, char *output, int len)
 			destroy_privs();
 			close(1);
 			close(2); /* avoid nasty error messages on stderr */
-			dup(pipefd[1]);
+			if(dup(pipefd[1]) < 0) {
+				perror("Dup error");
+				exit(1);
+			}
 			close(pipefd[1]);
 			execvp(command[0], (char**)(command+1));
 			exit(1);
