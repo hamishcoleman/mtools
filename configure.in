@@ -357,7 +357,7 @@ AC_ARG_ENABLE(floppyd,
 fi])
 
 AC_CHECK_LIB(socket,main)
-AC_CHECK_LIB(nsl,main)
+dnl AC_CHECK_LIB(nsl,main)
 AC_CHECK_LIB(bsd,main)
 AC_CHECK_HEADERS(sys/socket.h arpa/inet.h netdb.h)
 

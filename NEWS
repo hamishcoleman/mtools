@@ -1,4 +1,9 @@
+v4_0_15
+	Added missing -i option to mshortname
+	Splitted .deb package into mtools and floppyd in order to
+	match Ubuntu
 v4_0_14
+	New mshortname command
 	Fix floppyd for disks bigger than 2 Gig
 	Remove obsolete -z flag
 	Remove now unsupported AC_USE_SYSTEM_EXTENSIONS

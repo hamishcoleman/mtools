@@ -49,8 +49,11 @@ void mshortname(int argc, char **argv, int type)
 
 	if(helpFlag(argc, argv))
 		usage(0);
-	while ((c = getopt(argc, argv, "h")) != EOF) {
+	while ((c = getopt(argc, argv, "i:h")) != EOF) {
 		switch (c) {
+			case 'i':
+				set_cmd_line_image(optarg, 0);
+				break;
 			case 'h':
 				usage(0);
 			case '?':

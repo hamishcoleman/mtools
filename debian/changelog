@@ -1,5 +1,13 @@
+mtools (4.0.15) stable; urgency=low
+
+  * Added missing -i option to mshortname
+  * Splitted .deb package into mtools and floppyd in order to
+    match Ubuntu
+
+ -- Alain Knaff <alain@knaff.lu>  Sun, 17 Oct 2010 19:42:46 +0200
 mtools (4.0.14) stable; urgency=low
 
+  * New mshortname command
   * Fix floppyd for disks bigger than 2 Gig
   * Remove obsolete -z flag
   * Remove now unsupported AC_USE_SYSTEM_EXTENSIONS

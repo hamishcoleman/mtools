@@ -1,6 +1,6 @@
 Name:           mtools
 Summary:        mtools, read/write/list/format DOS disks under Unix
-Version:        4.0.14
+Version:        4.0.15
 Release:        1
 License:        GPLv3+
 Group:          Utilities/System
@@ -135,7 +135,10 @@ fi
 
 %changelog
 * Sun Oct 17 2010 Alain Knaff <alain@knaff.lu>
+- Added missing -i option to mshortname
+* Sun Oct 17 2010 Alain Knaff <alain@knaff.lu>
 - Released v4_0_14:
+- New mshortname command
 - Fix floppyd for disks bigger than 2 Gig
 - Remove obsolete -z flag
 - Remove now unsupported AC_USE_SYSTEM_EXTENSIONS

@@ -1,6 +1,6 @@
 This is mtools.info, produced by makeinfo version 4.13 from mtools.texi.
 
-This manual is for Mtools (version 4.0.14, October 2010), which is a
+This manual is for Mtools (version 4.0.15, October 2010), which is a
 collection of tools to allow Unix systems to manipulate MS-DOS files.
 
    Copyright (C) 2007, 2009 Free Software Foundation, Inc.  Copyright
@@ -42,7 +42,7 @@ any preliminary mounting or initialization (assuming the default
 `/etc/mtools.conf' works on your machine).  With mtools, one can change
 floppies too without unmounting and mounting.
 
-   This manual is for Mtools (version 4.0.14, October 2010), which is a
+   This manual is for Mtools (version 4.0.15, October 2010), which is a
 collection of tools to allow Unix systems to manipulate MS-DOS files.
 
    Copyright (C) 2007, 2009 Free Software Foundation, Inc.  Copyright
@@ -76,10 +76,10 @@ File: mtools.info,  Node: Location,  Next: Common features,  Prev: Top,  Up: Top
 *********************
 
 Mtools can be found at the following places (and their mirrors):
-     http://ftp.gnu.org/gnu/mtools/mtools-4.0.14.tar.gz
-     http://mtools.linux.lu/mtools-4.0.14.tar.gz
-     ftp://www.tux.org/pub/knaff/mtools/mtools-4.0.14.tar.gz
-     ftp://ibiblio.unc.edu/pub/Linux/utils/disk-management/mtools-4.0.14.tar.gz
+     http://ftp.gnu.org/gnu/mtools/mtools-4.0.15.tar.gz
+     http://mtools.linux.lu/mtools-4.0.15.tar.gz
+     ftp://www.tux.org/pub/knaff/mtools/mtools-4.0.15.tar.gz
+     ftp://ibiblio.unc.edu/pub/Linux/utils/disk-management/mtools-4.0.15.tar.gz
 
    Before reporting a bug, make sure that it has not yet been fixed in
 the Alpha patches which can be found at:
