@@ -150,7 +150,7 @@ ALLLIBS   = $(USERLDLIBS) $(MACHDEPLIBS) $(SHLIB) $(LIBS)
 X_LDFLAGS = $(X_EXTRA_LIBS) $(X_LIBS) $(X_PRE_LIBS) -lXau -lX11 $(LIBS)
 X_CCFLAGS = $(X_CFLAGS) $(CFLAGS)
 
-all:    mtools $(LINKS) mkmanifest @FLOPPYD@
+all:    mtools $(LINKS) mkmanifest @FLOPPYD@ mtools.1 mtools.5
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
@@ -190,11 +190,11 @@ texclean:
 	-rm -f mtools.pg mtools.tp mtools.vr
 
 info: mtools.info
-%.info: %.texi
+%.info: %.texi sysconfdir.texi
 	$(MAKEINFO) -I$(srcdir) $< --no-split --output=$@
 
 dvi: mtools.dvi
-%.dvi: %.texi
+%.dvi: %.texi sysconfdir.texi
 	$(TEXI2DVI) $<
 
 ps: mtools.ps
@@ -202,12 +202,20 @@ ps: mtools.ps
 	dvips -f < $< > $@
 
 pdf: mtools.pdf
-%.pdf: %.texi
+%.pdf: %.texi sysconfdir.texi
 	$(TEXI2PDF) $<
 
+mtools.1: mtools.tmpl.1 Makefile
+	sed "s%SYSCONFDIR%$(sysconfdir)/%g" $(srcdir)/mtools.tmpl.1 >mtools.1
+
+mtools.5: mtools.tmpl.5 Makefile
+	sed "s%SYSCONFDIR%$(sysconfdir)/%g" $(srcdir)/mtools.tmpl.5 >mtools.5
+
+sysconfdir.texi:
+	echo "@set SYSCONFDIR $(sysconfdir)/" >sysconfdir.texi
 
 html: mtools.html mtools_toc.html
-%.html %_toc.html: %.texi
+%.html %_toc.html: %.texi  sysconfdir.texi
 	$(TEXI2HTML) $<
 
 # Don't cd, to avoid breaking install-sh references.

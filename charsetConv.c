@@ -380,9 +380,9 @@ int wchar_to_native(const wchar_t *wchar, char *native, size_t len)
 }
 
 /**
- * Convert native string to wchar string, converting at most len wchar
+ * Convert native string to wchar string, generating at most len wchar
  * characters. If end is supplied, stop conversion when source pointer
- * exceeds end. Returns number of converted wchars
+ * exceeds end. Returns number of generated wchars
  */
 int native_to_wchar(const char *native, wchar_t *wchar, size_t len,
 		    const char *end, int *mangled)
@@ -410,7 +410,7 @@ int native_to_wchar(const char *native, wchar_t *wchar, size_t len,
 			break;
 		native += r;
 	}
-	if(mangled && end && native < end)
+	if(mangled && ((end && native < end) || (!end && *native &&  i == len)))
 		*mangled |= 3;
 	wchar[i]='\0';
 	return i;

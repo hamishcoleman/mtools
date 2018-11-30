@@ -1,4 +1,5 @@
-.TH mdir 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH mdir 1 "28Feb10" mtools-4.0.13
 .SH Name
 mdir - display an MSDOS directory
 '\" t
@@ -18,10 +19,6 @@ documentation, and may not be entirely accurate or complete.  See the
 end of this man page for details.
 .PP
 .SH Description
-.iX "p mdir"
-.iX "c Read-only files (listing them)"
-.iX "c Listing a directory"
-.iX "c Directory listing"
 .PP
 The \fR\&\f(CWmdir\fR command is used to display an MS-DOS directory. Its
 syntax is:
@@ -35,7 +32,7 @@ MS-DOS files.
 \&\fR\&\f(CWMdir\fR supports the following command line options:
 .TP
 \&\fR\&\f(CW/\fR\ 
-Recursive output, just like Dos' \fR\&\f(CW-s\fR option
+Recursive output, just like MS-DOS' \fR\&\f(CW-s\fR option
 .TP
 \&\fR\&\f(CWw\fR\ 
 Wide output.  With this option, \fR\&\f(CWmdir\fR prints the filenames across
@@ -48,8 +45,8 @@ Also list hidden files.
 Fast.  Do not try to find out free space.  On larger disks, finding out
 the amount of free space takes up some non trivial amount of time, as
 the whole FAT must be read in and scanned.  The \fR\&\f(CW-f\fR flag bypasses
-this step.  This flag is not needed on FAT32 filesystems, which store
-the size explicitely.
+this step.  This flag is not needed on FAT32 file systems, which store
+the size explicitly.
 .TP
 \&\fR\&\f(CWb\fR\ 
 Concise listing. Lists each directory name or filename, one per line
@@ -82,7 +79,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -96,7 +93,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -111,7 +108,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP

@@ -1,4 +1,5 @@
-.TH mclasserase 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH mclasserase 1 "28Feb10" mtools-4.0.13
 .SH Name
 mclasserase - erase memory cards
 '\" t
@@ -18,9 +19,6 @@ documentation, and may not be entirely accurate or complete.  See the
 end of this man page for details.
 .PP
 .SH Description
-.iX "p mclasserase"
-.iX "c Memory Card"
-.iX "c Physically erase"
 .PP
 The \fR\&\f(CWmclasserase\fR command is used to wipe memory cards by
 overwriting it three times: first with \fR\&\f(CW0xff\fR, then with
@@ -35,11 +33,11 @@ syntax:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
-Dos drive is optional, if none is specified, use \fR\&\f(CWA:\fR. If more than
+MS-DOS drive is optional, if none is specified, use \fR\&\f(CWA:\fR. If more than
 one drive are specified, all but the last are ignored.
 .PP
 \&\fR\&\f(CWMclasserase\fR accepts the following command line options:
@@ -75,7 +73,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -89,7 +87,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -104,7 +102,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -112,4 +110,3 @@ The texinfo doc looks most pretty when printed or as html.  Indeed, in
 the info version certain examples are difficult to read due to the
 quoting conventions used in info.
 .PP
-mclasserase

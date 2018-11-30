@@ -1,5 +1,5 @@
 '\" t
-.TH mtools.1 3 "03Nov09" mtools-4.0.12
+.TH mtools 1 "22Feb10" mtools-4.0.12
 .SH Name
 mtools - utilities to access DOS disks in Unix.
 '\" t
@@ -17,24 +17,19 @@ mtools - utilities to access DOS disks in Unix.
 .SH Introduction
 Mtools is a collection of tools to allow Unix systems to manipulate
 MS-DOS files: read, write, and move around files on an MS-DOS
-filesystem (typically a floppy disk).  Where reasonable, each program
+file system (typically a floppy disk).  Where reasonable, each program
 attempts to emulate the MS-DOS equivalent command. However,
 unnecessary restrictions and oddities of DOS are not emulated. For
 instance, it is possible to move subdirectories from one subdirectory
 to another.
 .PP
-Mtools is sufficient to give access to MS-DOS filesystems.  For
+Mtools is sufficient to give access to MS-DOS file systems.  For
 instance, commands such as \fR\&\f(CWmdir a:\fR work on the \fR\&\f(CWa:\fR floppy
 without any preliminary mounting or initialization (assuming the default
 \&\fR\&\f(CW\(if/etc/mtools.conf\(is\fR works on your machine).  With mtools, one can
 change floppies too without unmounting and mounting.
 .PP
 .SH Where\ to\ get\ mtools
-.iX "c bugs"
-.iX "c ALPHA patches"
-.iX "c patches"
-.iX "c diffs"
-.iX "c mailing list"
 .PP
 Mtools can be found at the following places (and their mirrors):
  
@@ -48,7 +43,7 @@ ftp://ibiblio.unc.edu/pub/Linux/utils/disk-management/mtools-4.0.12.tar.gz
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -64,7 +59,7 @@ ftp://www.tux.org/pub/knaff/mtools
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -80,14 +75,12 @@ sending a message with 'subscribe mtools @ tux.org' in its
 body to majordomo @ tux.org . (N.B. Please remove the spaces
 around the "@" both times. I left them there in order to fool
 spambots.)  Announcements of new mtools versions will also be sent to
-the list, in addition to the linux announce newsgroups.  The mailing
+the list, in addition to the Linux announce newsgroups.  The mailing
 list is archived at http://lists.gnu.org/pipermail/info-mtools/
 .PP
 .SH Common\ features\ of\ all\ mtools\ commands
 .PP
 .SS Options\ and\ filenames
-.iX "c Filenames"
-.iX "c Options"
 MS-DOS filenames are composed of a drive letter followed by a colon, a
 subdirectory, and a filename. Only the filename part is mandatory, the
 drive letter and the subdirectory are optional. Filenames without a
@@ -124,9 +117,9 @@ However, on most target architectures, drive A is the first floppy
 drive, drive B is the second floppy drive (if available), drive J is a
 Jaz drive (if available), and drive Z is a Zip drive (if available).  On
 those systems where the device name is derived from the SCSI id, the Jaz
-drive is assumed to be at Scsi target 4, and the Zip at Scsi target 5
+drive is assumed to be at SCSI target 4, and the Zip at SCSI target 5
 (factory default settings).  On Linux, both drives are assumed to be the
-second drive on the Scsi bus (/dev/sdb). The default settings can be
+second drive on the SCSI bus (/dev/sdb). The default settings can be
 changes using a configuration file (see section  Configuration).
 .PP
 The drive letter : (colon) has a special meaning. It is used to access
@@ -142,7 +135,7 @@ Example:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -161,7 +154,7 @@ Example:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -169,24 +162,14 @@ This looks for the image at the offset of 1M in the file, rather than
 at its beginning.
 .PP
 .SS Current\ working\ directory
-.iX "p mcd (introduction)"
-.iX "c Directory"
-.iX "c Working directory"
-.iX "c Current working directory"
-.iX "c Default directory"
 .PP
 The \fR\&\f(CWmcd\fR command (\(ifmcd\(is) is used to establish the device and
-the current working directory (relative to the MS-DOS filesystem),
+the current working directory (relative to the MS-DOS file system),
 otherwise the default is assumed to be \fR\&\f(CWA:/\fR. However, unlike
 MS-DOS, there is only one working directory for all drives, and not one
 per drive.
 .PP
 .SS VFAT-style\ long\ file\ names
-.iX "c Long file name"
-.iX "c Windows 95-style file names"
-.iX "c VFAT-style file names"
-.iX "c Primary file name (long names)"
-.iX "c Secondary file name (long names)"
 .PP
 This version of mtools supports VFAT style long filenames. If a Unix
 filename is too long to fit in a short DOS name, it is stored as a
@@ -209,7 +192,7 @@ hot+cold        HOT_CO~1        illegal character
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -243,7 +226,7 @@ the \fIprimary\fR name, and the derived short name is also called the
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR Mtools creates a VFAT entry for Reallylongname, and uses REALLYLO as
 a short name. Reallylongname is the primary name, and REALLYLO is the
@@ -256,7 +239,7 @@ secondary name.
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR Motd fits into the DOS filename limits. Mtools doesn't need to
 derivate another name. Motd is the primary name, and there is no
@@ -281,7 +264,7 @@ ab:c            ab_c-1          illegal character
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -295,11 +278,6 @@ Illegal characters are replaces by underscores,
 A \fR\&\f(CW-\fR\fIn\fR number is generated,
 .PP
 .SS Name\ clashes
-.iX "c Name clashes"
-.iX "c Duplicate file names"
-.iX "c Overwriting files"
-.iX "c Primary file name (name clashes)"
-.iX "c Secondary file name (name clashes)"
 .PP
 When writing a file to disk, its long name or short name may collide
 with an already existing file or directory. This may happen for all
@@ -374,18 +352,17 @@ secondary name is autorenamed.
 If a name clash occurs in a Unix directory, mtools only asks whether
 to overwrite the file, or to skip it.
 .PP
-.SS Case\ sensitivity\ of\ the\ VFAT\ filesystem
-.iX "c Case sensitivity"
+.SS Case\ sensitivity\ of\ the\ VFAT\ file\ system
 .PP
-The VFAT filesystem is able to remember the case of the
+The VFAT file system is able to remember the case of the
 filenames. However, filenames which differ only in case are not allowed
 to coexist in the same directory. For example if you store a file called
-LongFileName on a VFAT filesystem, mdir shows this file as LongFileName,
+LongFileName on a VFAT file system, mdir shows this file as LongFileName,
 and not as Longfilename. However, if you then try to add LongFilename to
 the same directory, it is refused, because case is ignored for clash
 checks.
 .PP
-The VFAT filesystem allows to store the case of a filename in the
+The VFAT file system allows to store the case of a filename in the
 attribute byte, if all letters of the filename are the same case, and if
 all letters of the extension are the same case too. Mtools uses this
 information when displaying the files, and also to generate the Unix
@@ -396,17 +373,11 @@ from the behavior of the old version of mtools which used to generate
 lower case Unix filenames.
 .PP
 .SS high\ capacity\ formats
-.iX "c Special formats"
-.iX "c High capacity formats"
-.iX "c Odd formats"
-.iX "c Weird formats"
-.iX "c Formats, high capacity"
-.iX "c Linux enhancements (High Capacity Formats)"
 .PP
 Mtools supports a number of formats which allow to store more data on
 disk as usual. Due to different operating system abilities, these
-formats are not supported on all OS'es. Mtools recognizes these formats
-transparently where supported.
+formats are not supported on all operating systems. Mtools recognizes
+these formats transparently where supported.
 .PP
 In order to format these disks, you need to use an operating system
 specific tool. For Linux, suitable floppy tools can be found in the
@@ -420,19 +391,15 @@ specific tool. For Linux, suitable floppy tools can be found in the
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
-See the manpages included in that package for further detail: Use
+See the manual pages included in that package for further detail: Use
 \&\fR\&\f(CWsuperformat\fR to format all formats except XDF, and use
 \&\fR\&\f(CWxdfcopy\fR to format XDF.
 .PP
 .SS \ \ More\ sectors
-.iX "c fdformat"
-.iX "c vgacopy"
-.iX "c DMF disks"
-.iX "c Windows 95 (DMF disks)"
 .PP
 The oldest method of fitting more data on a disk is to use more sectors
 and more cylinders. Although the standard format uses 80 cylinders and
@@ -444,14 +411,13 @@ packed so close together that we need to interleave them. This problem
 doesn't exist for 20 sector formats.
 .PP
 These formats are supported by numerous DOS shareware utilities such as
-\&\fR\&\f(CWfdformat\fR and \fR\&\f(CWvgacopy\fR. In his infinite hybris, Bill Gate$
+\&\fR\&\f(CWfdformat\fR and \fR\&\f(CWvgacopy\fR. In his infinite hubris, Bill Gate$
 believed that he invented this, and called it \fR\&\f(CW\(ifDMF disks\(is\fR, or
 \&\fR\&\f(CW\(ifWindows formatted disks\(is\fR. But in reality, it has already existed
-years before! Mtools supports these formats on Linux, on SunOs and on
+years before! Mtools supports these formats on Linux, on SunOS and on
 the DELL Unix PC.
 .PP
 .SS \ \ Bigger\ sectors
-.iX "c bigger sectors"
 By using bigger sectors it is possible to go beyond the capacity which
 can be obtained by the standard 512-byte sectors. This is because of the
 sector header. The sector header has the same size, regardless of how
@@ -465,14 +431,13 @@ This method allows to store up to 1992K on a 3 1/2 HD disk.
 Mtools supports these formats only on Linux.
 .PP
 .SS \ \ 2m
-.iX "c 2m"
 .PP
 The 2m format was originally invented by Ciriaco Garcia de Celis. It
 also uses bigger sectors than usual in order to fit more data on the
 disk.  However, it uses the standard format (18 sectors of 512 bytes
-each) on the first cylinder, in order to make these disks easyer to
+each) on the first cylinder, in order to make these disks easier to
 handle by DOS. Indeed this method allows to have a standard sized
-bootsector, which contains a description of how the rest of the disk
+boot sector, which contains a description of how the rest of the disk
 should be read.
 .PP
 However, the drawback of this is that the first cylinder can hold less
@@ -480,16 +445,14 @@ data than the others. Unfortunately, DOS can only handle disks where
 each track contains the same amount of data. Thus 2m hides the fact that
 the first track contains less data by using a \fIshadow
 FAT\fR. (Usually, DOS stores the FAT in two identical copies, for
-additional safety.  XDF stores only one copy, and it tells DOS that it
-stores two. Thus the same that would be taken up by the second FAT copy
-is saved.) This also means that your should \fBnever use a 2m disk
-to store anything else than a DOS fs\fR.
+additional safety.  XDF stores only one copy, but tells DOS that it
+stores two. Thus the space that would be taken up by the second FAT copy
+is saved.) This also means that you should \fBnever use a 2m disk
+to store anything else than a DOS file system\fR.
 .PP
-Mtools supports these format only on Linux.
+Mtools supports these formats only on Linux.
 .PP
 .SS \ \ XDF
-.iX "c XDF disks"
-.iX "c OS/2 (XDF disks)"
 .PP
 XDF is a high capacity format used by OS/2. It can hold 1840 K per
 disk. That's lower than the best 2m formats, but its main advantage is
@@ -497,7 +460,7 @@ that it is fast: 600 milliseconds per track. That's faster than the 21
 sector format, and almost as fast as the standard 18 sector format. In
 order to access these disks, make sure mtools has been compiled with XDF
 support, and set the \fR\&\f(CWuse_xdf\fR variable for the drive in the
-configuration file. See section Compiling mtools, and \(ifmisc variables\(is,
+configuration file. See section Compiling mtools, and \(ifmiscellaneous variables\(is,
 for details on how to do this. Fast XDF access is only available for
 Linux kernels which are more recent than 1.1.34.
 .PP
@@ -517,7 +480,7 @@ run on any 2.1 kernel or later.
 All the Mtools commands return 0 on success, 1 on utter failure, or 2
 on partial failure.  All the Mtools commands perform a few sanity
 checks before going ahead, to make sure that the disk is indeed an
-MS-DOS disk (as opposed to, say an ext2 or minix disk). These checks
+MS-DOS disk (as opposed to, say an ext2 or MINIX disk). These checks
 may reject partially corrupted disks, which might otherwise still be
 readable. To avoid these checks, set the MTOOLS_SKIP_CHECK
 environmental variable or the corresponding configuration file variable

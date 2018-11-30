@@ -1,4 +1,5 @@
-.TH mattrib 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH mattrib 1 "28Feb10" mtools-4.0.13
 .SH Name
 mattrib - change MSDOS file attribute flags
 '\" t
@@ -18,12 +19,6 @@ documentation, and may not be entirely accurate or complete.  See the
 end of this man page for details.
 .PP
 .SH Description
-.iX "p mattrib"
-.iX "c Changing file attributes"
-.iX "c Hidden files"
-.iX "c Read-only files (changing the attribute)"
-.iX "c System files"
-.iX "c Archive bit"
 .PP
 \&\fR\&\f(CWMattrib\fR is used to change MS-DOS file attribute flags. It has the
 following syntax:
@@ -56,16 +51,16 @@ Hidden bit.  Used to make files hidden from \fR\&\f(CWDIR\fR.
 Recursive.  Recursively list the attributes of the files in the subdirectories.
 .TP
 \&\fR\&\f(CWX\fR\ 
-Concise. Prints the attributes whithout any whitespace padding.  If
+Concise. Prints the attributes without any whitespace padding.  If
 neither the "/" option is given, nor the \fImsdosfile\fR contains a
-wildcard, and there is only one Msdos file parameter on the command
+wildcard, and there is only one MS-DOS file parameter on the command
 line, only the attribute is printed, and not the filename.  This option
 is convenient for scripts
 .TP
 \&\fR\&\f(CWp\fR\ 
 Replay mode.  Outputs a series of mformat commands that will reproduce
 the current situation, starting from a situation as left by untarring
-the Dos filesystem.  Commands are only output for attribute settings
+the MS-DOS file system.  Commands are only output for attribute settings
 that differ from the default (archive bit set for files, unset for
 directories).  This option is intended to be used in addition to
 tar. The \fR\&\f(CWreadonly\fR attribute is not taken into account, as tar can
@@ -94,7 +89,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -108,7 +103,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -123,7 +118,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP

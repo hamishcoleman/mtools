@@ -1,4 +1,5 @@
-.TH minfo 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH minfo 1 "28Feb10" mtools-4.0.13
 .SH Name
 minfo - print the parameters of a MSDOS filesystem
 '\" t
@@ -18,15 +19,12 @@ documentation, and may not be entirely accurate or complete.  See the
 end of this man page for details.
 .PP
 .SH Description
-.iX "p minfo"
-.iX "c mformat parameters"
-.iX "c getting parameters of a Dos fs"
 .PP
-The \fR\&\f(CWminfo\fR command prints the parameters of a Dos filesystem, such
+The \fR\&\f(CWminfo\fR command prints the parameters of a MS-DOS file system, such
 as number of sectors, heads and cylinders.  It also prints an mformat
-command line which can be used to create a similar Dos filesystem on
-another media.  However, this doesn't work with 2m or Xdf media, and
-with Dos 1.0 filesystems
+command line which can be used to create a similar MS-DOS file system on
+another media.  However, this doesn't work with 2m or XDF media, and
+with MS-DOS 1.0 file systems
 .ft I
 .nf
 \&\fR\&\f(CWminfo\fR \fIdrive\fR:
@@ -37,7 +35,7 @@ with Dos 1.0 filesystems
 Mlabel supports the following option:
 .TP
 \&\fR\&\f(CWv\fR\ 
-Prints a hexdump of the bootsector, in addition to the other information
+Prints a hexdump of the boot sector, in addition to the other information
 .PP
 .SH See\ Also
 Mtools' texinfo doc
@@ -62,7 +60,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -76,7 +74,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -91,7 +89,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP

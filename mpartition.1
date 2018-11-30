@@ -1,4 +1,5 @@
-.TH mpartition 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH mpartition 1 "28Feb10" mtools-4.0.13
 .SH Name
 mpartition - partition an MSDOS hard disk
 '\" t
@@ -18,14 +19,10 @@ documentation, and may not be entirely accurate or complete.  See the
 end of this man page for details.
 .PP
 .SH Description
-.iX "p mpartition"
-.iX "c partitions (creating)"
-.iX "c Zip disks (partitioning them)"
-.iX "c Jaz disks (partitioning them)"
 .PP
-The \fR\&\f(CWmpartition\fR command is used to create MS-DOS filesystems as
+The \fR\&\f(CWmpartition\fR command is used to create MS-DOS file systems as
 partitions.  This is intended to be used on non-Linux systems,
-i.e. systems where fdisk and easy access to Scsi devices are not
+i.e. systems where fdisk and easy access to SCSI devices are not
 available.  This command only works on drives whose partition variable
 is set.
 .PP
@@ -66,7 +63,7 @@ Creates the partition described by \fIdrive\fR.
 can be bootable at a time.
 .TP
 \&\fR\&\f(CWd\fR\ 
-"Desactivates" the partition, i.e. makes it unbootable.
+"Deactivates" the partition, i.e. makes it unbootable.
 .PP
 If no operation is given, the current settings are printed.
 .PP
@@ -79,7 +76,7 @@ number of sectors per track for the whole drive).
 \&\fR\&\f(CWh\ \fIheads\fR\&\f(CW\fR\ 
 The number of heads of the partition (which is also the number of heads
 for the whole drive).  By default, the geometry information (number of
-sectors and heads) is figured out from neighbouring partition table
+sectors and heads) is figured out from neighboring partition table
 entries, or guessed from the size.
 .TP
 \&\fR\&\f(CWt\ \fIcylinders\fR\&\f(CW\fR\ 
@@ -104,7 +101,7 @@ partition table:
 .TP
 \&\fR\&\f(CWf\fR\ 
 Usually, before writing back any changes to the partition, mpartition
-performs certain consistenct checks, such as checking for overlaps and
+performs certain consistency checks, such as checking for overlaps and
 proper alignment of the partitions.  If any of these checks fails, the
 partition table is not changes.  The \fR\&\f(CW-f\fR allows you to override
 these safeguards.
@@ -148,7 +145,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -162,7 +159,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -177,7 +174,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP

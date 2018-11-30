@@ -1,4 +1,5 @@
-.TH mcat 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH mcat 1 "28Feb10" mtools-4.0.13
 .SH Name
 mcat - dump raw disk image
 '\" t
@@ -23,12 +24,8 @@ The \fR\&\f(CWmcat\fR command is used to copy an entire disk image from or
 to the floppy device. It uses the following syntax:
 .PP
 \&\fR\&\f(CWmcat\fR [\fR\&\f(CW-w\fR] \fIdrive\fR\fR\&\f(CW:\fR
-.iX "p mcat"
-.iX "c Copying an entire disk image"
-.iX "c Disk image"
-.iX "c Floppyd cat"
 .PP
-\&\fR\&\f(CWMcat\fR performs the same task as the unix \fR\&\f(CWcat\fR command. It
+\&\fR\&\f(CWMcat\fR performs the same task as the Unix \fR\&\f(CWcat\fR command. It
 is included into the mtools package, since \fR\&\f(CWcat\fR cannot access
 remote floppy devices offered by the mtools floppy daemon.
 Now it is possible to create boot floppies remotely.
@@ -37,7 +34,7 @@ The default operation is reading. The output is written to stdout.
 .PP
 If the \fR\&\f(CW-w\fR option is specified, mcat reads a disk-image from 
 stdin and writes it to the given device. 
-\&\fBUse this carefully!\fR Because of the lowlevel nature of this 
+\&\fBUse this carefully!\fR Because of the low-level nature of this 
 command, it will happily destroy any data written before on the
 disk without warning!
 .PP
@@ -64,7 +61,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -78,7 +75,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -93,7 +90,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP

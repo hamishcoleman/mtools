@@ -1,7 +1,7 @@
-.TH floppyd 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH floppyd 1 "28Feb10" mtools-4.0.13
 .SH Name
 floppyd - floppy daemon for remote access to floppy drive
-floppyd_installtest - tests whether floppyd is installed and running
 '\" t
 .de TQ
 .br
@@ -19,9 +19,6 @@ documentation, and may not be entirely accurate or complete.  See the
 end of this man page for details.
 .PP
 .SH Description
-.iX "p floppyd"
-.iX "c X terminal"
-.iX "c remote floppy access"
 .PP
 \&\fR\&\f(CWFloppyd\fR is used as a server to grant access to the floppy drive
 to clients running on a remote machine, just as an X server grants
@@ -64,12 +61,12 @@ Daemon mode. Floppyd runs its own server loop.  Do not supply this if
 you start floppyd from \fR\&\f(CWinetd.conf\fR
 .TP
 \&\fR\&\f(CWs\ \ \fIport\fR\&\f(CW\fR\ 
-Port number for deamon mode.  Default is 5703 + \fIdisplaynumber\fR.
+Port number for daemon mode.  Default is 5703 + \fIdisplaynumber\fR.
 This flag implies daemon mode.  For example, for display
 \&\fR\&\f(CWhitchhiker:5\fR, the port would be 5708.
 .TP
 \&\fR\&\f(CWb\ \ \fIipaddr\fR\&\f(CW\fR\ 
-Bind address (for multihomed hosts). This flag implies daemon mode
+Bind address (for multi homed hosts). This flag implies daemon mode
 .TP
 \&\fR\&\f(CWr\ \fIuser\fR\&\f(CW\fR\ 
 Run the server under as the given user
@@ -109,7 +106,7 @@ floppyd -d /dev/fd0
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -126,7 +123,7 @@ floppyd -d -x :1 -p 5704 /dev/fd0
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -142,7 +139,7 @@ floppyd-1    5704/tcp    # floppy daemon for X server :1
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -159,7 +156,7 @@ floppyd-1 stream  tcp  wait  floppy  /usr/sbin/floppyd floppyd -x :1 /dev/fd0
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -177,7 +174,7 @@ drive x: file="$DISPLAY" remote
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -192,7 +189,7 @@ drive z: file="$DISPLAY//2" remote
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -219,7 +216,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -233,7 +230,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -248,7 +245,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP

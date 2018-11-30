@@ -1,3 +1,8 @@
+mtools (4.0.13) stable; urgency=low
+
+  * Merged Debian patches
+
+ -- Alain Knaff <alain@knaff.lu>  Sun, 28 Feb 2010 15:33:45 +0100
 mtools (4.0.12) stable; urgency=low
 
   * Mingw compatibility fixes

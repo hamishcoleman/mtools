@@ -485,6 +485,7 @@ APIRET rc;
 		printOom();
 		return 0;
 	}
+	memset((void*)This, 0, sizeof(SimpleFile_t));
 	This->scsi_sector_size = 512;
 	This->seekable = 1;
 #ifdef OS_hpux

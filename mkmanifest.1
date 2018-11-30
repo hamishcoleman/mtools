@@ -1,4 +1,5 @@
-.TH mkmanifest 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH mkmanifest 1 "28Feb10" mtools-4.0.13
 .SH Name
 mkmanifest - makes list of file names and their DOS 8+3 equivalent
 '\" t
@@ -18,8 +19,6 @@ documentation, and may not be entirely accurate or complete.  See the
 end of this man page for details.
 .PP
 .SH Description
-.iX "p mkmanifest"
-.iX "c packing list"
 .PP
 The \fR\&\f(CWmkmanifest\fR command is used to create a shell script (packing
 list) to restore Unix filenames. Its syntax is:
@@ -34,7 +33,7 @@ extensions, upper case only, no device names, and no illegal characters.
 The mkmanifest program is compatible with the methods used in
 \&\fR\&\f(CWpcomm, arc,\fR and \fR\&\f(CWmtools\fR to change perfectly good Unix
 filenames to fit the MS-DOS restrictions. This command is only useful if
-the target system which will read the diskette cannot handle vfat long
+the target system which will read the diskette cannot handle VFAT long
 names.
 .PP
 .SH Example
@@ -54,11 +53,11 @@ You want to copy the following Unix files to a MS-DOS diskette (using the
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
-\&\fR\&\f(CWMcopy\fR
+\&\fR\&\f(CWASCII\fR
 converts the names to:
 .PP
  
@@ -74,7 +73,7 @@ converts the names to:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -87,7 +86,7 @@ mkmanifest very_long_name 2.many.dots illegal: good.c prn.dev Capital >manifest
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRwould produce the following:
  
@@ -102,7 +101,7 @@ mkmanifest very_long_name 2.many.dots illegal: good.c prn.dev Capital >manifest
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -142,7 +141,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -156,7 +155,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -171,7 +170,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP

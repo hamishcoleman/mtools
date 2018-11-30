@@ -1,6 +1,6 @@
 Summary: mtools, read/write/list/format DOS disks under Unix
 Name: mtools
-Version: 4.0.12
+Version: 4.0.13
 Release: 1
 Group: Utilities/System
 URL: http://mtools.linux.lu
@@ -124,5 +124,7 @@ if [ -f %{_bindir}/install-info ] ; then
 fi
 
 %changelog
+* Sun Feb 28 2010 Alain Knaff <alain@knaff.lu>
+- Merged Debian patches
 * Tue Nov 03 2009 Alain Knaff <alain@knaff.lu>
 - Mingw compatibility fixes

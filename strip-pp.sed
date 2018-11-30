@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Mtools.  If not, see <http://www.gnu.org/licenses/>.
 :1
-/^\.[IP]P$/N
-s/^\.[IP]P\n\(\.[ITP]P\)$/\1/
+/^\.[IlP][pP]$/N
+s/^\.[IlP][pP]\n\(\.[IlTP][pP]\)$/\1/
+s/^\.l[pP]/.PP/
 /^\.PP$/b1

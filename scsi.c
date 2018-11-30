@@ -54,12 +54,8 @@
 #endif
 
 #ifdef OS_linux
-#define SCSI_IOCTL_SEND_COMMAND 1
-struct scsi_ioctl_command {
-    int  inlen;
-    int  outlen;
-    char cmd[5008];
-};
+#include <scsi/scsi.h>
+#include <scsi/sg.h>
 #endif
 
 #ifdef _SCO_DS
@@ -169,37 +165,33 @@ int scsi_cmd(int fd, unsigned char *cdb, int cmdlen, scsi_io_mode_t mode,
 	return 0;
 	
 #elif defined OS_linux
-	struct scsi_ioctl_command my_scsi_cmd;
+	struct sg_io_hdr scsi_cmd;
 
+	/*
+	** Init the command
+	*/
+	memset(&scsi_cmd,0,sizeof(scsi_cmd));
+	scsi_cmd.interface_id    = 'S';
+	scsi_cmd.dxfer_direction = (mode == SCSI_IO_READ)?(SG_DXFER_FROM_DEV):(SG_DXFER_TO_DEV);
+	scsi_cmd.cmd_len         = cmdlen;
+	scsi_cmd.mx_sb_len       = 0;
+	scsi_cmd.dxfer_len       = len;
+	scsi_cmd.dxferp          = data;
+	scsi_cmd.cmdp            = cdb;
+	scsi_cmd.timeout         = ~0; /* where is MAX_UINT defined??? */
 
-	memcpy(my_scsi_cmd.cmd, cdb, cmdlen);        /* copy command */
+#if DEBUG
+	printf("CMD(%d): %02x%02x%02x%02x%02x%02x %sdevice\n",cmdlen,cdb[0],cdb[1],cdb[2],cdb[3],cdb[4],cdb[5],
+		(mode==SCSI_IO_READ)?("<-"):("->"));
+	printf("DATA   : len = %d\n",len);
+#endif
 
-	switch (mode) {
-		case SCSI_IO_READ:
-			my_scsi_cmd.inlen = 0;
-			my_scsi_cmd.outlen = len;
-			break;
-		case SCSI_IO_WRITE:
-			my_scsi_cmd.inlen = len;
-			my_scsi_cmd.outlen = 0;
-			memcpy(my_scsi_cmd.cmd + cmdlen,data,len);
-			break;
-	}
-	
-	if (ioctl(fd, SCSI_IOCTL_SEND_COMMAND, &my_scsi_cmd) < 0) {
+	if (ioctl(fd, SG_IO,&scsi_cmd) < 0) {
 		perror("scsi_io");
 		return -1;
 	}
 	
-	switch (mode) {
-		case SCSI_IO_READ:
-			memcpy(data, &my_scsi_cmd.cmd[0], len);
-			break;
-		case SCSI_IO_WRITE:
-			break;
-    }
-
-	return 0;  /* where to get scsi status? */
+	return scsi_cmd.status & STATUS_MASK;
 
 #elif (defined _SCO_DS) && (defined SCSIUSERCMD)
 	struct scsicmd my_scsi_cmd;

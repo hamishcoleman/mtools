@@ -1,4 +1,5 @@
-.TH mzip 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH mzip 1 "28Feb10" mtools-4.0.13
 .SH Name
 mzip - change protection mode and eject disk on Zip/Jaz drive
 '\" t
@@ -18,18 +19,9 @@ documentation, and may not be entirely accurate or complete.  See the
 end of this man page for details.
 .PP
 .SH Description
-.iX "c Zip disk (utilities)"
-.iX "c Jaz disk (utilities)"
-.iX "c Ejecting a Zip/Jaz disk"
-.iX "c Write protecting a Zip/Jaz disk"
-.iX "p mzip"
-.iX "c ZipTools disk"
-.iX "c Tools disk (Zip and Jaz drives)"
-.iX "c APlaceForYourStuff"
-.iX "c password protected Zip disks"
 .PP
 The \fR\&\f(CWmzip\fR command is used to issue ZIP disk specific commands on
-Linux, Solaris or HPUX. Its syntax is:
+Linux, Solaris or HP-UX. Its syntax is:
 .PP
 .ft I
 .nf
@@ -67,23 +59,23 @@ writable, and reverts back to its old state when ejected.
 \&\fR\&\f(CWq\fR\ 
 Queries the status
 .PP
-To remove the password, set it to one of the passwordless modes
+To remove the password, set it to one of the password-less modes
 \&\fR\&\f(CW-r\fR or \fR\&\f(CW-w\fR: mzip will then ask you for the password, and
 unlock the disk.  If you have forgotten the password, you can get rid of
-it by low-level formatting the disk (using your SCSI adaptor's BIOS
+it by low-level formatting the disk (using your SCSI adapter's BIOS
 setup).
 .PP
 The ZipTools disk shipped with the drive is also password protected.  On
-Dos or on a Mac, this password is automatically removed once the
+MS-DOS or on a Mac, this password is automatically removed once the
 ZipTools have been installed.  From various articles posted to Usenet, I
 learned that the password for the tools disk is
 \&\fR\&\f(CWAPlaceForYourStuff\fR\fR.  Mzip knows about this
 password, and tries it first, before prompting you for a password.  Thus
 \&\fR\&\f(CWmzip -w z:\fR unlocks the tools disk.  The tools disk is
 formatted in a special way so as to be usable both in a PC and in a Mac.
-On a PC, the Mac filesystem appears as a hidden file named
+On a PC, the Mac file system appears as a hidden file named
 \&\fR\&\f(CW\(ifpartishn.mac\(is\fR.  You may erase it to reclaim the 50 Megs of space
-taken up by the Mac filesystem.
+taken up by the Mac file system.
 .PP
 .SH Bugs
 .PP
@@ -116,7 +108,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -130,7 +122,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -145,7 +137,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP

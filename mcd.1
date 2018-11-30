@@ -1,4 +1,5 @@
-.TH mcd 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH mcd 1 "28Feb10" mtools-4.0.13
 .SH Name
 mcd - change MSDOS directory
 '\" t
@@ -18,12 +19,6 @@ documentation, and may not be entirely accurate or complete.  See the
 end of this man page for details.
 .PP
 .SH Description
-.iX "p mcd"
-.iX "c Directory (changing)"
-.iX "c Working directory"
-.iX "c Current working directory (changing the)"
-.iX "c Default directory (changing the)"
-.iX "c Mcwd file"
 .PP
 The \fR\&\f(CWmcd\fR command is used to change the mtools working directory
 on the MS-DOS disk. It uses the following syntax:
@@ -36,13 +31,13 @@ on the MS-DOS disk. It uses the following syntax:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
 Without arguments, \fR\&\f(CWmcd\fR reports the current device and working
 directory.  Otherwise, \fR\&\f(CWmcd\fR changes the current device and current
-working directory relative to an MS-DOS filesystem.
+working directory relative to an MS-DOS file system.
 .PP
 The environmental variable \fR\&\f(CWMCWD\fR may be used to locate the file
 where the device and current working directory information is stored.
@@ -77,7 +72,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -91,7 +86,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -106,7 +101,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP

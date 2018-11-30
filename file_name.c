@@ -63,10 +63,6 @@ static void TranslateToDos(doscp_t *toDos, const char *in, char *out, int count,
 
 	*Case = NONE;
 	for( ;  *s ; s++) {
-		if(!count) {
-			*mangled |= 3;
-			break;
-		}
 		/* skip spaces & dots */
 		if(*s == ' ' || *s == '.') {
 			*mangled |= 3;
@@ -91,7 +87,6 @@ static void TranslateToDos(doscp_t *toDos, const char *in, char *out, int count,
 				*Case = UPPER;
 		} else
 			*t = *s;
-		count--;
 		t++;
 	}
 	wchar_to_dos(toDos, buffer, out, t - buffer, mangled);

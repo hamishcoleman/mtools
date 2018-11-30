@@ -1,4 +1,5 @@
-.TH mcopy 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH mcopy 1 "28Feb10" mtools-4.0.13
 .SH Name
 mcopy - copy MSDOS files to/from Unix
 '\" t
@@ -18,13 +19,6 @@ documentation, and may not be entirely accurate or complete.  See the
 end of this man page for details.
 .PP
 .SH Description
-.iX "p mcopy"
-.iX "c Reading MS-DOS files"
-.iX "c Writing MS-DOS files"
-.iX "c Copying MS-DOS files"
-.iX "c Concatenating MS-DOS files"
-.iX "c Text files"
-.iX "c CR/LF conversions"
 .PP
 The \fR\&\f(CWmcopy\fR command is used to copy MS-DOS files to and from
 Unix. It uses the following syntax:
@@ -39,7 +33,7 @@ Unix. It uses the following syntax:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -64,8 +58,8 @@ on its position on the command line.
 .TP
 \&\fR\&\f(CWt\fR\ 
 Text file transfer.  Mcopy translates incoming carriage return/line
-feeds to line feeds when copying from Dos to Unix, and vice-versa when
-copying from Unix to Dos.
+feeds to line feeds when copying from MS-DOS to Unix, and vice-versa when
+copying from Unix to MS-DOS.
 .TP
 \&\fR\&\f(CWb\fR\ 
 Batch mode. Optimized for huge recursive copies, but less secure if a
@@ -82,18 +76,18 @@ When mcopying multiple files, quits as soon as one copy fails (for
 example due to lacking storage space on the target disk)
 .TP
 \&\fR\&\f(CWa\fR\ 
-Text (Ascii) file transfer.  \fR\&\f(CWMcopy\fR translates incoming carriage
+Text (ASCII) file transfer.  \fR\&\f(CWASCII\fR translates incoming carriage
 return/line feeds to line feeds.
 .TP
 \&\fR\&\f(CWT\fR\ 
-Text (Ascii) file transfer with charset conversion.  Differs from
-\&\fR\&\f(CW-a\fR in the \fR\&\f(CWMcopy\fR also translates incoming PC-8 characters
+Text (ASCII) file transfer with character set conversion.  Differs from
+\&\fR\&\f(CW-a\fR in the \fR\&\f(CWASCII\fR also translates incoming PC-8 characters
 to ISO-8859-1 equivalents as far as possible.  When reading DOS files,
 untranslatable characters are replaced by '\fR\&\f(CW#\fR'; when writing DOS files,
 untranslatable characters are replaced by '\fR\&\f(CW.\fR'.
 .TP
 \&\fR\&\f(CWn\fR\ 
-No confirmation when overwriting Unix files.  \fR\&\f(CWMcopy\fR doesn't warn
+No confirmation when overwriting Unix files.  \fR\&\f(CWASCII\fR doesn't warn
 the user when overwriting an existing Unix file. If the target file already exists,
 and the \fR\&\f(CW-n\fR option is not in effect, \fR\&\f(CWmcopy\fR asks whether to
 overwrite the file or to rename the new file (\(ifname clashes\(is) for
@@ -117,7 +111,7 @@ mtype a:file1 a:file2 a:file3 | mcopy - a:msdosfile
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
@@ -144,7 +138,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -158,7 +152,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -173,7 +167,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP

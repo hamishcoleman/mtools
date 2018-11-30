@@ -1,4 +1,5 @@
-.TH mformat 1 "03Nov09" mtools-4.0.12
+'\" t
+.TH mformat 1 "28Feb10" mtools-4.0.13
 .SH Name
 mformat - add an MSDOS filesystem to a low-level formatted floppy disk
 '\" t
@@ -18,12 +19,8 @@ documentation, and may not be entirely accurate or complete.  See the
 end of this man page for details.
 .PP
 .SH Description
-.iX "p mformat"
-.iX "c Initializing disks"
-.iX "c Formatting disks"
-.iX "c Filesystem creation"
 .PP
-The \fR\&\f(CWmformat\fR command is used to add an MS-DOS filesystem to a
+The \fR\&\f(CWmformat\fR command is used to add an MS-DOS file system to a
 low-level formatted diskette. Its syntax is:
 .PP
 .ft I
@@ -45,7 +42,7 @@ low-level formatted diskette. Its syntax is:
 .ft R
  
 .PP
-\&\fR\&\f(CWMformat\fR adds a minimal MS-DOS filesystem (boot sector, FAT, and
+\&\fR\&\f(CWMformat\fR adds a minimal MS-DOS file system (boot sector, FAT, and
 root directory) to a diskette that has already been formatted by a Unix
 low-level format.
 .PP
@@ -53,7 +50,7 @@ The following options are supported: (The S, 2, 1 and M options may not
 exist if this copy of mtools has been compiled without the USE_2M
 option)
 .PP
-The following options are the same as for Dos's format command:
+The following options are the same as for MS-DOS's format command:
 .PP
 .SH Options
 .TP
@@ -63,7 +60,7 @@ be a maximum of 11 characters. If you omit the -v switch, mlabel will
 assign no label to the disk.
 .TP
 \&\fR\&\f(CWf\fR\ 
-Specifies the size of the DOS filesystem to format. Only a certain
+Specifies the size of the DOS file system to format. Only a certain
 number of predefined sizes are supported by this flag; for others use
 the -h/-t/-s flags. The following sizes are supported:
 .RS
@@ -115,7 +112,7 @@ together with -the 1 switch, this switch formats a 180K disk
 \&\fR\&\f(CW8\fR\ 
 Formats a disk with 8 sectors per track.
 .PP
-MSDOS format's \fR\&\f(CWq\fR, \fR\&\f(CWu\fR and \fR\&\f(CWb\fR options are not
+MS-DOS format's \fR\&\f(CWq\fR, \fR\&\f(CWu\fR and \fR\&\f(CWb\fR options are not
 supported, and \fR\&\f(CWs\fR has a different meaning.
 .PP
 The following options are specific to mtools:
@@ -125,7 +122,7 @@ The following options are specific to mtools:
 Format the partition as FAT32.
 .TP
 \&\fR\&\f(CWS\fR\ 
-The sizecode. The size of the sector is 2 ^ (sizecode + 7).
+The size code. The size of the sector is 2 ^ (sizecode + 7).
 .TP
 \&\fR\&\f(CWX\fR\ 
 formats the disk as an XDF disk. See section XDF, for more details. The disk
@@ -150,7 +147,7 @@ Data transfer rate on tracks other than 0
 .TP
 \&\fR\&\f(CWM\fR\ 
 software sector size. This parameter describes the sector size in bytes used
-by the MS-DOS filesystem. By default it is the physical sector size.
+by the MS-DOS file system. By default it is the physical sector size.
 .TP
 \&\fR\&\f(CWN\fR\ 
 Uses the requested serial number, instead of generating one
@@ -161,7 +158,7 @@ If this option is given, an Atari style serial number is generated.
 Ataris store their serial number in the OEM label.
 .TP
 \&\fR\&\f(CWC\fR\ 
-creates the disk image file to install the MS-DOS filesystem on
+creates the disk image file to install the MS-DOS file system on
 it. Obviously, this is useless on physical devices such as floppies
 and hard disk partitions, but is interesting for image files.
 .TP
@@ -195,13 +192,13 @@ and 16 bit FATs. This setting can also be specified using the
 Sets the length of the FAT.
 .TP
 \&\fR\&\f(CWB\fR\ 
-Use the bootsector stored in the given file or device, instead of using
+Use the boot sector stored in the given file or device, instead of using
 its own.  Only the geometry fields are updated to match the target disks
 parameters.
 .TP
 \&\fR\&\f(CWk\fR\ 
 Keep the existing boot sector as much as possible.  Only the geometry
-fields and other similar filesystem data are updated to match the target
+fields and other similar file system data are updated to match the target
 disks parameters.
 .TP
 \&\fR\&\f(CWm\fR\ 
@@ -243,7 +240,7 @@ commands:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .TP
@@ -257,7 +254,7 @@ To generate a html copy,  run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fRA premade html can be found at
 \&\fR\&\f(CW\(ifhttp://www.gnu.org/software/mtools/manual/mtools.html\(is\fR
@@ -272,7 +269,7 @@ To generate an info copy (browsable using emacs' info mode), run:
 .fi
 .in -0.3i
 .ft R
-.lp
+.PP
  
 \&\fR
 .PP
