@@ -955,7 +955,9 @@ struct device devices[] = {
 
 #ifdef OS_mingw32msvc
 #define predefined_devices
-struct device devices[] = {};
+struct device devices[] = {
+   {"\\\\.\\A:", 'A', GENFD },
+};
 #endif
 
 #ifdef INIT_GENERIC

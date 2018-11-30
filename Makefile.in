@@ -62,6 +62,7 @@ LIBS        = @LIBS@
 SHLIB       = @SHLIB@
 MACHDEPLIBS = @MACHDEPLIBS@	
 LN_S        = @LN_S@
+EXE         = @EXEEXT@
 
 INSTALL         = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -173,7 +174,7 @@ floppyd_installtest: $(OBJS4)
 
 
 $(LINKS): mtools
-	rm -f $@ && $(LN_S) mtools $@
+	rm -f $@ && $(LN_S) mtools$(EXE) $@
 
 mostlyclean:
 	-rm -f *~ *.orig *.o a.out core 2>/dev/null
@@ -261,7 +262,7 @@ $(DESTDIR)$(bindir)/mkmanifest: mkmanifest
 install-links: $(DESTDIR)$(bindir)/mtools
 	@for j in $(LINKS); do \
 		rm -f $(DESTDIR)$(bindir)/$$j ; \
-		$(LN_S) mtools $(DESTDIR)$(bindir)/$$j ; \
+		$(LN_S) mtools$(EXE) $(DESTDIR)$(bindir)/$$j ; \
 		echo $(DESTDIR)$(bindir)/$$j ; \
 	done
 
@@ -273,7 +274,7 @@ install-scripts: $(DESTDIR)$(bindir)/mtools
 		echo $(DESTDIR)$(bindir)/$$j ; \
 	done
 	rm -f $(DESTDIR)$(bindir)/lz
-	$(LN_S) uz $(DESTDIR)$(bindir)/lz
+	cd $(DESTDIR)$(bindir) && $(LN_S) uz lz
 
 install-man:
 	@$(top_srcdir)/mkinstalldirs $(MAN1DIR)

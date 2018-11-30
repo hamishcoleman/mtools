@@ -1,3 +1,8 @@
+mtools (4.0.12) stable; urgency=low
+
+  * Mingw compatibility fixes
+
+ -- Alain Knaff <alain@knaff.lu>  Tue,  3 Nov 2009 21:26:58 +0100
 mtools (4.0.11) stable; urgency=low
 
   * Fixed compiler in mlabel.c and elsewhere

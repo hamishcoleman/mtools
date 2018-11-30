@@ -585,7 +585,11 @@ APIRET rc;
 #ifdef __EMX__
 	if (*(name+1) != ':')
 #endif
-	if (MT_FSTAT(This->fd, &This->statbuf) < 0){
+	if (MT_FSTAT(This->fd, &This->statbuf) < 0
+#ifdef OS_mingw32msvc
+	    && strncmp(name, "\\\\.\\", 4) != 0
+#endif
+	   ) {
 		Free(This);
 		if(errmsg) {
 #ifdef HAVE_SNPRINTF

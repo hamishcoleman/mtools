@@ -528,12 +528,7 @@ static int unix_target_lookup(MainParam_t *mp, const char *arg)
 
 int target_lookup(MainParam_t *mp, const char *arg)
 {
-	if((mp->lookupflags & NO_UNIX) || (arg[0]
-#ifdef OS_mingw32msvc
-/* On Windows, support only the command-line image drive. */
-                                           && arg[0] == ':'
-#endif
-                                           && arg[1] == ':' ))
+	if((mp->lookupflags & NO_UNIX) || (arg[0] && arg[1] == ':' ))
 		return dos_target_lookup(mp, arg);
 	else
 		return unix_target_lookup(mp, arg);

@@ -420,11 +420,7 @@ void myexit(int code)
 
 #endif
 
-#ifdef OS_mingw32msvc
-static const char PATH_SEP = '\\';
-#else
 static const char PATH_SEP = '/';
-#endif
 
 /*#ifndef HAVE_BASENAME*/
 const char *_basename(const char *filename)
@@ -433,9 +429,15 @@ const char *_basename(const char *filename)
 
 	ptr = strrchr(filename, PATH_SEP);
 	if(ptr)
-		return ptr+1;
-	else
-		return filename;
+		filename = ptr + 1;
+
+#ifdef OS_mingw32msvc
+	ptr = strrchr(filename, '\\');
+	if(ptr)
+		filename = ptr + 1;
+#endif
+
+	return filename;
 }
 /*#endif*/
 

@@ -1,6 +1,6 @@
 Summary: mtools, read/write/list/format DOS disks under Unix
 Name: mtools
-Version: 4.0.11
+Version: 4.0.12
 Release: 1
 Group: Utilities/System
 URL: http://mtools.linux.lu
@@ -9,10 +9,10 @@ Source0: mtools-%{version}.tar.gz
 Buildroot: %{_tmppath}/%{name}-%{version}-buildroot
 License: GPL
 %description
-Mtools is a collection of utilities to access MS-DOS disks
-from Unix without mounting them. It supports Win'95 style
-long file names, OS/2 Xdf disks, ZIP/JAZ disks and 2m
-disks (store up to 1992k on a high density 3 1/2 disk).
+Mtools is a collection of utilities to access MS-DOS disks from GNU
+and Unix without mounting them. It supports long file names, OS/2 Xdf
+disks, ZIP/JAZ disks and 2m disks (store up to 1992k on a high density
+3 1/2 disk).
 
 
 %prep
@@ -122,3 +122,7 @@ if [ -f %{_bindir}/install-info ] ; then
 		%{_bindir}/install-info --delete %{_infodir}/mtools.info %{_infodir}/dir.info
 	fi
 fi
+
+%changelog
+* Tue Nov 03 2009 Alain Knaff <alain@knaff.lu>
+- Mingw compatibility fixes

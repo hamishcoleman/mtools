@@ -1,3 +1,5 @@
+v4_0_12
+	Mingw compatibility fixes
 v4_0_11
 	Fixed compiler warnings in mlabel.c and elsewhere
 	Fixed h flag in mattrib.c
