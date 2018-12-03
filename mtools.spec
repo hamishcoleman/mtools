@@ -1,7 +1,7 @@
 %define _binary_payload w9.gzdio
 Name:           mtools
 Summary:        mtools, read/write/list/format DOS disks under Unix
-Version:        4.0.21
+Version:        4.0.22
 Release:        1
 License:        GPLv3+
 Group:          Utilities/System
@@ -135,6 +135,9 @@ if [ -f %{_bindir}/install-info ] ; then
 fi
 
 %changelog
+* Sun Dec 02 2018 Alain Knaff <alain@knaff.lu>
+- Fixed -f flag for mformat (size is KBytes, rather than sectors)
+- Fixed toupper/tolower usage (unsigned char rather than plain signed)
 * Sat Nov 24 2018 Alain Knaff <alain@knaff.lu>
 - Fixed compilation for MingW
 - After MingW compilation, make sure executable has .exe extension

@@ -176,12 +176,6 @@ static switches_t dswitches[]= {
     { "CODEPAGE", OFFS(codepage), T_UINT }
 };
 
-static __inline__ char ch_toupper(char ch)
-{
-    return (char) toupper( (unsigned char) ch);
-}
-
-
 static void maintain_default_drive(char drive)
 {
     if(default_drive == ':')

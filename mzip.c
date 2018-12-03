@@ -295,7 +295,7 @@ void mzip(int argc, char **argv, int type UNUSEDP)
 	     (!argv[optind][0] || argv[optind][1] != ':')))
 		usage(1);
 	
-	drive = toupper(argc - optind == 1 ? argv[argc - 1][0] : ':');
+	drive = ch_toupper(argc - optind == 1 ? argv[argc - 1][0] : ':');
 	
 	for (dev = devices; dev->name; dev++) {
 		unsigned char cdb[6] = { 0, 0, 0, 0, 0, 0 };

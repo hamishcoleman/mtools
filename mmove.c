@@ -279,8 +279,8 @@ void mmove(int argc, char **argv, int oldsyntax)
 	for(i=optind; i<argc; i++)
 		if(argv[i][0] && argv[i][1] == ':' ){
 			if(!def_drive)
-				def_drive = toupper(argv[i][0]);
-			else if(def_drive != toupper(argv[i][0])){
+				def_drive = ch_toupper(argv[i][0]);
+			else if(def_drive != ch_toupper(argv[i][0])){
 				fprintf(stderr,
 					"Cannot move files across different drives\n");
 				exit(1);

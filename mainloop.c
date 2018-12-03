@@ -71,7 +71,7 @@ static const char *fix_mcwd(char *ans)
 #if 0
 					/* translate to upper case */
 	for (s = ans; *s; ++s) {
-		*s = toupper(*s);
+		*s = ch_toupper(*s);
 		if (*s == '\\')
 			*s = '/';
 	}
@@ -433,7 +433,7 @@ static int common_dos_loop(MainParam_t *mp, const char *pathname,
 	drive='\0';
 	cwd = "";
 	if(*pathname && pathname[1] == ':') {
-		drive = toupper(*pathname);
+		drive = ch_toupper(*pathname);
 		pathname += 2;
 		if(mp->mcwd[0] == drive)
 			cwd = mp->mcwd+2;

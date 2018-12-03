@@ -1,3 +1,8 @@
+mtools (4.0.22) stable; urgency=low
+  * Fixed -f flag for mformat (size is KBytes, rather than sectors)
+  * Fixed toupper/tolower usage (unsigned char rather than plain signed)
+ -- Alain Knaff <alain@knaff.lu>  Sun,  2 Dec 2018 18:29:59 +0100
+
 mtools (4.0.21) stable; urgency=low
   * Fixed compilation for MingW
   * After MingW compilation, make sure executable has .exe extension

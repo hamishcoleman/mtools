@@ -146,7 +146,7 @@ static void do_mclasserase(char drive,int debug)
   }
       
   /* Forming cat command to overwrite the medias content. */
-  sprintf( drivel, "%c:", tolower(drive) );
+  sprintf( drivel, "%c:", ch_tolower(drive) );
 
 #if 0
   media_sectors = dev.tracks * dev.sectors;
@@ -339,7 +339,7 @@ void mclasserase(int argc, char **argv, int type UNUSEDP)
      {
        usage(1);
      }
-     drive = toupper(argv[optind][0]);
+     drive = ch_toupper(argv[optind][0]);
    }
   }
 #ifdef DEBUG

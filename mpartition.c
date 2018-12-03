@@ -461,7 +461,7 @@ void mpartition(int argc, char **argv, int dummy UNUSEDP)
 	    !argv[optind][0] || argv[optind][1] != ':')
 		usage(1);
 
-	drive = toupper(argv[optind][0]);
+	drive = ch_toupper(argv[optind][0]);
 
 	/* check out a drive whose letter and parameters match */
 	sprintf(errmsg, "Drive '%c:' not supported", drive);

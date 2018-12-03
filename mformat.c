@@ -1133,7 +1133,7 @@ void mformat(int argc, char **argv, int dummy UNUSEDP)
 	if(argc - optind == 1) {
 	    if(!argv[optind][0] || argv[optind][1] != ':')
 		usage(1);
-	    drive = toupper(argv[argc -1][0]);
+	    drive = ch_toupper(argv[argc -1][0]);
 	} else {
 	    drive = get_default_drive();
 	    if(drive != ':') {

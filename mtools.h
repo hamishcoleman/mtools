@@ -209,6 +209,16 @@ UNUSED(static __inline__ int compare (long ref, long testee))
 	return (ref && ref != testee);
 }
 
+UNUSED(static __inline__ char ch_toupper(char ch))
+{
+        return (char) toupper( (unsigned char) ch);
+}
+
+UNUSED(static __inline__ char ch_tolower(char ch))
+{
+        return (char) tolower( (unsigned char) ch);
+}
+
 Stream_t *GetFs(Stream_t *Fs);
 
 void label_name_uc(doscp_t *cp, const char *filename, int verbose, 

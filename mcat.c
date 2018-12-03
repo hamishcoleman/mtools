@@ -92,7 +92,7 @@ void mcat(int argc, char **argv, int type UNUSEDP)
 		usage();
 	}
 
-        drive = toupper(argv[optindex][0]);
+        drive = ch_toupper(argv[optindex][0]);
 
         /* check out a drive whose letter and parameters match */       
         sprintf(errmsg, "Drive '%c:' not supported", drive);    

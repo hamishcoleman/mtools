@@ -1,3 +1,6 @@
+v4_0_22
+	- Fixed -f flag for mformat (size is KBytes, rather than sectors)
+	- Fixed toupper/tolower usage (unsigned char rather than plain signed)
 v4_0_21
 	- Fixed compilation for MingW
 	- After MingW compilation, make sure executable has .exe extension

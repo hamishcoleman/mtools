@@ -18,8 +18,13 @@ static struct OldDos_t old_dos[]={
 {   80,  9,  1, 7, 2, 2, 0xf8 }, /* 360 KB */
 };
 
+/**
+ * Get Old Dos parameters for a filesystem of size KBytes (assuming
+ * 512 byte sectors), i.e. number of sectors is double the size
+ */
 struct OldDos_t *getOldDosBySize(size_t size) {
 	size_t i;
+	size = size * 2;
 	for(i=0; i < sizeof(old_dos) / sizeof(old_dos[0]); i++){
 		if (old_dos[i].sectors *
 		    old_dos[i].tracks *
@@ -66,6 +71,6 @@ int setDeviceFromOldDos(int media, struct device *dev) {
 	dev->tracks = params->tracks;
 	dev->sectors = params->sectors;
 	dev->ssize = 0x80;
-	dev->use_2m = ~1;
+	dev->use_2m = ~1u;
 	return 0;
 }

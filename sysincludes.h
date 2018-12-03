@@ -266,8 +266,6 @@ extern int errno;
 
 #ifndef OS_mingw32msvc
 #include <pwd.h>
-#else
-typedef unsigned int uid_t;
 #endif
 
 

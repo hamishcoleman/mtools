@@ -79,7 +79,7 @@ static char *dos_name2(const char *name)
 			ext = &buf[i+1];
 		}
 		if (isupper((unsigned char)buf[i]))
-			buf[i] = tolower((unsigned char)buf[i]);
+			buf[i] = ch_tolower(buf[i]);
 	}
 					/* if no name */
 	if (*temp == '\0')

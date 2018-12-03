@@ -169,7 +169,7 @@ wchar_t *unix_name(doscp_t *dosCp,
 
 	if(Case & BASECASE)
 		for(i=0;i<8 && tname[i];i++)
-			tname[i] = tolower(tname[i]);
+			tname[i] = ch_tolower(tname[i]);
 
 	strncpy(text, ext, 3);
 	text[3] = '\0';
@@ -178,7 +178,7 @@ wchar_t *unix_name(doscp_t *dosCp,
 
 	if(Case & EXTCASE)
 		for(i=0;i<3 && text[i];i++)
-			text[i] = tolower(text[i]);
+			text[i] = ch_tolower(text[i]);
 
 	if (*text) {
 		strcpy(ans, tname);

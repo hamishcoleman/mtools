@@ -163,7 +163,7 @@ void minfo(int argc, char **argv, int type UNUSEDP)
 		} else {
 			if(!argv[optind][0] || argv[optind][1] != ':')
 				usage(1);
-			drive = toupper(argv[optind][0]);
+			drive = ch_toupper(argv[optind][0]);
 		}
 		have_drive = 1;
 
@@ -225,7 +225,7 @@ void minfo(int argc, char **argv, int type UNUSEDP)
 				printf("-S %d ",size_code);
 			if(imgFile != NULL)
 				printf("-i \"%s\" ", imgFile);
-			printf("%c:\n", tolower(drive));
+			printf("%c:\n", ch_tolower(drive));
 			printf("\n");
 		}
 
