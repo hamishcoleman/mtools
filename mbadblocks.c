@@ -140,10 +140,10 @@ void mbadblocks(int argc, char **argv, int type UNUSEDP)
 			sectorMode = 1;
 			break;
 		case 'S':
-			startSector = atol(optarg); 
+			startSector = atoui(optarg); 
 			break;
 		case 'E':
-			endSector = atol(optarg); 
+			endSector = atoui(optarg); 
 			break;
 		case 'w':
 			writeMode = 1;
@@ -183,7 +183,7 @@ void mbadblocks(int argc, char **argv, int type UNUSEDP)
 			ret = 1;
 			goto exit_0;
 		}
-		srandom(time(NULL));
+		init_random();
 		for(i=0; i < in_len * N_PATTERN; i++) {
 			pat_buf[i] = random();
 		}
@@ -222,7 +222,7 @@ void mbadblocks(int argc, char **argv, int type UNUSEDP)
 		}
 		while(fgets(line, sizeof(line), f)) {
 			char *ptr = line + strspn(line, " \t");
-			long offset = strtoul(ptr, 0, 0);
+			long offset = strtol(ptr, 0, 0);
 			if(sectorMode)
 				offset = (offset-Fs->clus_start)/Fs->cluster_size + 2;
 			if(offset < 2) {

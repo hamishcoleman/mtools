@@ -51,7 +51,7 @@ typedef struct SimpleFile_t {
     int size_limited;
 #endif
     int scsi_sector_size;
-    void *extra_data; /* extra system dependant information for scsi */
+    void *extra_data; /* extra system dependent information for scsi */
     int swap; /* do the word swapping */
 } SimpleFile_t;
 
@@ -386,7 +386,7 @@ static int scsi_io(Stream_t *Stream, char *buf,
 	if (firstblock > 0x1fffff || nsect > 0xff) {
 		/* I suspect that the ZIP drive also understands Group 1
 		 * commands. If that is indeed true, we may chose Group 1
-		 * more agressively in the future */
+		 * more aggressively in the future */
 
 		cdb[0] |= SCSI_GROUP1;
 		clen=10; /* SCSI Group 1 cmd */

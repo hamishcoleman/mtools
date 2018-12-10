@@ -24,7 +24,7 @@
 #include "file_name.h"
 
 /* Write a DOS name + extension into a legal unix-style name.  */
-char *unix_normalize (doscp_t *cp, char *ans, dos_name_t *dn)
+char *unix_normalize (doscp_t *cp, char *ans, dos_name_t *dn, size_t ans_size)
 {
 	char buffer[13];
 	wchar_t wbuffer[13];
@@ -40,7 +40,7 @@ char *unix_normalize (doscp_t *cp, char *ans, dos_name_t *dn)
 	}
 	*a++ = '\0';
 	dos_to_wchar(cp, buffer, wbuffer, 13);
-	wchar_to_native(wbuffer, ans, 13);
+	wchar_to_native(wbuffer, ans, 13, ans_size);
 	return ans;
 }
 
@@ -50,12 +50,12 @@ typedef enum Case_l {
 	LOWER
 } Case_t;
 
-static void TranslateToDos(doscp_t *toDos, const char *in, char *out, int count,
-			   char *end, Case_t *Case, int *mangled)
+static void TranslateToDos(doscp_t *toDos, const char *in, char *out,
+			   size_t count, char *end, Case_t *Case, int *mangled)
 {
 	wchar_t buffer[12];
 	wchar_t *s=buffer;
-	wchar_t *t=buffer;
+	size_t t_idx = 0;
 
 	/* first convert to wchar, so we get to use towupper etc. */
 	native_to_wchar(in, buffer, count, end, mangled);
@@ -69,27 +69,27 @@ static void TranslateToDos(doscp_t *toDos, const char *in, char *out, int count,
 			continue;
 		}
 
-		if (iswcntrl(*s)) {
+		if (iswcntrl((wint_t)*s)) {
 			/* "control" characters */
 			*mangled |= 3;
-			*t = '_';
-		} else if (iswlower(*s)) {
-			*t = towupper(*s);
+			buffer[t_idx] = '_';
+		} else if (iswlower((wint_t)*s)) {
+			buffer[t_idx] = ch_towupper(*s);
 			if(*Case == UPPER && !mtools_no_vfat)
 				*mangled |= 1;
 			else
 				*Case = LOWER;
-		} else if (iswupper(*s)) {
-			*t = *s;
+		} else if (iswupper((wint_t)*s)) {
+			buffer[t_idx] = *s;
 			if(*Case == LOWER && !mtools_no_vfat)
 				*mangled |= 1;
 			else
 				*Case = UPPER;
 		} else
-			*t = *s;
-		t++;
+			buffer[t_idx] = *s;
+		t_idx++;
 	}
-	wchar_to_dos(toDos, buffer, out, t - buffer, mangled);
+	wchar_to_dos(toDos, buffer, out, t_idx, mangled);
 }
 
 /* dos_name
@@ -102,7 +102,7 @@ void dos_name(doscp_t *toDos, const char *name, int verbose UNUSEDP,
 	      int *mangled, dos_name_t *dn)
 {
 	char *s, *ext;
-	register int i;
+	size_t i;
 	Case_t BaseCase, ExtCase = UPPER;
 
 	*mangled = 0;
@@ -206,10 +206,14 @@ int unicode_write(wchar_t *in, struct unicode_char *out, int num, int *end_p)
 	for (j=0; j<num; ++j) {
 		if (*end_p)
 			/* Fill with 0xff */
-			out->uchar = out->lchar = (char) 0xff;
+			out->uchar = out->lchar = 0xff;
 		else {
-			out->uchar = *in >> 8;
-			out->lchar = *in;
+			/* TODO / FIXME : handle case where wchat has more
+			 * than 2 bytes (i.e. bytes 2 or 3 are set.
+			 * ==> generate surrogate pairs?
+			 */
+			out->uchar = (*in & 0xffff) >> 8;
+			out->lchar = *in & 0xff;
 			if (! *in) {
 				*end_p = VSE_LAST;
 			}

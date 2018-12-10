@@ -269,7 +269,7 @@ size_t strspn(const char *s, const char *accept)
 #endif /* HAVE_STRSPN */
 
 #ifndef HAVE_STRCSPN
-/* Return the length of the maximum inital segment of S
+/* Return the length of the maximum initial segment of S
    which contains no characters from REJECT.  */
 size_t strcspn (const char *s, const char *reject)
 {

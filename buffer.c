@@ -33,7 +33,7 @@ typedef struct Buffer_t {
 
 	size_t sectorSize;	/* sector size: all operations happen
 				 * in multiples of this */
-	size_t cylinderSize;	/* cylinder size: preferred alignemnt,
+	size_t cylinderSize;	/* cylinder size: preferred alignment,
 				 * but for efficiency, less data may be read */
 	int ever_dirty;	       	/* was the buffer ever dirty? */
 	size_t dirty_pos;

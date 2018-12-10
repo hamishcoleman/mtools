@@ -34,7 +34,7 @@ typedef struct Arg_t {
 	MainParam_t mp;
 	ClashHandling_t ch;
 	Stream_t *sourcefile;
-	unsigned long fat;
+	uint32_t fat;
 	int markbad;
 	int setsize;
 	unsigned long size;
@@ -79,10 +79,11 @@ void mdoctorfat(int argc, char **argv, int mtype UNUSEDP)
 {
 	Arg_t arg;
 	int c, ret;
-	long address, begin, end;
+	unsigned int address;
+	unsigned int begin, end;
 	char *number, *eptr;
-	int i, j;
-	long offset;
+	int i;
+	unsigned int offset;
 	
 	/* get command line options */
 
@@ -105,7 +106,7 @@ void mdoctorfat(int argc, char **argv, int mtype UNUSEDP)
 				arg.markbad = 1;
 				break;
 			case 'o':
-				offset = strtoul(optarg,0,0);
+				offset = strtoui(optarg,0,0);
 				break;
 			case 's':
 				arg.setsize=1;
@@ -131,20 +132,21 @@ void mdoctorfat(int argc, char **argv, int mtype UNUSEDP)
 	
 	arg.mp.lookupflags = ACCEPT_PLAIN | ACCEPT_DIR | DO_OPEN;
 	arg.mp.openflags = O_RDWR;
-	arg.fat = strtoul(argv[optind+1], 0, 0) + offset;
+	arg.fat = strtoui(argv[optind+1], 0, 0) + offset;
 	ret=main_loop(&arg.mp, argv + optind, 1);
 	if(ret)
 		exit(ret);
 	address = 0;
 	for(i=optind+1; i < argc; i++) {
+		unsigned int j;
 		number = argv[i];
 		if (*number == '<') {
 			number++;
 		}
-		begin = strtoul(number, &eptr, 0);
+		begin = strtoui(number, &eptr, 0);
 		if (eptr && *eptr == '-') {
 			number = eptr+1;
-			end = strtoul(number, &eptr, 0);
+			end = strtoui(number, &eptr, 0);
 		} else {
 			end = begin;
 		}

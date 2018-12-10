@@ -35,7 +35,7 @@
 
 /***********************************************************************/
 /*                                                                     */
-/* OS dependancies which cannot be covered by the autoconfigure script */
+/* OS dependencies which cannot be covered by the autoconfigure script */
 /*                                                                     */
 /***********************************************************************/
 
@@ -93,7 +93,7 @@ typedef void *caddr_t;
 
 /***********************************************************************/
 /*                                                                     */
-/* Compiler dependancies                                               */
+/* Compiler dependencies                                               */
 /*                                                                     */
 /***********************************************************************/
 
@@ -105,18 +105,29 @@ typedef void *caddr_t;
 /* gcc 2.6.3 doesn't have "unused" */		/* mool */
 #  define UNUSED(x) x __attribute__ ((unused));x
 #  define UNUSEDP __attribute__ ((unused))
-# else
-#  define UNUSED(x) x
-#  define UNUSEDP /* */
 # endif
 # define NORETURN __attribute__ ((noreturn))
-#else
+# if __GNUC__ >= 8
+#  define NONULLTERM __attribute__ ((nonstring))
+# endif
+#endif
+
+#ifndef UNUSED
 # define UNUSED(x) x
-#  define UNUSEDP /* */
+# define UNUSEDP /* */
+#endif
+
+#ifndef PACKED
 # define PACKED /* */
+#endif
+
+#ifndef NORETURN
 # define NORETURN /* */
 #endif
 
+#ifndef NONULLTERM
+# define NONULLTERM /* */
+#endif
 
 /***********************************************************************/
 /*                                                                     */
@@ -345,6 +356,10 @@ extern int errno;
 
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
+#endif
+
+#ifdef HAVE_NETINET_TCP_H
+#include <netinet/tcp.h>
 #endif
 
 #ifdef HAVE_ARPA_INET_H

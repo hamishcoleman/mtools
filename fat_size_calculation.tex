@@ -27,7 +27,7 @@
 This small document explains the formula used by {\tt mformat.c} to
 figure out fat size and number of clusters. Due to the way that
 filesystem parameters are stored in the boot sector, we can afford to
-have a FAT that is larger than need to be to accomodate the clusters
+have a FAT that is larger than need to be to accommodate the clusters
 present on disk, but under no circumstances can we have one that is
 too small.
 
@@ -146,7 +146,7 @@ space for one more cluster (i.e. not enough space for data + FAT, but
 enough for data alone). This situation, combined with a situation
 where the last FAT sector was flush full could have lead to a
 situation where $numClus$ would become too large for the FAT to
-accomodate. I think this is clearer with an example:
+accommodate. I think this is clearer with an example:
 \begin{itemize}
 \item $remSect=4127$, $clusSiz=1$, $nfats=1$
 \item (Non rounded down) $numClus={(4127+2)*(1024) \over 1032} -
@@ -163,7 +163,7 @@ needed number of FAT sectors to 17, nicely solving this problem.
 The downside of counting the fractional part however is that we quite
 often waste a sector in the really common situation where both $nfats$
 and $clusSiz$ are even, while $remSect$ is odd. An easy way to address
-this is to substract one from $remSect$ before application of the
+this is to subtract one from $remSect$ before application of the
 formula, if this case is detected. Such operation carries no risk, as
 the odd final sector cannot be used to make a full cluster.
 

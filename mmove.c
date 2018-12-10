@@ -77,7 +77,7 @@ static int renameit(dos_name_t *dosname,
 			initializeDirentry(&subEntry, arg->mp.File);
 
 			switch(vfat_lookup(&subEntry, "..", 2, ACCEPT_DIR,
-					   NULL, NULL)) {
+					   NULL, 0, NULL, 0)) {
 			    case -1:
 				fprintf(stderr,
 					" Directory has no parent entry\n");
@@ -312,10 +312,12 @@ void mmove(int argc, char **argv, int oldsyntax)
 	}
 
 
-	arg.mp.longname = longname;
+	arg.mp.longname.data = longname;
+	arg.mp.longname.len = sizeof(longname);
 	longname[0]='\0';
 
-	arg.mp.shortname = shortname;
+	arg.mp.shortname.data = shortname;
+	arg.mp.shortname.len = sizeof(shortname);
 	shortname[0]='\0';
 
 	exit(main_loop(&arg.mp, argv + optind, argc - optind - 1));

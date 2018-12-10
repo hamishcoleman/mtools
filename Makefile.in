@@ -102,7 +102,7 @@ mpartition.1 mpartition.c mrd.1 \
 mren.1 msdos.h mshortname.1 mshowfat.1 mtoolstest.1 mtools.1 mtools.5 mtools.c \
 mtools.conf mtools.h mtype.1 nameclash.h patchlevel.c \
 plain_io.c plain_io.h precmd.c privileges.c scripts signal.c stream.c stream.h \
-streamcache.c streamcache.h subdir.c sysincludes.h unixdir.c todo \
+streamcache.c streamcache.h subdir.c strtonum.c sysincludes.h unixdir.c todo \
 vfat.c vfat.h xdf_io.c xdf_io.h
 
 OBJS1 = buffer.o charsetConv.o codepages.o config.o copyfile.o \
@@ -113,13 +113,13 @@ mdel.o mdir.o mdoctorfat.o mdu.o \
 mformat.o minfo.o misc.o missFuncs.o mk_direntry.o mlabel.o mmd.o mmount.o \
 mmove.o mpartition.o mshortname.o mshowfat.o mzip.o mtools.o old_dos.o \
 patchlevel.o plain_io.o precmd.o privileges.o scsi.o signal.o stream.o \
-streamcache.o subdir.o unixdir.o tty.o vfat.o xdf_io.o
+streamcache.o subdir.o unixdir.o tty.o vfat.o xdf_io.o strtonum.o
 
 OBJS2 = missFuncs.o mkmanifest.o misc.o patchlevel.o
 
 OBJS3 = floppyd.o llong.o lockdev.o
 
-OBJS4 = floppyd_installtest.o misc.o expand.o privileges.o
+OBJS4 = floppyd_installtest.o misc.o expand.o privileges.o strtonum.o
 
 SRCS = buffer.c codepages.c config.c copyfile.c devices.c \
 dirCache.c directory.c direntry.c expand.c fat.c fat_free.c file.c file_name.c \
@@ -329,7 +329,7 @@ depend: $(SRCS)
 
 check:
 	echo No self tests included
-# check target needed even if empty, in order to make life easyer for
+# check target needed even if empty, in order to make life easier for
 # automatic tools to install GNU soft
 
 

@@ -173,15 +173,16 @@ int dos_to_wchar(doscp_t *cp, const char *dos, wchar_t *wchar, size_t len)
  * mangled will be set if there has been an untranslatable character.
  */
 static int safe_iconv(iconv_t conv, const wchar_t *wchar, char *dest,
-		      size_t len, int *mangled)
+		      size_t in_len, size_t out_len, int *mangled)
 {
 	int r;
 	unsigned int i;
-	size_t in_len=len*sizeof(wchar_t);
-	size_t out_len=len;
 	char *dptr = dest;
+	size_t len;
 
-	while(in_len > 0) {
+	in_len=in_len*sizeof(wchar_t);
+
+	while(in_len > 0 && out_len > 0) {
 		r=iconv(conv, (char**)&wchar, &in_len, &dptr, &out_len);
 		if(r >= 0 || errno != EILSEQ) {
 			/* everything transformed, or error that is _not_ a bad
@@ -190,7 +191,9 @@ static int safe_iconv(iconv_t conv, const wchar_t *wchar, char *dest,
 		}
 		*mangled |= 1;
 
-		if(dptr)
+		if(out_len <= 0)
+			break;
+		if(dptr) 
 			*dptr++ = '_';
 		in_len -= sizeof(wchar_t);
 
@@ -215,7 +218,7 @@ static int safe_iconv(iconv_t conv, const wchar_t *wchar, char *dest,
 void wchar_to_dos(doscp_t *cp,
 		  wchar_t *wchar, char *dos, size_t len, int *mangled)
 {
-	safe_iconv(cp->to, wchar, dos, len, mangled);
+	safe_iconv(cp->to, wchar, dos, len, len, mangled);
 }
 
 #else
@@ -361,14 +364,15 @@ static void initialize_to_native(void)
  * Convert wchar string to native, converting at most len wchar characters
  * Returns number of generated native characters
  */
-int wchar_to_native(const wchar_t *wchar, char *native, size_t len)
+int wchar_to_native(const wchar_t *wchar, char *native, size_t len,
+		    size_t out_len)
 {
 #ifdef HAVE_ICONV_H
 	int mangled;
 	int r;
 	initialize_to_native();
 	len = wcsnlen(wchar,len);
-	r=safe_iconv(to_native, wchar, native, len*4, &mangled);
+	r=safe_iconv(to_native, wchar, native, len, out_len, &mangled);
 	native[r]='\0';
 	return r;
 #else
@@ -407,7 +411,7 @@ int native_to_wchar(const char *native, wchar_t *wchar, size_t len,
 		int r = mbrtowc(wchar+i, native, len, &ps);
 		if(r < 0) {
 			/* Unconvertible character. Just pretend it's Latin1
-			   encoded (if valid Latin1 character) or substitue
+			   encoded (if valid Latin1 character) or substitute
 			   with an underscore if not
 			*/
 			char c = *native;

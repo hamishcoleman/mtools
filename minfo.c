@@ -184,7 +184,7 @@ void minfo(int argc, char **argv, int type UNUSEDP)
 
 		sect_per_track = dev.sectors * dev.heads;
 		if(sect_per_track != 0) {
-			int hidden;
+			unsigned int hidden;
 			unsigned long tot_sectors;
 			int tracks_match=0;
 			printf("mformat command line: mformat ");

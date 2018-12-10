@@ -58,8 +58,8 @@ static mt_size_t bytesOnDrive;
 static Stream_t *RootDir;	
 
 
-static char global_shortname[4*12+1];
-static char global_longname[4*MAX_VNAMELEN+1];
+static char mdir_shortname[4*12+1];
+static char mdir_longname[4*MAX_VNAMELEN+1];
 
 
 /*
@@ -197,7 +197,8 @@ static __inline__ int print_volume_label(Stream_t *Dir, char drive)
 
 	initializeDirentry(&entry, RootDir);
 	if((r=vfat_lookup(&entry, 0, 0, ACCEPT_LABEL | MATCH_ANY,
-			  shortname, longname)) ) {
+			  shortname, sizeof(shortname),
+			  longname, sizeof(longname))) ) {
 		if (r == -2) {
 			/* I/O Error */
 			return -1;
@@ -390,7 +391,7 @@ static int list_file(direntry_t *entry, MainParam_t *mp UNUSEDP)
 	dos_to_wchar(cp, entry->dir.ext, ext, 3);
 	if(Case & EXTCASE){
 		for(i=0; i<3;i++)
-			ext[i] = towlower(ext[i]);
+			ext[i] = ch_towlower(ext[i]);
 	}
 	ext[3] = '\0';
 	if (entry->dir.name[0] == '\x05') {
@@ -401,25 +402,25 @@ static int list_file(direntry_t *entry, MainParam_t *mp UNUSEDP)
 	}
 	if(Case & BASECASE){
 		for(i=0; i<8;i++)
-			name[i] = towlower(name[i]);
+			name[i] = ch_towlower(name[i]);
 	}
 	name[8]='\0';
 	if(wide){
 		if(IS_DIR(entry))
-			printf("[%s]%*s", global_shortname,
-			       (int) (15 - 2 - strlen(global_shortname)), "");
+			printf("[%s]%*s", mdir_shortname,
+			       (int) (15 - 2 - strlen(mdir_shortname)), "");
 		else
-			printf("%-15s", global_shortname);
+			printf("%-15s", mdir_shortname);
 	} else if(!concise) {				
 		char tmpBasename[4*8+1];
 		char tmpExt[4*3+1];
-		wchar_to_native(name,tmpBasename,8);
-		wchar_to_native(ext,tmpExt,3);
+		WCHAR_TO_NATIVE(name,tmpBasename,8);
+		WCHAR_TO_NATIVE(ext,tmpExt,3);
 
 		if (name[0] == ' ') 
 			printf("             ");
 		else if(mtools_dotted_dir)
-			printf("%-12s ", global_shortname);
+			printf("%-12s ", mdir_shortname);
 		else
 			printf("%s %s ", tmpBasename, tmpExt);
 		/* is a subdirectory */
@@ -435,12 +436,13 @@ static int list_file(direntry_t *entry, MainParam_t *mp UNUSEDP)
 		if(debug)
 			printf(" %s %d ", tmpBasename, START(&entry->dir));
 		
-		if(*global_longname)
-			printf(" %s", global_longname);
+		if(*mdir_longname)
+			printf(" %s", mdir_longname);
 		printf("\n");
 	} else {
 		char tmp[4*MAX_VNAMELEN+1];
-		wchar_to_native(entry->name,tmp,MAX_VNAMELEN);
+		wchar_to_native(entry->name,tmp,
+				MAX_VNAMELEN, sizeof(tmp));
 
 		printf("%s/%s", dirPath, tmp);
 		if(IS_DIR(entry))
@@ -608,8 +610,10 @@ void mdir(int argc, char **argv, int type UNUSEDP)
 		mp.dirCallback = list_non_recurs_directory;
 		mp.callback = list_file;
 	}
-	mp.longname = global_longname;
-	mp.shortname = global_shortname;
+	mp.longname.data = mdir_longname;
+	mp.longname.len = sizeof(mdir_longname);
+	mp.shortname.data = mdir_shortname;
+	mp.shortname.len = sizeof(mdir_shortname);
 	ret=main_loop(&mp, argv + optind, argc - optind);
 	leaveDirectory(ret);
 	leaveDrive(ret);

@@ -1,3 +1,9 @@
+v4_0_23
+	- Address lots of compiler warnings (assignments between different types)
+	- Network speedup fixes for floppyd (TCP_CORK)
+	- Typo fixes
+	- Explicitly pass available target buffer size for character
+	set conversions
 v4_0_22
 	- Fixed -f flag for mformat (size is KBytes, rather than sectors)
 	- Fixed toupper/tolower usage (unsigned char rather than plain signed)
@@ -73,7 +79,7 @@ v4_0_16
 	Fixed typo in initialization of FAT32 info sector
 v4_0_15
 	Added missing -i option to mshortname
-	Splitted .deb package into mtools and floppyd in order to
+	Split .deb package into mtools and floppyd in order to
 	match Ubuntu
 v4_0_14
 	New mshortname command
@@ -170,7 +176,7 @@ v20070305
 v20060626
 	Merged Redhat/Fedora patches
 v20060531
-	#ifdef linux-dependant code in mformat.c
+	#ifdef linux-dependent code in mformat.c
 v20060525
 	Fix gcc4 warnings
 	Fix reading of boot sector (block size)
@@ -210,7 +216,7 @@ v20040228
 v20030718
 	Fix rootskip and rate of XDF disks
 v20030705
-	Fix inverted IS_MFORMAT_ONLY conditon in plain_io.c
+	Fix inverted IS_MFORMAT_ONLY condition in plain_io.c
 v20030609
 	Moved putc after variable description (anybody knows about a -W
 	flag so that gcc warns about these?)
@@ -264,7 +270,7 @@ v20021102
 v20020125
 	Fixes for cygwin
 	Fixes in buffer.c for oddly sized image files
-	Mformat.c fixes to avoid makeing images which would not be
+	Mformat.c fixes to avoid making images which would not be
 	readable in windows.
 v20010908
 	Warn for invalid partition numbers
@@ -521,7 +527,7 @@ v19971215
 	Jacked up performance, and corrected signal handling bugs.  Also
 	corrected various "Disk full bugs"
 v19971212
-	Fixed "Bad address" errors which occured when running mdu on empty
+	Fixed "Bad address" errors which occurred when running mdu on empty
 	files.  When copying recursively, do not barf if a directory
 	already exist at the target.  Mcopy operates silently by default.
 v19971212
@@ -550,7 +556,7 @@ v19971129
 	Pre-3.9.  Redid the mainloop logic, and got rid of lots of cruft
 	in subdir.c and parse.c.  It is now possible to put wildcards in
 	the directory part of the filename.  Design also became simpler,
-	making it easyer to maintain this part in the future.
+	making it easier to maintain this part in the future.
 	Added a -u flag to mzip to temporarily unprotect a disk
 	Added a test to mzip to prevent manipulation of mounted disks
 	Added support for partitioned devices in mmount
@@ -590,7 +596,7 @@ v19970812
 	Guard against corrupted "next free block" pointer in a FAT32
 	InfoBlock
 v19970715
-	Use root priviliges during scsi_init
+	Use root privileges during scsi_init
 v19970714
 	Fixed close-on-exec bug.
 v19970714
@@ -665,11 +671,11 @@ v19970426
 v19970423
 	Prefer termios.h on Ultrix
 v19970422
-	Renamed missing_functions to missFuncs in order to accomodate
+	Renamed missing_functions to missFuncs in order to accommodate
 	operating systems with file name size limits.
 v19970420
 	Autoextend size for images that are too small.  Moved BSD
-	dependant #ifdef's after the inclusion of sys/param.h, as it
+	dependent #ifdef's after the inclusion of sys/param.h, as it
 	is there where BSD is defined (sigh!)
 v19970419
 	Insist on the fact that mzip's -f flag only makes sense if
@@ -878,7 +884,7 @@ v19961211
 v19961210
 	Added warning about running mtools with root privs.
 v19961209
-	Fixed unitialized variable in fat.c and added example for Sun
+	Fixed uninitialized variable in fat.c and added example for Sun
 	mtools.conf
 v19961209
 	Fixed comment in scripts/tgz
@@ -895,7 +901,7 @@ v19961202
 	Test first for tzset in autoconfigure (Solaris)
 v19961202
 	Segment fault due to change of buffer size fixed
-	E-mail adress fixed
+	E-mail address fixed
 v19961117
 	Lots of portability fixes.
 v19961012
@@ -935,7 +941,7 @@ v19960609
 	Beginning of ED and 5 1/4 HD XDF support (doesn't work yet for
 	ED)
 v19960528
-	Make vold and "raw" floppy drive accesible simultaneously on
+	Make vold and "raw" floppy drive accessible simultaneously on
 	Solaris by calling one A: and the other B:
 	Add missing mbadblock LINK in Makefile.in
 v19960527
@@ -979,7 +985,7 @@ v19960429
 v19960427
 	more spelling fixes.
 v19960426
-	Speling fixes
+	Spelling fixes
 v19960424
 	Mmount arg parsing bug fix
 v19960422

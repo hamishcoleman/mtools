@@ -33,8 +33,9 @@ typedef struct direntry_t {
 
 #include "stream.h"
 
-int vfat_lookup(direntry_t *entry, const char *filename, int length,
-		int flags, char *shortname, char *longname);
+int vfat_lookup(direntry_t *entry, const char *filename, int length, int flags,
+		char *shortname, size_t shortname_len,
+		char *longname, size_t longname_len);
 
 struct directory *dir_read(direntry_t *entry, int *error);
 

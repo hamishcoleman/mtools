@@ -22,6 +22,12 @@
 #include "vfat.h"
 #include "mtoolsDirentry.h"
 
+typedef struct bounded_string {
+	char *data; /* storage of converted string, including final null byte */
+	size_t len; /* max length of converted string, including final null 
+		     * byte */
+} bounded_string;
+
 typedef struct MainParam_t {
 	/* stuff needing to be initialised by the caller */
 	int (*loop)(Stream_t *Dir, struct MainParam_t *mp, 
@@ -38,9 +44,10 @@ typedef struct MainParam_t {
 	int fast_quit; /* for commands manipulating multiple files, quit
 			* as soon as even _one_ file has a problem */
 
-	char *shortname; /* where to put the short name of the matched file */
-	char *longname; /* where to put the long name of the matched file */
-
+	bounded_string shortname; /* where to put the short name of the 
+				   * matched file */
+	bounded_string longname; /* where to put the long name of the 
+				  * matched file */
 	/* out parameters */
 	Stream_t *File;
 

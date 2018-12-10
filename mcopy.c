@@ -392,7 +392,7 @@ static Stream_t *subDir(Stream_t *parent, const char *filename)
 	direntry_t entry;
 	initializeDirentry(&entry, parent);
 
-	switch(vfat_lookup(&entry, filename, -1, ACCEPT_DIR, 0, 0)) {
+	switch(vfat_lookup(&entry, filename, -1, ACCEPT_DIR, 0, 0, 0, 0)) {
 	    case 0:
 		return OpenFileByDirentry(&entry);
 	    case -1:

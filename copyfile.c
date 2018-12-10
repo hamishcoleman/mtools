@@ -28,7 +28,8 @@ int copyfile(Stream_t *Source, Stream_t *Target)
 {
 	char buffer[8*16384];
 	mt_off_t pos;
-	int ret, retw;
+	int ret;
+	ssize_t retw;
 /*	size_t len;*/
 	mt_size_t mt_len;
 
@@ -56,13 +57,14 @@ int copyfile(Stream_t *Source, Stream_t *Target)
 			return -1;
 		if (ret == 0)
 			break;
-		if ((retw = force_write(Target, buffer, (mt_off_t) pos, ret)) != ret){
+		if ((retw = force_write(Target, buffer,
+					(mt_off_t) pos, (size_t) ret)) != ret){
 			if(retw < 0 )
 				perror("write in copy");
 			else
 				fprintf(stderr,
-					"Short write %d instead of %d\n", retw,
-					ret);
+					"Short write %lu instead of %d\n",
+					(unsigned long) retw, ret);
 			if(errno == ENOSPC)
 				got_signal = 1;
 			return ret;

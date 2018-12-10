@@ -25,7 +25,7 @@
 #include "mainloop.h"
 
 typedef struct Arg_t {
-	char add;
+	unsigned char add;
 	unsigned char remove;
 	struct MainParam_t mp;
 	int recursive;

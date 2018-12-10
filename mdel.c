@@ -75,7 +75,7 @@ static int del_entry(direntry_t *entry, MainParam_t *mp)
 
 	if (entry->dir.attr & (ATTR_READONLY | ATTR_SYSTEM)) {
 		char tmp[4*MAX_VNAMELEN+1];
-		wchar_to_native(entry->name,tmp,MAX_VNAMELEN);
+		WCHAR_TO_NATIVE(entry->name,tmp,MAX_VNAMELEN);
 		if (ask_confirmation("%s: \"%s\" is read only, erase anyway (y/n) ? ",
 				     progname, tmp))
 			return ERROR_ONE;
@@ -108,7 +108,8 @@ static int del_file(direntry_t *entry, MainParam_t *mp)
 		ret = 0;
 		while((r=vfat_lookup(&subEntry, "*", 1,
 				     ACCEPT_DIR | ACCEPT_PLAIN,
-				     shortname, NULL)) == 0 ){
+				     shortname, sizeof(shortname),
+				     NULL, 0)) == 0 ){
 			if(shortname[0] != DELMARK &&
 			   shortname[0] &&
 			   shortname[0] != '.' ){
@@ -195,8 +196,7 @@ void mdel(int argc, char **argv, int deltype)
 	}
 	mp.lookupflags |= NO_DOTS;
 	for(i=optind;i<argc;i++) {
-		int b;
-		size_t l;
+		size_t b, l;
 		if(argv[i][0] && argv[i][1] == ':')
 			b = 2;
 		else

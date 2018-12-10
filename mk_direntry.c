@@ -156,7 +156,8 @@ static __inline__ clash_action ask_namematch(doscp_t *cp,
 	}
 
 	if (!isprimary)
-		name = unix_normalize(cp, name_buffer, dosname);
+		name = unix_normalize(cp, name_buffer,
+				      dosname, sizeof(*dosname));
 	else
 		name = longname;
 

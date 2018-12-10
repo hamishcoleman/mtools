@@ -42,9 +42,9 @@ direntry_t *getParent(direntry_t *entry)
 }
 
 
-static int getPathLen(direntry_t *entry)
+static size_t getPathLen(direntry_t *entry)
 {
-	int length=0;
+	size_t length=0;
 
 	while(1) {
 		if(entry->entry == -3) /* rootDir */
@@ -55,19 +55,26 @@ static int getPathLen(direntry_t *entry)
 	}
 }
 
-static char *sprintPwd(direntry_t *entry, char *ptr)
+static char *sprintPwd(direntry_t *entry, char *ptr, size_t *len_available)
 {
 	if(entry->entry == -3) {
 		*ptr++ = getDrive(entry->Dir);
 		*ptr++ = ':';
 		*ptr++ = '/';
+		(*len_available) -= 3;
 	} else {
-		ptr = sprintPwd(getDirentry(entry->Dir), ptr);
-		if(ptr[-1] != '/')
+		size_t bytes_converted;
+		ptr = sprintPwd(getDirentry(entry->Dir), ptr, len_available);
+		if(ptr[-1] != '/') {
 			*ptr++ = '/';
-		ptr += wchar_to_native(entry->name, ptr, MAX_VNAMELEN);
+			(*len_available)--;
+		}
+		bytes_converted = wchar_to_native(entry->name, ptr,
+						  MAX_VNAMELEN, *len_available);
+		ptr += bytes_converted;
+		(*len_available) -= bytes_converted;
 	}
-	return ptr;		
+	return ptr;
 }
 
 
@@ -96,7 +103,7 @@ static void _fprintPwd(FILE *f, direntry_t *entry, int recurs, int escape)
 			}
 		} else {
 			char tmp[4*MAX_VNAMELEN+1];
-			wchar_to_native(entry->name,tmp,MAX_VNAMELEN);
+			WCHAR_TO_NATIVE(entry->name,tmp,MAX_VNAMELEN);
 			fprintf(f, "/%s", tmp);
 		}
 	}
@@ -140,15 +147,17 @@ void fprintShortPwd(FILE *f, direntry_t *entry)
 
 char *getPwd(direntry_t *entry)
 {
-	int size;
+	size_t size;
 	char *ret;
 	char *end;
+	size_t buf_size;
 
 	size = getPathLen(entry);
-	ret = malloc(size*4+1);
+	buf_size = size*4+1;
+	ret = malloc(buf_size);
 	if(!ret)
 		return 0;
-	end = sprintPwd(entry, ret);
+	end = sprintPwd(entry, ret, &buf_size);
 	*end = '\0';
 	return ret;
 }

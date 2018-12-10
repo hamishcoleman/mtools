@@ -103,6 +103,7 @@ static char *dos_name2(const char *name)
 		while (ext && (s = strpbrk(ext, "^+=/[]:',?*\\<>|\". ")))
 			*s = 'x';	      
 		strncpy(ans, temp, 12);
+		ans[12] = '\0';
 	}
 	if (ext && *ext) {
 		strcat(ans, ".");

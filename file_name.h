@@ -26,8 +26,8 @@
  * MYFILE  TXT
  */
 struct dos_name_t {
-  char base[8];
-  char ext[3];
+  char base[8] NONULLTERM;
+  char ext[3] NONULLTERM;
   char sentinel;
 };
 
@@ -37,7 +37,12 @@ void wchar_to_dos(doscp_t *toDos, wchar_t *wchar, char *dos, size_t len, int *ma
 doscp_t *cp_open(int codepage);
 void cp_close(doscp_t *cp);
 
-int wchar_to_native(const wchar_t *wchar, char *native, size_t len);
+int wchar_to_native(const wchar_t *wchar, char *native,
+		    size_t len, size_t out_len);
+
+#define WCHAR_TO_NATIVE(wchar,native,len) \
+	wchar_to_native((wchar),(native),(len),sizeof(native))
+
 int native_to_wchar(const char *native, wchar_t *wchar, size_t len,
 		    const char *end, int *mangled);
 

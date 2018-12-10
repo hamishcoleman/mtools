@@ -34,8 +34,8 @@ static __inline__ uint32_t rol(uint32_t arg, int shift)
 static uint32_t calcHash(wchar_t *name)
 {
 	uint32_t hash;
-	int i;
-	wchar_t c;
+	unsigned int i;
+	wint_t c;
 
 	hash = 0;
 	i = 0;
@@ -46,7 +46,7 @@ static uint32_t calcHash(wchar_t *name)
 				     * prime with 32, which makes sure that
 				     * successive letters cannot cover each
 				     * other easily */
-		c = (wchar_t)towupper((wint_t)*name);		
+		c = towupper((wint_t)*name);		
 		hash ^=  (c * (c+2)) ^ (i * (i+2));
 		hash &= 0xffffffff;
 		i++, name++;
@@ -151,9 +151,9 @@ dirCache_t *allocDirCache(Stream_t *Stream, unsigned int slot)
 			return 0;
 		}
 		(*dcp)->nr_entries = (slot+1) * 2;
-		memset( (*dcp)->bm0, 0, DC_BITMAP_SIZE);
-		memset( (*dcp)->bm1, 0, DC_BITMAP_SIZE);
-		memset( (*dcp)->bm2, 0, DC_BITMAP_SIZE);
+		memset( (*dcp)->bm0, 0, sizeof((*dcp)->bm0));
+		memset( (*dcp)->bm1, 0, sizeof((*dcp)->bm1));
+		memset( (*dcp)->bm2, 0, sizeof((*dcp)->bm1));
 		(*dcp)->nrHashed = 0;
 	} else
 		if(growDirCache(*dcp, slot) < 0)
@@ -217,7 +217,7 @@ static int freeDirCacheRange(dirCache_t *cache,
 				free(entry->shortName);
 			free(entry);
 			if(needWriteEnd) {
-				return beginSlot;
+				return (int) beginSlot;
 			}
 		}
 
@@ -227,7 +227,7 @@ static int freeDirCacheRange(dirCache_t *cache,
 }
 
 static dirCacheEntry_t *allocDirCacheEntry(dirCache_t *cache,
-					   int beginSlot,
+					   unsigned int beginSlot,
 					   unsigned int endSlot,
 					   dirCacheEntryType_t type)
 {
@@ -330,7 +330,7 @@ dirCacheEntry_t *addFreeEndEntry(dirCache_t *cache,
 		return 0;
 	entry = allocDirCacheEntry(cache, beginSlot, endSlot, DCET_FREE);
 	if(isAtEnd)
-		entry->endMarkPos = beginSlot;
+		entry->endMarkPos = (int) beginSlot;
 	mergeFreeSlots(cache, beginSlot);
 	mergeFreeSlots(cache, endSlot);
 	return cache->entries[beginSlot];

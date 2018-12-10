@@ -51,7 +51,7 @@ static void _label_name(doscp_t *cp, const char *filename, int verbose UNUSEDP,
 		if(isupper(wbuffer[i]))
 			have_upper = 1;
 		if(!preserve_case)
-			wbuffer[i] = towupper(wbuffer[i]);
+			wbuffer[i] = ch_towupper(wbuffer[i]);
 		if(
 #ifdef HAVE_WCHAR_H
 		   wcschr(L"^+=/[]:,?*\\<>|\".", wbuffer[i])
@@ -119,7 +119,7 @@ void mlabel(int argc, char **argv, int type UNUSEDP)
 	int c;
 	int mangled;
 	enum { SER_NONE, SER_RANDOM, SER_SET }  set_serial = SER_NONE;
-	long serial = 0;
+	unsigned long serial = 0;
 	int need_write_boot = 0;
 	int have_boot = 0;
 	char *eptr;
@@ -158,7 +158,7 @@ void mlabel(int argc, char **argv, int type UNUSEDP)
 				break;
 			case 'n':
 				set_serial = SER_RANDOM;
-				srandom(time (0));
+				init_random();
 				serial=random();
 				break;
 			case 'N':
@@ -219,7 +219,8 @@ void mlabel(int argc, char **argv, int type UNUSEDP)
 
 	initializeDirentry(&entry, RootDir);
 	r=vfat_lookup(&entry, 0, 0, ACCEPT_LABEL | MATCH_ANY,
-		      shortname, longname);
+		      shortname, sizeof(shortname),
+		      longname, sizeof(longname));
 	if (r == -2) {
 		FREE(&RootDir);
 		exit(1);
@@ -302,7 +303,8 @@ void mlabel(int argc, char **argv, int type UNUSEDP)
 		label_name_pc(cp, shrtLabel, verbose, &mangled, &dosname);
 
 		if(have_boot && boot.boot.descr >= 0xf0 && has_BPB4) {
-			strncpy(labelBlock->label, dosname.base, 11);
+			strncpy(labelBlock->label, dosname.base, 8);
+			strncpy(labelBlock->label+8, dosname.ext, 3);
 			need_write_boot = 1;
 
 		}

@@ -41,10 +41,6 @@
 
 /* ######################################################################## */
 
-typedef unsigned char Byte;
-typedef unsigned long Dword;
-typedef mt_off_t Qword;
-
 static const char* AuthErrors[] = {
 	"Auth success!",
 	"Auth failed: Packet oversized!",
@@ -70,16 +66,16 @@ static int write_dword(int handle, Dword parm)
 
 /* ######################################################################## */
 
-static int authenticate_to_floppyd(char fullauth, int sock, char *display, 
-				   int protoversion)
+static uint32_t authenticate_to_floppyd(char fullauth, int sock, char *display, 
+					uint32_t protoversion)
 {
-	off_t filelen=0;
+	size_t filelen=0;
 	Byte buf[16];
 	const char *command[] = { "xauth", "xauth", "extract", "-", 0, 0 };
 	char *xcookie = NULL;
 	Dword errcode;
-	int bytesRead;
-	int cap=0;
+	uint32_t bytesRead;
+	uint32_t cap=0;
 
 	if (fullauth) {
 		command[4] = display;
@@ -125,7 +121,7 @@ static int authenticate_to_floppyd(char fullauth, int sock, char *display,
 
 	if (fullauth) {
 		dword2byte(filelen, (Byte *) xcookie);
-		if(write(sock, xcookie, filelen+4) < filelen+4)
+		if(write(sock, xcookie, filelen+4) < (ssize_t)(filelen+4))
 			return AUTH_IO_ERROR;
 
 		if (read_dword(sock) != 4) {
@@ -143,7 +139,7 @@ static int authenticate_to_floppyd(char fullauth, int sock, char *display,
 /* ######################################################################## */
 
 static int get_host_and_port(const char* name, char** hostname, char **display,
-			     short* port)
+			     uint16_t* port)
 {
 	char* newname = strdup(name);
 	char* p;
@@ -155,7 +151,7 @@ static int get_host_and_port(const char* name, char** hostname, char **display,
 	if (*p) p++;
 	*p2 = 0;
 	
-	*port = atoi(p);
+	*port = atou16(p);
 	if (*port == 0) {
 		*port = FLOPPYD_DEFAULT_PORT;	
 	}
@@ -182,11 +178,11 @@ static int get_host_and_port(const char* name, char** hostname, char **display,
 /*
  *  * Return the IP address of the specified host.
  *  */
-static IPaddr_t getipaddress(char *ipaddr)
+static in_addr_t getipaddress(char *ipaddr)
 {
 	
 	struct hostent  *host;
-	IPaddr_t        ip;
+	in_addr_t        ip;
 	
 	if (((ip = inet_addr(ipaddr)) == INADDR_NONE) &&
 	    (strcmp(ipaddr, "255.255.255.255") != 0)) {
@@ -208,7 +204,7 @@ static IPaddr_t getipaddress(char *ipaddr)
 /*
  *  * Connect to the floppyd server.
  *  */
-static int connect_to_server(IPaddr_t ip, short port)
+static int connect_to_server(in_addr_t ip, uint16_t port)
 {
 	
 	struct sockaddr_in      addr;
@@ -254,11 +250,11 @@ int main (int argc, char** argv)
 	char* hostname;
 	char* display;
 	char* name;
-	short port;
+	uint16_t port;
 	int sock;
-	int reply;
+	uint32_t reply;
 	int rval;
-	int protoversion;
+	uint32_t protoversion;
 	char fullauth = 0;
 	Byte opcode = OP_CLOSE;
 

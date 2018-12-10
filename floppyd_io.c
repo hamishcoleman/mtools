@@ -38,10 +38,6 @@
 /* ######################################################################## */
 
 
-typedef unsigned char Byte;
-typedef unsigned long Dword;
-typedef mt_off_t Qword;
-
 static const char* AuthErrors[] = {
 	"Auth success",
 	"Auth failed: Packet oversized",
@@ -62,8 +58,8 @@ typedef struct RemoteFile_t {
 	mt_off_t offset;
 	mt_off_t lastwhere;
 	mt_off_t size;
-	int version;
-	int capabilities;
+	unsigned int version;
+	unsigned int capabilities;
 	int drive;
 } RemoteFile_t;
 
@@ -74,9 +70,11 @@ typedef struct RemoteFile_t {
 
 /* ######################################################################## */
 
-static int authenticate_to_floppyd(RemoteFile_t *floppyd, int sock, char *display)
+static unsigned int authenticate_to_floppyd(RemoteFile_t *floppyd,
+					    int sock, char *display)
 {
-	off_t filelen;
+	size_t filelen;
+	ssize_t newlen;
 	Byte buf[16];
 	const char *command[] = { "xauth", "xauth", "extract", "-", 0, 0 };
 	char *xcookie;
@@ -89,17 +87,18 @@ static int authenticate_to_floppyd(RemoteFile_t *floppyd, int sock, char *displa
 	filelen += 100;
 
 	xcookie = (char *) safe_malloc(filelen+4);
-	filelen = safePopenOut(command, xcookie+4, filelen);
-	if(filelen < 1)
+	newlen = safePopenOut(command, xcookie+4, filelen);
+	if(newlen < 1)
 		return AUTH_AUTHFAILED;
-
+	filelen = (size_t) newlen;
+	
 	/* Version negotiation */
 	dword2byte(4,buf);
 	dword2byte(floppyd->version,buf+4);
 	if(write(sock, buf, 8) < 8)
 		return AUTH_IO_ERROR;
 
-	if ( (l = read_dword(sock)) < 4) {
+	if ( (l = (int) read_dword(sock)) < 4) {
 		return AUTH_WRONGVERSION;
 	}
 
@@ -115,7 +114,7 @@ static int authenticate_to_floppyd(RemoteFile_t *floppyd, int sock, char *displa
 		floppyd->capabilities = read_dword(sock);
 
 	dword2byte(filelen, (Byte *)xcookie);
-	if(write(sock, xcookie, filelen+4) < filelen + 4)
+	if(write(sock, xcookie, filelen+4) < ((ssize_t) (filelen + 4)))
 		return AUTH_IO_ERROR;
 
 	if (read_dword(sock) != 4) {
@@ -128,11 +127,10 @@ static int authenticate_to_floppyd(RemoteFile_t *floppyd, int sock, char *displa
 }
 
 
-static int floppyd_reader(int fd, char* buffer, int len) 
+static int floppyd_reader(int fd, char* buffer, size_t len) 
 {
 	Dword errcode;
 	Dword gotlen;
-	int l;
 	Byte buf[16];
 
 	dword2byte(1, buf);
@@ -151,17 +149,21 @@ static int floppyd_reader(int fd, char* buffer, int len)
 	errcode = read_dword(fd);
 
 	if (gotlen != (Dword) -1) {
+		size_t l;
 		unsigned int start;
 		if (read_dword(fd) != gotlen) {
 			errno = EIO;
 			return -1;
 		}
 		for (start = 0, l = 0; start < gotlen; start += l) {
-			l = read(fd, buffer+start, gotlen-start);
-			if (l == 0) {
+			ssize_t ret = read(fd, buffer+start, gotlen-start);
+			if( ret < 0)
+				return -1;
+			if (ret == 0) {
 				errno = EIO;
 				return -1;
 			}
+			l = (size_t) ret;
 		}
 	} else {
 		errno = errcode;
@@ -169,7 +171,7 @@ static int floppyd_reader(int fd, char* buffer, int len)
 	return gotlen;
 }
 
-static int floppyd_writer(int fd, char* buffer, int len) 
+static int floppyd_writer(int fd, char* buffer, size_t len) 
 {
 	Dword errcode;
 	Dword gotlen;
@@ -179,10 +181,12 @@ static int floppyd_writer(int fd, char* buffer, int len)
 	buf[4] = OP_WRITE;
 	dword2byte(len, buf+5);
 
+	cork(fd, 1);
 	if(write(fd, buf, 9) < 9)
 		return AUTH_IO_ERROR;
 	if(write(fd, buffer, len) < len)
 		return AUTH_IO_ERROR;
+	cork(fd, 0);
 	
 	if (read_dword(fd) != 8) {
 		errno = EIO;
@@ -298,10 +302,10 @@ static int floppyd_open(RemoteFile_t *This, int mode)
 
 /* ######################################################################## */
 
-typedef int (*iofn) (int, char *, int);
+typedef int (*iofn) (int, char *, size_t);
 
-static int floppyd_io(Stream_t *Stream, char *buf, mt_off_t where, int len,
-		   iofn io)
+static int floppyd_io(Stream_t *Stream, char *buf, mt_off_t where, size_t len,
+		      iofn io)
 {
 	DeclareThis(RemoteFile_t);
 	int ret;
@@ -335,12 +339,12 @@ static int floppyd_io(Stream_t *Stream, char *buf, mt_off_t where, int len,
 
 static int floppyd_read(Stream_t *Stream, char *buf, mt_off_t where, size_t len)
 {	
-	return floppyd_io(Stream, buf, where, len, (iofn) floppyd_reader);
+	return floppyd_io(Stream, buf, where, len, floppyd_reader);
 }
 
 static int floppyd_write(Stream_t *Stream, char *buf, mt_off_t where, size_t len)
 {
-	return floppyd_io(Stream, buf, where, len, (iofn) floppyd_writer);
+	return floppyd_io(Stream, buf, where, len, floppyd_writer);
 }
 
 static int floppyd_flush(Stream_t *Stream)
@@ -370,8 +374,8 @@ static int floppyd_flush(Stream_t *Stream)
 static int floppyd_free(Stream_t *Stream)
 {
 	Byte buf[16];
-	int gotlen;
-	int errcode;
+	unsigned int gotlen;
+	unsigned int errcode;
 	DeclareThis(RemoteFile_t);
 
 	if (This->fd > 2) {
@@ -402,7 +406,7 @@ static int floppyd_geom(Stream_t *Stream, struct device *dev,
 			int media, union bootsector *boot)
 {
 	size_t tot_sectors;
-	int sect_per_track;
+	unsigned int sect_per_track;
 	DeclareThis(RemoteFile_t);
 
 	dev->ssize = 2; /* allow for init_geom to change it */
@@ -462,7 +466,8 @@ static Class_t FloppydFileClass = {
 /* ######################################################################## */
 
 static int get_host_and_port_and_drive(const char* name, char** hostname,
-				       char **display, short* port, int *drive)
+				       char **display, uint16_t* port,
+				       int *drive)
 {
 	char* newname = strdup(name);
 	char* p;
@@ -476,12 +481,12 @@ static int get_host_and_port_and_drive(const char* name, char** hostname,
 	
 	*port = FLOPPYD_DEFAULT_PORT;	
 	if(*p >= '0' && *p <= '9')
-	  *port = strtoul(p, &p, 0);
+	  *port = strtou16(p, &p, 0);
 	if(*p == '/')
 	  p++;
 	*drive = 0;
 	if(*p >= '0' && *p <= '9')
-	  *drive = strtoul(p, &p, 0);
+	  *drive = strtoi(p, &p, 0);
 
 	*display = strdup(newname);
 
@@ -505,11 +510,10 @@ static int get_host_and_port_and_drive(const char* name, char** hostname,
 /*
  *  * Return the IP address of the specified host.
  *  */
-static IPaddr_t getipaddress(char *ipaddr)
+static in_addr_t getipaddress(char *ipaddr)
 {
-	
 	struct hostent  *host;
-	IPaddr_t        ip;
+	in_addr_t        ip;
 
 	if (((ip = inet_addr(ipaddr)) == INADDR_NONE) &&
 	    (strcmp(ipaddr, "255.255.255.255") != 0)) {
@@ -531,7 +535,7 @@ static IPaddr_t getipaddress(char *ipaddr)
 /*
  *  * Connect to the floppyd server.
  *  */
-static int connect_to_server(IPaddr_t ip, short port)
+static int connect_to_server(in_addr_t ip, uint16_t port)
 {
 	
 	struct sockaddr_in      addr;
@@ -622,11 +626,11 @@ static int ConnectToFloppyd(RemoteFile_t *floppyd, const char* name,
 {
 	char* hostname;
 	char* display;
-	short port;
+	uint16_t port;
 	int rval = get_host_and_port_and_drive(name, &hostname, &display, 
 					       &port, &floppyd->drive);
 	int sock;
-	int reply;
+	unsigned int reply;
 	
 	if (!rval) return -1;
 

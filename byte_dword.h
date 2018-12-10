@@ -21,7 +21,7 @@
 static Dword byte2dword(Byte* val)
 {
 	Dword l;
-	l = (val[0] << 24) + (val[1] << 16) + (val[2] << 8) + val[3];
+	l = (Dword)((val[0] << 24) + (val[1] << 16) + (val[2] << 8) + val[3]);
 	
 	return l;
 }	

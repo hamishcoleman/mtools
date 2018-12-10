@@ -1,7 +1,7 @@
 %define _binary_payload w9.gzdio
 Name:           mtools
 Summary:        mtools, read/write/list/format DOS disks under Unix
-Version:        4.0.22
+Version:        4.0.23
 Release:        1
 License:        GPLv3+
 Group:          Utilities/System
@@ -135,6 +135,11 @@ if [ -f %{_bindir}/install-info ] ; then
 fi
 
 %changelog
+* Sun Dec 09 2018 Alain Knaff <alain@knaff.lu>
+- Address lots of compiler warnings (assignments between different types)
+- Network speedup fixes for floppyd (TCP_CORK)
+- Typo fixes
+- Explicitly pass available target buffer size for character set conversions
 * Sun Dec 02 2018 Alain Knaff <alain@knaff.lu>
 - Fixed -f flag for mformat (size is KBytes, rather than sectors)
 - Fixed toupper/tolower usage (unsigned char rather than plain signed)

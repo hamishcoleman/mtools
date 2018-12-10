@@ -82,7 +82,7 @@ static uid_t ruid, euid;
  */
 
 
-/* group id handling is lots easyer, as long as we don't use group 0.
+/* group id handling is lots easier, as long as we don't use group 0.
  * If you want to use group id's, create a *new* group mtools or
  * floppy.  Chgrp any devices that you only want to be accessible to
  * mtools to this group, and give them the appropriate privs.  Make
@@ -134,7 +134,7 @@ void destroy_privs(void)
 		setuid(ruid); /* this should be enough to get rid of the three
 			       * ids */
 		seteuid(ruid); /* for good measure... just in case we came
-				* accross a system which implemented sane
+				* across a system which implemented sane
 				* semantics instead of POSIXly broken
 				* semantics for setuid */
 #else

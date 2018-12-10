@@ -256,7 +256,7 @@ static void do_mclasserase(char drive,int debug)
 
 
 /**
- * Total Erase of Data on a Disk. After using mclasserase there wont
+ * Total Erase of Data on a Disk. After using mclasserase there won't
  * be ANY bits of old files on the disk.<br>
  * </b>
  * @author  stefan feuz<br>

@@ -47,15 +47,15 @@ extern int lockf(int, int, off_t);  /* SCO has no proper include file for lockf 
 typedef struct device {
 	const char *name;       /* full path to device */
 
-	char drive;	   	    	/* the drive letter */
-	int fat_bits;			/* FAT encoding scheme */
+	char drive;	   	/* the drive letter */
+	int fat_bits;		/* FAT encoding scheme */
 
-	unsigned int mode;		/* any special open() flags */
+	int mode;		/* any special open() flags */
 	unsigned int tracks;	/* tracks */
-	unsigned int heads;		/* heads */
-	unsigned int sectors;	/* sectors */
+	uint16_t heads;		/* heads */
+	uint16_t sectors;	/* sectors */
 	unsigned int hidden;	/* number of hidden sectors. Used for
-							 * mformatting partitioned devices */
+				 * mformatting partitioned devices */
 
 	off_t offset;	       	/* skip this many bytes */
 
@@ -64,31 +64,31 @@ typedef struct device {
 	unsigned int misc_flags;
 
 	/* Linux only stuff */
-	unsigned int ssize;
+	uint8_t ssize;
 	unsigned int use_2m;
 
 	char *precmd;		/* command to be executed before opening
-						 * the drive */
+				 * the drive */
 
 	/* internal variables */
 	int file_nr;		/* used during parsing */
-	unsigned int blocksize;	  /* size of disk block in bytes */
+	unsigned int blocksize;	/* size of disk block in bytes */
 
-	int codepage; /* codepage for shortname encoding */
+	int codepage;		/* codepage for shortname encoding */
 
 	const char *cfg_filename; /* used for debugging purposes */
 } device_t;
 
 struct OldDos_t {
 	unsigned int tracks;
-	unsigned int sectors;
-	unsigned int heads;
+	uint16_t sectors;
+	uint16_t  heads;
 	
 	unsigned int dir_len;
 	unsigned int cluster_size;
 	unsigned int fat_len;
 
-	int media;
+	uint8_t media;
 };
 
 extern struct OldDos_t *getOldDosBySize(size_t size);
@@ -158,7 +158,8 @@ int readwrite_sectors(int fd, /* file descriptor */
 
 int lock_dev(int fd, int mode, struct device *dev);
 
-char *unix_normalize (doscp_t *cp, char *ans, struct dos_name_t *dn);
+char *unix_normalize (doscp_t *cp, char *ans, struct dos_name_t *dn,
+		      size_t ans_size);
 void dos_name(doscp_t *cp, const char *filename, int verbose, int *mangled,
 	      struct dos_name_t *);
 struct directory *mk_entry(const dos_name_t *filename, unsigned char attr,
@@ -219,6 +220,22 @@ UNUSED(static __inline__ char ch_tolower(char ch))
         return (char) tolower( (unsigned char) ch);
 }
 
+UNUSED(static __inline__ wchar_t ch_towupper(wchar_t ch))
+{
+        return (wchar_t) towupper( (wint_t) ch);
+}
+
+UNUSED(static __inline__ wchar_t ch_towlower(wchar_t ch))
+{
+        return (wchar_t) towlower( (wint_t) ch);
+}
+
+UNUSED(static __inline__ void init_random(void))
+{
+	srandom((unsigned int)time (0));
+}
+
+
 Stream_t *GetFs(Stream_t *Fs);
 
 void label_name_uc(doscp_t *cp, const char *filename, int verbose, 
@@ -237,7 +254,7 @@ extern unsigned int mtools_dotted_dir;
 extern unsigned int mtools_lock_timeout;
 extern unsigned int mtools_twenty_four_hour_clock;
 extern const char *mtools_date_string;
-extern unsigned int mtools_rate_0, mtools_rate_any;
+extern uint8_t mtools_rate_0, mtools_rate_any;
 extern unsigned int mtools_default_codepage;
 extern int mtools_raw_tty;
 
@@ -247,6 +264,17 @@ char get_default_drive(void);
 void set_cmd_line_image(char *img);
 void read_config(void);
 off_t str_to_offset(char *str);
+unsigned int strtoui(const char *nptr, char **endptr, int base);
+unsigned int atoui(const char *nptr);
+int strtoi(const char *nptr, char **endptr, int base);
+unsigned long atoul(const char *nptr);
+uint8_t strtou8(const char *nptr, char **endptr, int base);
+uint8_t atou8(const char *str);
+uint16_t strtou16(const char *nptr, char **endptr, int base);
+uint16_t atou16(const char *str);
+uint32_t strtou32(const char *nptr, char **endptr, int base);
+uint32_t atou32(const char *str);
+
 extern struct device *devices;
 extern struct device const_devices[];
 extern const unsigned int nr_const_devices;
@@ -321,7 +349,7 @@ FILE *open_mcwd(const char *mode);
 void unlink_mcwd(void);
 
 #ifndef OS_mingw32msvc
-int safePopenOut(const char **command, char *output, int len);
+ssize_t safePopenOut(const char **command, char *output, size_t len);
 #endif
 
 #define ROUND_DOWN(value, grain) ((value) - (value) % (grain))

@@ -242,7 +242,7 @@ void myfree(void *ptr)
 {
 	int *size = ((int *) ptr)-1;
 	total -= *size;
-	fprintf(stderr, "freeing %d bytes at %p total alloced=%d\n",
+	fprintf(stderr, "freeing %d bytes at %p total allocated=%d\n",
 		*size, ptr, total);
 	free(size);
 }

@@ -101,9 +101,6 @@
 	    
 */
 
-typedef unsigned char Byte;
-typedef unsigned long Dword;
-typedef mt_off_t Qword;
 
 #define MAX_XAUTHORITY_LENGTH    3000
 #define MAX_DATA_REQUEST         3000000
@@ -111,7 +108,8 @@ typedef mt_off_t Qword;
 
 unsigned int mtools_lock_timeout=30;
 
-void serve_client(int sock, char **device_name, int n_dev, int close_stderr);
+void serve_client(int sock, char **device_name, unsigned int n_dev,
+		  int close_stderr);
 
 
 #ifdef USE_FLOPPYD_BUFFERED_IO
@@ -119,9 +117,9 @@ typedef struct io_buffer {
 	Byte out_buffer[BUFFERED_IO_SIZE];
 	Byte in_buffer[BUFFERED_IO_SIZE];
 	
-	unsigned long in_valid;
-	long in_start;
-	long out_valid;
+	size_t in_valid;
+	size_t in_start;
+	size_t out_valid;
 	
 	int handle;
 } *io_buffer;
@@ -154,13 +152,13 @@ static void free_io_buffer(io_buffer buffer) {
 
 
 static size_t buf_read (io_buffer buf, Byte* buffer, size_t nbytes) {
-	ssize_t rval;
+	size_t ret;
 	
 	if (nbytes <= buf->in_valid) {
 		memcpy(buffer, buf->in_buffer+buf->in_start, nbytes);
 		buf->in_valid -= nbytes;
 		buf->in_start += nbytes;
-		rval = nbytes;
+		ret = nbytes;
 	} else {
 		if (buf->in_valid) 
 			memcpy(buffer, buf->in_buffer+buf->in_start, 
@@ -168,41 +166,48 @@ static size_t buf_read (io_buffer buf, Byte* buffer, size_t nbytes) {
 		nbytes -= buf->in_valid;
 		buffer += buf->in_valid;
 		if (nbytes > BUFFERED_IO_SIZE) {
-			rval = read(buf->handle, buffer, nbytes);
+			ssize_t rval = read(buf->handle, buffer, nbytes);
 			if (rval >= 0) {
-				rval += buf->in_valid;
+				ret = (size_t) rval + buf->in_valid;
+			} else {
+				perror("read error");
+				exit(1);
 			}
 			buf->in_valid = buf->in_start = 0;
 		} else {
-			rval = read(buf->handle, buf->in_buffer, 
-						BUFFERED_IO_SIZE);
+			ssize_t rval = read(buf->handle, buf->in_buffer, 
+					    BUFFERED_IO_SIZE);
 			if (rval >= 0) {
 				if (rval < (ssize_t) nbytes) {
-					memcpy(buffer, buf->in_buffer, rval);
-					rval += buf->in_valid;
+					memcpy(buffer, buf->in_buffer,
+					       (size_t) rval);
+					ret = (size_t) rval + buf->in_valid;
 					buf->in_valid = buf->in_start = 0;
 				} else {
 					size_t a;
 					memcpy(buffer, buf->in_buffer, nbytes);
 					buf->in_start = nbytes;
 					a = buf->in_valid;
-					buf->in_valid = rval-nbytes;
-					rval = a + nbytes;
+					buf->in_valid = (size_t) rval-nbytes;
+					ret = a + nbytes;
 				}
+			} else {
+				perror("read error");
+				exit(1);
 			}
 		}
 	}
-	return rval;
+	return ret;
 }
 
-static size_t buf_write(io_buffer buf, void* buffer, size_t nbytes) {
+static ssize_t buf_write(io_buffer buf, void* buffer, size_t nbytes) {
 	if (buf->out_valid + nbytes > BUFFERED_IO_SIZE) {
 		flush(buf);
 		return write(buf->handle, buffer, nbytes);
 	}
 	memcpy(buf->out_buffer+buf->out_valid, buffer, nbytes);
 	buf->out_valid += nbytes;
-	return nbytes;
+	return (ssize_t) nbytes;
 }
 
 
@@ -220,7 +225,7 @@ size_t buf_read (io_buffer handle, Byte* buffer, size_t nbytes) {
 	return (read(handle, buffer, nbytes));
 }
 
-size_t buf_write(io_buffer handle, void* buffer, size_t nbytes) {
+ssize_t buf_write(io_buffer handle, void* buffer, size_t nbytes) {
 	return (write(handle, buffer, nbytes));
 }
 
@@ -287,7 +292,7 @@ static void kill_packet(Packet packet)
 	packet->alloc_size = 0;
 }
 
-static void make_new(Packet packet, unsigned long l)
+static void make_new(Packet packet, Dword l)
 {
 	if (l < packet->alloc_size) {
 		packet->len = l;
@@ -324,7 +329,7 @@ static char send_packet(Packet packet, io_buffer fp)
 static char recv_packet(Packet packet, io_buffer fp, Dword maxlength)
 {
 	Dword start;
-	int l;
+	size_t l;
 	Dword length = read_dword(fp);
 #if DEBUG
 	fprintf(stderr, "recv_packet(): Size: %li\n", length);
@@ -357,13 +362,17 @@ static char recv_packet(Packet packet, io_buffer fp, Dword maxlength)
 	return 1;
 }
 
-static void read_packet(Packet packet, int fd, int length) {
+static ssize_t read_packet(Packet packet, int fd, Dword length) {
 	make_new(packet, length);
-	packet->len = read(fd, packet->data, packet->len);
+	ssize_t ret = read(fd, packet->data, packet->len);
+	if(ret < 0)
+		return ret;
+	packet->len = (Dword) ret;
+	return 0;
 }
 
 static int write_packet(Packet packet, int fd) {
-	return (write(fd, packet->data, packet->len));
+	return (int)write(fd, packet->data, packet->len);
 }
 
 static void put_dword(Packet packet, int my_index, Dword val) {
@@ -386,7 +395,7 @@ static Dword get_length(Packet packet) {
 	return packet->len;
 }
 
-static int eat(char **ptr, int *len, unsigned char c) {
+static int eat(unsigned char **ptr, size_t *len, unsigned char c) {
     /* remove length + size code + terminating 0 */
     if (*len < c + 3)
 	return -1;
@@ -399,17 +408,17 @@ static const char *dispName;
 
 static char XAUTHORITY[]="XAUTHORITY";
 
-static char do_auth(io_buffer sock, int *version) 
+static char do_auth(io_buffer sock, unsigned int *version) 
 {
 	int fd;
 	Display* displ;
 	Packet proto_version = newPacket();
 	Packet mit_cookie;
-	char *ptr;
-	int len;
+	unsigned char *ptr;
+	size_t len;
 
 	char authFile[41]="/tmp/floppyd.XXXXXX";
-	char template[4096];
+	unsigned char template[4096];
 
 	Packet reply = newPacket();
 
@@ -487,20 +496,20 @@ static char do_auth(io_buffer sock, int *version)
 	*ptr++ = 1;
 	*ptr++ = 0;
 	*ptr++ = 0;
-	gethostname(ptr+1, 4088);
-	len = strlen(ptr+1);
-	*ptr++ = len;
+	gethostname((char*)ptr+1, 4088);
+	len = strlen((char*)ptr+1);
+	*ptr++ = (unsigned char) len;
 	ptr += len;
 	*ptr++ = 0;
 	*ptr++ = 1;
 	*ptr++ = '0'; /* Display number */
 	*ptr++ = '\0';
 
-	if(write(fd, template, len+8) < len + 8) {
+	if(write(fd, template, len+8) < (ssize_t) (len + 8)) {
 		close(fd);
 		return 0;
 	}
-	ptr = (char *)mit_cookie->data;
+	ptr = mit_cookie->data;
 	len = mit_cookie->len;
 
 	if (eat(&ptr,&len,1) ||    /* the "type"    */
@@ -514,7 +523,7 @@ static char do_auth(io_buffer sock, int *version)
 	    return 0;
 	}
 
-	if(write(fd, ptr, len) < len) {
+	if(write(fd, ptr, len) < (ssize_t) len) {
 		close(fd);
 		return 0;
 	}
@@ -542,11 +551,11 @@ static char do_auth(io_buffer sock, int *version)
 /*
  * Return the port number, in network order, of the specified service.
  */
-static short getportnum(char *portnum)
+static uint16_t getportnum(char *portnum)
 {
-	char			*digits = portnum;
+	char		*digits = portnum;
 	struct servent	*serv;
-	short			port;
+	uint16_t	port;
 
 	for (port = 0; isdigit(*digits); ++digits)
 		{
@@ -561,7 +570,7 @@ static short getportnum(char *portnum)
 				}
 			else
 				{
-					port = -1;
+					port = 0;
 				}
 			endservent();
 		}
@@ -576,10 +585,10 @@ static short getportnum(char *portnum)
 /*
  * Return the IP address of the specified host.
  */
-static IPaddr_t getipaddress(char *ipaddr)
+static in_addr_t getipaddress(char *ipaddr)
 {
 	struct hostent	*host;
-	IPaddr_t ip;
+	in_addr_t ip;
 
 	if (((ip = inet_addr(ipaddr)) == INADDR_NONE)
 	    &&
@@ -666,7 +675,7 @@ static uid_t getgroupid(uid_t uid)
 /*
  * Bind to the specified ip and port.
  */
-static int bind_to_port(IPaddr_t bind_ip, short bind_port)
+static int bind_to_port(in_addr_t bind_ip, uint16_t bind_port)
 {
 	struct sockaddr_in	addr;
 	int					sock;
@@ -740,8 +749,10 @@ static void alarm_signal(int a UNUSEDP)
 /*
  * This is the main loop when running as a server.
  */
-static void server_main_loop(int sock, char **device_name, int n_dev) NORETURN;
-static void server_main_loop(int sock, char **device_name, int n_dev)
+static void server_main_loop(int sock, char **device_name,
+			     unsigned  int n_dev) NORETURN;
+static void server_main_loop(int sock, char **device_name,
+			     unsigned int n_dev)
 {
 	struct sockaddr_in	addr;
 	unsigned int		len;
@@ -821,8 +832,8 @@ int main (int argc, char** argv)
 	int sockfd = 0;
 	int			arg;
 	int			run_as_server = 0;
-	IPaddr_t		bind_ip = INADDR_ANY;
-	unsigned short		bind_port = 0;
+	in_addr_t		bind_ip = INADDR_ANY;
+	uint16_t		bind_port = 0;
 	uid_t			run_uid = 65535;
 	gid_t			run_gid = 65535;
 	char*			username = strdup("nobody");
@@ -830,7 +841,7 @@ int main (int argc, char** argv)
 
 	char **device_name = NULL; 
 	const char *floppy0 = "/dev/fd0";
-	int n_dev;
+	unsigned int n_dev;
 
 
 	/*
@@ -958,7 +969,7 @@ int main (int argc, char** argv)
 					 * Drop back to an untrusted user.
 					 */
 					setgid(run_gid);
-					initgroups(username, -1);
+					initgroups(username, run_gid);
 					setuid(run_uid);
 					
 					/*
@@ -979,7 +990,8 @@ int main (int argc, char** argv)
 					/*
 					 * Handle the server main loop.
 					 */
-					server_main_loop(sock, device_name, n_dev);
+					server_main_loop(sock, device_name,
+							 n_dev);
 				}
 		
 		/*
@@ -1005,7 +1017,7 @@ int main (int argc, char** argv)
 	return 0;
 }
 
-static void send_reply(int rval, io_buffer sock, int len) {
+static void send_reply(int rval, io_buffer sock, Dword len) {
 	Packet reply = newPacket();
 
 	make_new(reply, 8);
@@ -1013,7 +1025,7 @@ static void send_reply(int rval, io_buffer sock, int len) {
 	if (rval == -1) {
 		put_dword(reply, 4, 0);
 	} else {
-		put_dword(reply, 4, errno);
+		put_dword(reply, 4, (Dword) errno);
 	}
 	send_packet(reply, sock);
 	destroyPacket(reply);
@@ -1027,7 +1039,7 @@ static void send_reply64(int rval, io_buffer sock, mt_off_t len) {
 	if (rval == -1) {
 		put_dword(reply, 8, 0);
 	} else {
-		put_dword(reply, 8, errno);
+		put_dword(reply, 8, (Dword) errno);
 	}
 	send_packet(reply, sock);
 	destroyPacket(reply);
@@ -1041,7 +1053,7 @@ static void cleanup(int x UNUSEDP) {
 
 #include "lockdev.h"
 
-void serve_client(int sockhandle, char **device_name, int n_dev,
+void serve_client(int sockhandle, char **device_name, unsigned int n_dev,
 		  int close_stderr) {
 	Packet opcode;
 	Packet parm;
@@ -1050,7 +1062,7 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 	int devFd;
 	io_buffer sock;
 	int stopLoop;
-	int version;
+	unsigned int version;
 	int needSendReply=0;
 	int rval=0;
 	
@@ -1064,7 +1076,7 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 			perror("setsockopt");
 			exit(1);
 		}
-			
+
 	}
 
 
@@ -1116,7 +1128,7 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 				     O_RDONLY|O_LARGEFILE);
 		}
 		if(devFd < 0) {
-			send_reply(0, sock, devFd);
+			send_reply(0, sock, devFd >= 0 ? 0 : DWORD_ERR);
 			stopLoop = 1;
 		}
 		lock_dev(devFd, !readOnly, NULL);
@@ -1124,7 +1136,7 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 
 
 	while(!stopLoop) {
-		int dev_nr = 0;
+		uint32_t dev_nr = 0;
 		/*
 		 * Allow 60 seconds for any activity.
 		 */
@@ -1136,7 +1148,7 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 /*		if(opcode->data[0] != OP_CLOSE)*/
 		    recv_packet(parm, sock, MAX_DATA_REQUEST);
 
-
+		cork(sock->handle, 1);
 		switch(opcode->data[0]) {
 			case OP_OPRO:
 				if(get_length(parm) >= 4)
@@ -1144,7 +1156,7 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 				else
 					dev_nr = 0;
 				if(dev_nr >= n_dev) {
-					send_reply(0, sock, -1);
+					send_reply(0, sock, DWORD_ERR);
 					break;
 				}
 
@@ -1154,10 +1166,11 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 				fprintf(stderr, "Device opened\n");
 #endif
 				if(devFd >= 0 && lock_dev(devFd, 0, NULL)) {
-					send_reply(0, sock, -1);
+					send_reply(0, sock, DWORD_ERR);
 					break;
 				}
-				send_reply(0, sock, devFd);
+				send_reply(0, sock,
+					   devFd >= 0 ? 0 : DWORD_ERR);
 				readOnly = 1;
 				break;
 			case OP_OPRW:
@@ -1166,24 +1179,30 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 				else
 					dev_nr = 0;
 				if(dev_nr >= n_dev) {
-					send_reply(0, sock, -1);
+					send_reply(0, sock, DWORD_ERR);
 					break;
 				}
 				devFd = open(device_name[dev_nr], O_RDWR);
 				if(devFd >= 0 && lock_dev(devFd, 1, NULL)) {
-					send_reply(0, sock, -1);
+					send_reply(0, sock, DWORD_ERR);
 					break;
 				}
-				send_reply(0, sock, devFd);
+				send_reply(0, sock,
+					   devFd >= 0 ? 0 : DWORD_ERR);
 				readOnly = 0;
 				break;
 			case OP_READ:
 #if DEBUG
 				fprintf(stderr, "READ:\n");
 #endif
-				read_packet(parm, devFd, get_dword(parm, 0));
-				send_reply(devFd, sock, get_length(parm));
-				send_packet(parm, sock);
+				if(read_packet(parm, devFd,
+					       get_dword(parm, 0)) < 0)
+					send_reply(devFd, sock, DWORD_ERR);
+				else {
+					send_reply(devFd, sock,
+						   get_length(parm));
+					send_packet(parm, sock);
+				}
 				break;
 			case OP_WRITE:
 #if DEBUG
@@ -1206,7 +1225,7 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 				      get_dword(parm, 0), get_dword(parm, 4));
 				send_reply(devFd, 
 					   sock, 
-					   lseek(devFd, 0, SEEK_CUR));
+					   (Dword) lseek(devFd, 0, SEEK_CUR));
 				break;
 			case OP_SEEK64:
 				if(sizeof(mt_off_t) < 8) {
@@ -1214,7 +1233,7 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 					fprintf(stderr, "64 bit requested where not available!\n");
 #endif
 					errno = EINVAL;
-					send_reply(devFd, sock, -1);
+					send_reply(devFd, sock, DWORD_ERR);
 					break;
 				}
 #if DEBUG
@@ -1252,9 +1271,10 @@ void serve_client(int sockhandle, char **device_name, int n_dev,
 				fprintf(stderr, "Invalid Opcode!\n");
 #endif
 				errno = EINVAL;
-				send_reply(devFd, sock, -1);
+				send_reply(devFd, sock, DWORD_ERR);
 				break;
 		}
+		cork(sock->handle, 0);
 		kill_packet(parm);
 		alarm(0);
 	}

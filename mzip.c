@@ -459,14 +459,14 @@ void mzip(int argc, char **argv, int type UNUSEDP)
 		}
 		
 		if (newMode & 0x1) {
-			char first_try[_PASSWORD_LEN];
+			char first_try[_PASSWORD_LEN+1];
 			
 			passwd = getpass("Enter new password:");
 			strncpy(first_try, passwd,_PASSWORD_LEN);
 			passwd = getpass("Re-type new password:");
 			if(strncmp(first_try, passwd, _PASSWORD_LEN)) {
 				fprintf(stderr,
-					"You mispelled it. Password not set.\n");
+					"You misspelled it. Password not set.\n");
 				exit(1);
 			}
 		} else {

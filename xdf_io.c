@@ -100,8 +100,8 @@ typedef struct Xdf_t {
 	int track_size;
 	int track0_size;
 	int sector_size;
-	int FatSize;
-	int RootDirSize;
+	unsigned int FatSize;
+	unsigned int RootDirSize;
 	TrackMap_t *track_map;
 
 	unsigned char last_sector;
@@ -370,7 +370,8 @@ static int load_bounds(Xdf_t *This, off_t begin, off_t end)
 }
 
 
-static int fill_t0(Xdf_t *This, int ptr, int size, int *sector, int *head)
+static int fill_t0(Xdf_t *This, int ptr, unsigned int size,
+		   int *sector, int *head)
 {
 	int n;
 
@@ -388,7 +389,7 @@ static int fill_t0(Xdf_t *This, int ptr, int size, int *sector, int *head)
 }
 
 
-static int fill_phantoms(Xdf_t *This, int ptr, int size)
+static int fill_phantoms(Xdf_t *This, int ptr, unsigned int size)
 {
 	int n;
 

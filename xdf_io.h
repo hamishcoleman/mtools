@@ -22,9 +22,9 @@
 #include "stream.h"
 
 struct xdf_info {
-  int FatSize;
-  int RootDirSize;
-  int BadSectors;
+  unsigned int FatSize;
+  unsigned int RootDirSize;
+  unsigned int BadSectors;
 };
 
 Stream_t *XdfOpen(struct device *dev, char *name,
